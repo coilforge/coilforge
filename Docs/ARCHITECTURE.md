@@ -1,4 +1,4 @@
-# CoilForge v2 — Architecture Design
+# CoilForge — Architecture Design
 
 This document is the architectural blueprint for a ground-up rewrite of
 CoilForge. The rewrite keeps the same outward feature set — schematic editing,

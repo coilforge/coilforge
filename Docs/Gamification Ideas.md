@@ -1,7 +1,7 @@
-# CoilForge v2 — Gamification Ideas
+# CoilForge — Gamification Ideas
 
-This document collects all gamification concepts discussed for CoilForge v2.  
-It serves as a living reference for future development after the core v2 architecture is stable.
+This document collects all gamification concepts discussed for CoilForge  
+It serves as a living reference for future development after the core architecture is stable.
 
 **Core Philosophy Reminder**  
 Keep the foundation clean and understandable. All gamification features must reuse existing Part interface, world/, editor/, sim/, and render/ as much as possible. New features live in gamify/ or higher layers.
