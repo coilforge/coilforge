@@ -18,10 +18,11 @@ type Wire struct {
 
 func init() {
 	part.Register(TypeID, part.TypeInfo{
-		New:    newWire,
-		Decode: decodeWire,
-		Tools:  []string{"wire"},
-		Icon:   toolbarIcon,
+		New:     newWire,
+		NewWire: newWireSegment,
+		Decode:  decodeWire,
+		Tools:   []string{"wire"},
+		Icon:    toolbarIcon,
 	})
 }
 
@@ -47,6 +48,10 @@ func New(id int, from, to core.Pt, allocPinA, allocPinB func() core.PinID) *Wire
 		wire.PinB = allocPinB()
 	}
 	return wire
+}
+
+func newWireSegment(id int, from, to core.Pt, allocPin func() core.PinID) part.Part {
+	return New(id, from, to, allocPin, allocPin)
 }
 
 func newWire(id int, pos core.Pt) part.Part {

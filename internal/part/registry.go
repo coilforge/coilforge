@@ -8,10 +8,11 @@ import (
 )
 
 type TypeInfo struct {
-	New    func(id int, pos core.Pt) Part
-	Decode func(data json.RawMessage) (Part, error)
-	Tools  []string
-	Icon   func() *ebiten.Image
+	New     func(id int, pos core.Pt) Part
+	NewWire func(id int, from, to core.Pt, allocPin func() core.PinID) Part
+	Decode  func(data json.RawMessage) (Part, error)
+	Tools   []string
+	Icon    func() *ebiten.Image
 }
 
 var Registry = map[core.PartTypeID]TypeInfo{}

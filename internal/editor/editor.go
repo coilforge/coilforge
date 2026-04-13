@@ -3,7 +3,6 @@ package editor
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
-	"coilforge/internal/part/catalog/wire"
 	"coilforge/internal/render"
 	"coilforge/internal/world"
 	"math"
@@ -228,8 +227,12 @@ func handleWireClick(pt core.Pt) {
 
 	from := WireDraft[len(WireDraft)-2]
 	to := WireDraft[len(WireDraft)-1]
+	info, ok := part.Registry[core.PartTypeID("wire")]
+	if !ok || info.NewWire == nil {
+		return
+	}
 	pushUndo()
-	world.Parts = append(world.Parts, wire.New(world.AllocPartID(), from, to, world.AllocPinID, world.AllocPinID))
+	world.Parts = append(world.Parts, info.NewWire(world.AllocPartID(), from, to, world.AllocPinID))
 }
 
 func snapToGrid(pt core.Pt) core.Pt {
