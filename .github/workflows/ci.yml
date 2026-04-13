@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Install local check tools
+        run: ./check.sh bootstrap
+
+      - name: Run checks
+        run: ./check.sh full
+
+  architecture-review:
+    if: vars.COILFORGE_ARCH_REVIEW_ENABLED == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Install GitHub Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Run architecture review
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COILFORGE_ARCH_DIFF_BASE: ${{ github.event.pull_request.base.sha || '' }}
+        run: ./check.sh architecture
+
+      - name: Upload architecture review artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: architecture-review
+          path: .artifacts/architecture-review.report.md
+          if-no-files-found: warn
