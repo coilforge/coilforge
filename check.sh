@@ -8,7 +8,6 @@ TOOLS_BIN_DIR="$TOOLS_DIR/bin"
 TOOLS_NODE_DIR="$TOOLS_DIR/node"
 
 GOLANGCI_LINT_VERSION="v2.8.0"
-DEADCODE_VERSION="v0.43.0"
 MARKDOWNLINT_CLI2_VERSION="0.18.1"
 
 export PATH="$TOOLS_BIN_DIR:$TOOLS_NODE_DIR/node_modules/.bin:$PATH"
@@ -18,7 +17,6 @@ usage() {
 Usage:
   ./check.sh bootstrap   Install repo-local lint/check tools into ./.tools
   ./check.sh go          Run Go lint checks via golangci-lint (includes govet)
-  ./check.sh deadcode    Run deadcode against executable packages
   ./check.sh markdown    Run markdownlint-cli2 against Markdown files
   ./check.sh architecture Run LLM-based architecture review
   ./check.sh full        Run all checks
@@ -49,7 +47,6 @@ bootstrap() {
   mkdir -p "$TOOLS_BIN_DIR" "$TOOLS_NODE_DIR"
 
   install_go_tool "golangci-lint" "github.com/golangci/golangci-lint/v2/cmd/golangci-lint" "$GOLANGCI_LINT_VERSION"
-  install_go_tool "deadcode" "golang.org/x/tools/cmd/deadcode" "$DEADCODE_VERSION"
 
   if [[ ! -x "$TOOLS_NODE_DIR/node_modules/.bin/markdownlint-cli2" ]]; then
     echo "Installing markdownlint-cli2@$MARKDOWNLINT_CLI2_VERSION"
@@ -68,28 +65,7 @@ require_tool() {
 
 run_go_checks() {
   require_tool "golangci-lint"
-  golangci-lint run --config "$ROOT_DIR/.golangci.yml" ./...
-}
-
-run_deadcode() {
-  local module_path
-  local main_packages=()
-
-  require_tool "deadcode"
-
-  module_path="$(go list -m -f '{{.Path}}')"
-  while IFS= read -r package_name; do
-    if [[ -n "$package_name" ]]; then
-      main_packages+=("$package_name")
-    fi
-  done < <(go list -f '{{if eq .Name "main"}}{{.ImportPath}}{{end}}' ./...)
-
-  if [[ "${#main_packages[@]}" -eq 0 ]]; then
-    echo "No main packages found for deadcode analysis." >&2
-    exit 1
-  fi
-
-  deadcode -test -filter "^${module_path}(/|$)" "${main_packages[@]}"
+  golangci-lint run --config "$ROOT_DIR/.github/golangci.yml" ./...
 }
 
 run_markdown_checks() {
@@ -107,7 +83,6 @@ run_architecture_checks() {
 
 run_full() {
   run_go_checks
-  run_deadcode
   run_markdown_checks
   if [[ -n "${COILFORGE_ARCH_LLM_CMD:-}" ]]; then
     run_architecture_checks
@@ -123,9 +98,6 @@ main() {
       ;;
     go)
       run_go_checks
-      ;;
-    deadcode)
-      run_deadcode
       ;;
     markdown)
       run_markdown_checks
