@@ -1,0 +1,146 @@
+# CodeRabbit configuration for CoilForge
+# Architecture rules reference: Docs/ARCHITECTURE_RULES.md
+# See https://docs.coderabbit.ai/guides/configure-coderabbit for full schema
+
+language: "en-US"
+
+tone_instructions: "Be direct and technical. Match the terse, precise style of the codebase. Avoid filler phrases and style commentary."
+
+reviews:
+  enabled: true
+  auto_review:
+    enabled: true
+    drafts: false
+  collapse_walkthrough: true
+  path_instructions:
+    - path: "internal/part/catalog/**"
+      instructions: |
+        Enforce Rule 11: every real component directory must contain the standard file split —
+        part.go, draw.go, props.go, sim.go (when needed), assets.go, and *_gen.go for generated code.
+        Flag any missing required file or any file that does not belong in this layout.
+        Enforce Rule 5: catalog packages may import core and part only.
+        They must NOT import world. Flag any import of coilforge/internal/world.
+
+    - path: "internal/core/**"
+      instructions: |
+        Enforce Rule 5 (highest priority): core is a leaf package.
+        It must not import any other internal package — not part, not world, not editor, not sim, not any catalog package.
+        Flag every coilforge/internal/* import found here.
+
+    - path: "internal/editor/**"
+      instructions: |
+        Enforce Rule 5 (highest priority):
+        - editor must NOT import sim. Flag any import of coilforge/internal/sim.
+        - editor must NOT import concrete catalog packages under internal/part/catalog/*.
+          Only app and components are allowed to import concrete catalog packages.
+          Flag any import matching coilforge/internal/part/catalog/*.
+        Enforce Rule 6: screen-to-world coordinate conversion must not happen here.
+        Any call that converts screen coordinates to world coordinates (other than delegating to
+        internal/world or internal/app) is a violation. Flag it with Rule 6.
+
+    - path: "internal/sim/**"
+      instructions: |
+        Enforce Rule 5 (highest priority): sim must NOT import editor.
+        Flag any import of coilforge/internal/editor.
+        Enforce Rule 9: the simulator must call part interfaces (Tick, SeedNets, AddConductive,
+        AddStateEdges, etc.) rather than mutating part internals directly.
+        Flag any direct field mutation on catalog part structs.
+
+    - path: "internal/render/**"
+      instructions: |
+        Enforce Rule 10: the renderer must not contain per-component drawing logic.
+        It should assemble scene/chrome state and call Part.Draw; it must not branch on specific
+        part types or draw anything itself on behalf of a specific component.
+        Flag any such per-component drawing logic.
+
+    - path: "internal/app/**"
+      instructions: |
+        Enforce Rule 12: this is the correct home for file I/O, Ebiten lifecycle, input polling,
+        mode switching, and save/load. These concerns must NOT leak into other packages.
+        If you see any of these concerns referenced in editor, sim, or render, note it here.
+        app may orchestrate other packages but must NOT import concrete catalog packages (Rule 5).
+        Flag any import of coilforge/internal/part/catalog/*.
+
+    - path: "internal/world/**"
+      instructions: |
+        Enforce Rule 4: shared application state (camera, parts list, net state, mode flags,
+        screen dimensions, sim tick) belongs here and must not be threaded through long call chains.
+        Flag any shared state that has been moved out of world into other packages.
+
+  instructions: |
+    This project follows the architecture rules in Docs/ARCHITECTURE_RULES.md.
+    Apply all 13 rules when reviewing changed .go files. Prefer high-signal findings only —
+    report concrete or likely violations, not style commentary.
+    For each finding cite the file path and the rule number violated.
+
+    Summary of rules:
+
+    Rule 1 — Keep code concrete and obvious.
+    Avoid closure-dispatch registries, generic store bridges, service bundles, and
+    indirection-heavy patterns.
+
+    Rule 2 — Put behavior on concrete types.
+    Parts should expose normal methods on structs, not function fields assembled at
+    registration time.
+
+    Rule 3 — Prefer direct struct access over trivial getters/setters.
+    Public fields are acceptable when they keep the code simpler.
+
+    Rule 4 — Shared application state belongs in internal/world.
+    Do not thread camera, parts, net state, or mode flags through long call chains
+    when they are shared app state.
+
+    Rule 5 (HIGHEST PRIORITY) — Respect the package boundaries.
+    Check every changed .go file against these constraints:
+    - core is a leaf and must not import any internal package.
+    - part imports only core.
+    - world imports only core and part.
+    - part/catalog/* imports core and part, and must NOT import world.
+    - components only blank-imports catalog packages for registration.
+    - editor, sim, flatten, render may import core, part, and world.
+    - editor must NOT import sim.
+    - sim must NOT import editor.
+    - editor must NOT import any concrete catalog package under internal/part/catalog/*.
+    - app may orchestrate other packages but must NOT import concrete catalog packages.
+    - cmd/coilforge should import only app and components.
+    Flag every import that crosses these boundaries.
+
+    Rule 6 — Use world coordinates for schematic logic.
+    Screen-to-world conversion must happen at the app boundary only (internal/app or
+    internal/world). Flag any conversion occurring in editor, sim, flatten, or parts.
+
+    Rule 7 — Keep editor and simulator independent.
+    They may share world state but must not import or call each other directly.
+    Flag any direct import of editor from sim or sim from editor.
+
+    Rule 8 — Treat wires as normal parts.
+    Selection, move, copy, paste, delete, rotate, mirror, undo/redo, serialization,
+    and drawing must use the same part.Part contract as other components.
+    Only wire routing is editor-specific.
+
+    Rule 9 — Parts own their own behavior and runtime state.
+    The simulator calls part interfaces (Tick, SeedNets, AddConductive, AddStateEdges);
+    it must not mutate part internals directly.
+
+    Rule 10 — Drawing responsibility belongs to the part.
+    The renderer assembles scene/chrome state and calls Part.Draw.
+    It must not contain per-component drawing logic.
+
+    Rule 11 — Keep the component layout consistent.
+    Real components under internal/part/catalog/<name>/ must follow the standard file split:
+    part.go, draw.go, props.go, sim.go (when needed), assets.go, and *_gen.go.
+    Flag missing required files or unexpected additions.
+
+    Rule 12 — Keep file I/O and top-level orchestration in app.
+    Package lifecycle, Ebiten lifecycle, input polling, mode switching, and save/load
+    belong in internal/app. Flag these concerns appearing elsewhere.
+
+    Rule 13 — Favor simple whole-schematic state management.
+    Undo/redo and file save/load should operate on full snapshots rather than complex
+    incremental object graphs.
+
+    Review output contract:
+    - Report only concrete or likely violations.
+    - For each finding cite the file path and the rule number.
+    - Distinguish: definite violation / likely violation / no issue.
+    - End the review summary with VERDICT: PASS or VERDICT: FAIL.
