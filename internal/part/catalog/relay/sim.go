@@ -1,11 +1,18 @@
 package relay
 
+// File overview:
+// sim implements simulation-facing behavior for relay using part sim interfaces.
+// Subsystem: part catalog (relay) simulation.
+// It is invoked by the sim engine through interfaces and does not depend on editor.
+// Flow position: part sim logic executed during run-mode ticks and net solving.
+
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
 	"math/rand"
 )
 
+// AddConductive adds conductive.
 func (r *Relay) AddConductive(union part.NetUnion, netByPin func(core.PinID) int) {
 	r.ensureContactSlices()
 	for idx, pole := range r.Poles {
@@ -19,6 +26,7 @@ func (r *Relay) AddConductive(union part.NetUnion, netByPin func(core.PinID) int
 	}
 }
 
+// Tick handles tick.
 func (r *Relay) Tick(ctx part.SimContext) bool {
 	r.ensureContactSlices()
 
@@ -48,6 +56,7 @@ func (r *Relay) Tick(ctx part.SimContext) bool {
 	return changed
 }
 
+// computePendingContacts handles compute pending contacts.
 func (r *Relay) computePendingContacts() {
 	target := ContactNC
 	if r.CoilActive {
@@ -58,14 +67,17 @@ func (r *Relay) computePendingContacts() {
 	}
 }
 
+// pickupTicks handles pickup ticks.
 func (r *Relay) pickupTicks(tickMicros int) int {
 	return millisToTicks(r.PickupMs+r.FlightMs, tickMicros)
 }
 
+// releaseTicks handles release ticks.
 func (r *Relay) releaseTicks(tickMicros int) int {
 	return millisToTicks(r.ReleaseMs+r.FlightMs, tickMicros)
 }
 
+// jitterTicks handles jitter ticks.
 func (r *Relay) jitterTicks(tickMicros int, randSource *rand.Rand) int {
 	if r.JitterMs <= 0 || randSource == nil {
 		return 0
@@ -73,6 +85,7 @@ func (r *Relay) jitterTicks(tickMicros int, randSource *rand.Rand) int {
 	return millisToTicks(randSource.Intn(r.JitterMs+1), tickMicros)
 }
 
+// millisToTicks handles millis to ticks.
 func millisToTicks(ms, tickMicros int) int {
 	if ms <= 0 || tickMicros <= 0 {
 		return 0

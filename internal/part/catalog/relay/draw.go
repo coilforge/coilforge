@@ -1,10 +1,17 @@
 package relay
 
+// File overview:
+// draw renders relay geometry and anchors in world space for this part.
+// Subsystem: part catalog (relay) drawing.
+// It cooperates with assets selection and is called through the generic part.Draw path.
+// Flow position: part-level render leaf beneath render scene orchestration.
+
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
 )
 
+// Bounds handles bounds.
 func (r *Relay) Bounds() core.Rect {
 	rows := len(r.Poles)
 	if rows < 1 {
@@ -17,6 +24,7 @@ func (r *Relay) Bounds() core.Rect {
 	)
 }
 
+// Anchors handles anchors.
 func (r *Relay) Anchors() []core.PinAnchor {
 	r.ensureContactSlices()
 
@@ -38,6 +46,7 @@ func (r *Relay) Anchors() []core.PinAnchor {
 	return anchors
 }
 
+// HitTest handles hit test.
 func (r *Relay) HitTest(pt core.Pt) part.HitResult {
 	if core.PointInRect(pt, r.Bounds()) {
 		return part.HitResult{Hit: true, Kind: part.HitBody}
@@ -45,6 +54,7 @@ func (r *Relay) HitTest(pt core.Pt) part.HitResult {
 	return part.HitResult{}
 }
 
+// Draw draws its work.
 func (r *Relay) Draw(ctx part.DrawContext) {
 	r.asset().Draw(ctx, r.Bounds())
 }

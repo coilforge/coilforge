@@ -1,5 +1,11 @@
 package app
 
+// File overview:
+// fileio owns project save/load entrypoints and snapshot persistence wiring.
+// Subsystem: app I/O orchestration.
+// It bridges world state with part codec and avoids file handling in editor/sim.
+// Flow position: app-level persistence boundary invoked by hotkeys and menus.
+
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/editor"
@@ -10,11 +16,12 @@ import (
 )
 
 type FileFormat struct {
-	NextPartID int           `json:"nextPartID"`
-	NextPinID  core.PinID    `json:"nextPinID"`
-	Parts      []part.Record `json:"parts"`
+	NextPartID int           `json:"nextPartID"` // next part id value.
+	NextPinID  core.PinID    `json:"nextPinID"`  // next pin id value.
+	Parts      []part.Record `json:"parts"`      // part list.
 }
 
+// SaveProject saves project.
 func SaveProject(path string) error {
 	records := make([]part.Record, 0, len(world.Parts))
 	for _, p := range world.Parts {
@@ -39,6 +46,7 @@ func SaveProject(path string) error {
 	return os.WriteFile(path, data, 0o644)
 }
 
+// LoadProject loads project.
 func LoadProject(path string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {

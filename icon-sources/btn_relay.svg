@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!-- Left stem -->
+  <line x1="32" y1="184" x2="32" y2="108" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+  <!-- Right stem -->
+  <line x1="160" y1="184" x2="160" y2="108" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+  <!-- Relay coil (4 semicircle arcs) -->
+  <path d="M32,108 A16,32 0 0,1 64,108 A16,32 0 0,1 96,108 A16,32 0 0,1 128,108 A16,32 0 0,1 160,108" fill="none" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+  <!-- Armature bar above coil -->
+  <line x1="20" y1="48" x2="172" y2="48" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+  <!-- Contact posts -->
+  <line x1="48" y1="48" x2="48" y2="24" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+  <line x1="144" y1="48" x2="144" y2="24" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+</svg>

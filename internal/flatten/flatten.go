@@ -1,5 +1,11 @@
 package flatten
 
+// File overview:
+// flatten converts placed parts and wires into connectivity data for net solving.
+// Subsystem: flatten net derivation.
+// It consumes part/world geometry and feeds sim with conductive and state-edge relationships.
+// Flow position: preprocessing step between edit-time layout and run-time simulation.
+
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/world"
@@ -7,6 +13,7 @@ import (
 	"math"
 )
 
+// BuildNets builds nets.
 func BuildNets() {
 	var anchors []core.PinAnchor
 	var segs []core.Seg
@@ -20,6 +27,7 @@ func BuildNets() {
 	world.PinNet = BuildPinNetMap(world.Nets)
 }
 
+// BuildPinNetMap builds pin net map.
 func BuildPinNetMap(nets []core.Net) map[core.PinID]int {
 	out := make(map[core.PinID]int, len(nets))
 	for _, net := range nets {
@@ -30,10 +38,11 @@ func BuildPinNetMap(nets []core.Net) map[core.PinID]int {
 	return out
 }
 
+// deriveNets handles derive nets.
 func deriveNets(anchors []core.PinAnchor, segs []core.Seg) []core.Net {
 	type bucket struct {
-		pins []core.PinID
-		segs []core.Seg
+		pins []core.PinID // pins value.
+		segs []core.Seg   // segs value.
 	}
 
 	grouped := map[string]*bucket{}
@@ -71,10 +80,12 @@ func deriveNets(anchors []core.PinAnchor, segs []core.Seg) []core.Net {
 	return nets
 }
 
+// pointKey handles point key.
 func pointKey(pt core.Pt) string {
 	return fmt.Sprintf("%d:%d", quantize(pt.X), quantize(pt.Y))
 }
 
+// quantize handles quantize.
 func quantize(v float64) int64 {
 	return int64(math.Round(v * 1000))
 }

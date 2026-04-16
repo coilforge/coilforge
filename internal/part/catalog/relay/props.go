@@ -1,7 +1,14 @@
 package relay
 
+// File overview:
+// props declares editable relay properties and applies updates to part state.
+// Subsystem: part catalog (relay) properties.
+// It implements part property contracts used by app/editor property panels.
+// Flow position: part-specific metadata and mutation rules in edit flow.
+
 import "coilforge/internal/part"
 
+// PropSpec handles prop spec.
 func (r *Relay) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
@@ -13,6 +20,7 @@ func (r *Relay) PropSpec() part.PropSpec {
 	}
 }
 
+// ApplyProp handles apply prop.
 func (r *Relay) ApplyProp(action part.PropAction) bool {
 	switch action.Index {
 	case 0:

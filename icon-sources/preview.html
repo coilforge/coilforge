@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Icon Source Preview</title>
+<style>
+  body { background: #e0e0e0; font-family: system-ui, sans-serif; padding: 24px; }
+  h1 { font-size: 20px; margin-bottom: 24px; }
+  h2 { font-size: 14px; color: #444; margin: 16px 0 4px; }
+  .row { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 32px; }
+  .icon-card { background: #fff; border: 1px solid #ccc; padding: 12px; text-align: center; }
+  .icon-card img { display: block; }
+  .icon-card .label { font-size: 11px; color: #666; margin-top: 6px; }
+  .relay-stack { display: flex; flex-direction: column; align-items: center; }
+  .relay-stack img { display: block; }
+  .relay-stack .label { font-size: 11px; color: #666; margin-top: 6px; }
+</style>
+</head>
+<body>
+<h1>Icon Source Preview</h1>
+<p>Current SVG source set for CoilForge. Artwork produced with Claude Opus 4.6.</p>
+
+<h2>Switches</h2>
+<div class="row">
+  <div class="icon-card">
+    <img src="button_open.svg" width="256" height="128">
+    <div class="label">button_open.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="button_closed.svg" width="256" height="128">
+    <div class="label">button_closed.svg</div>
+  </div>
+</div>
+
+<h2>Indicators</h2>
+<div class="row">
+  <div class="icon-card">
+    <img src="indicator_off.svg" width="256" height="128">
+    <div class="label">indicator_off.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="indicator_on.svg" width="256" height="128">
+    <div class="label">indicator_on.svg</div>
+  </div>
+</div>
+
+<h2>Power</h2>
+<div class="row">
+  <div class="icon-card">
+    <img src="power_vcc.svg" width="256" height="64">
+    <div class="label">power_vcc.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="power_gnd.svg" width="256" height="64">
+    <div class="label">power_gnd.svg</div>
+  </div>
+</div>
+
+<h2>Parts</h2>
+<div class="row">
+  <div class="icon-card">
+    <img src="diode.svg" width="256" height="128">
+    <div class="label">diode.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="rch.svg" width="256" height="128">
+    <div class="label">rch.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="rch-charged.svg" width="256" height="128">
+    <div class="label">rch-charged.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="rch-draining.svg" width="256" height="128">
+    <div class="label">rch-draining.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="clock_high.svg" width="256" height="128">
+    <div class="label">clock_high.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="clock_low.svg" width="256" height="128">
+    <div class="label">clock_low.svg</div>
+  </div>
+</div>
+
+<h2>Relay (stacked)</h2>
+<div class="row">
+  <div class="icon-card">
+    <div class="relay-stack">
+      <img src="relay_top.svg" width="256" height="64">
+      <img src="relay_middle_nc.svg" width="256" height="128">
+      <img src="relay_bottom.svg" width="256" height="64">
+      <div class="label">relay (de-energised / NC)</div>
+    </div>
+  </div>
+  <div class="icon-card">
+    <div class="relay-stack">
+      <img src="relay_top.svg" width="256" height="64">
+      <img src="relay_middle_float.svg" width="256" height="128">
+      <img src="relay_bottom.svg" width="256" height="64">
+      <div class="label">relay (float)</div>
+    </div>
+  </div>
+  <div class="icon-card">
+    <div class="relay-stack">
+      <img src="relay_top.svg" width="256" height="64">
+      <img src="relay_middle_no.svg" width="256" height="128">
+      <img src="relay_bottom_on.svg" width="256" height="64">
+      <div class="label">relay (energised / NO)</div>
+    </div>
+  </div>
+</div>
+
+<h2>Individual Relay Parts</h2>
+<div class="row">
+  <div class="icon-card">
+    <img src="relay_top.svg" width="256" height="64">
+    <div class="label">relay_top.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="relay_middle_nc.svg" width="256" height="128">
+    <div class="label">relay_middle_nc.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="relay_middle_float.svg" width="256" height="128">
+    <div class="label">relay_middle_float.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="relay_middle_no.svg" width="256" height="128">
+    <div class="label">relay_middle_no.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="relay_bottom.svg" width="256" height="64">
+    <div class="label">relay_bottom.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="relay_bottom_on.svg" width="256" height="64">
+    <div class="label">relay_bottom_on.svg</div>
+  </div>
+</div>
+
+<h2>Toolbar Buttons (192×192, shown at 96×96)</h2>
+<div class="row">
+  <div class="icon-card">
+    <img src="btn_button.svg" width="96" height="96">
+    <div class="label">btn_button.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="btn_clock.svg" width="96" height="96">
+    <div class="label">btn_clock.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="btn_diode.svg" width="96" height="96">
+    <div class="label">btn_diode.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="btn_indicator.svg" width="96" height="96">
+    <div class="label">btn_indicator.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="btn_gnd.svg" width="96" height="96">
+    <div class="label">btn_gnd.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="btn_vcc.svg" width="96" height="96">
+    <div class="label">btn_vcc.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="btn_rch.svg" width="96" height="96">
+    <div class="label">btn_rch.svg</div>
+  </div>
+  <div class="icon-card">
+    <img src="btn_relay.svg" width="96" height="96">
+    <div class="label">btn_relay.svg</div>
+  </div>
+</div>
+
+</body>
+</html>

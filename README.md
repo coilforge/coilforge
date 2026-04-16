@@ -7,7 +7,7 @@
 
 CoilForge is an Ebiten-based schematic editor and simulator for relay logic style circuits. The current app supports part placement, wire drawing, selection and transforms, save/load to JSON, and edit/run mode switching.
 
-## Current component catalog
+## Current part catalog
 
 - Relay
 - VCC

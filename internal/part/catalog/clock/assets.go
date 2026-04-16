@@ -1,11 +1,18 @@
 package clock
 
+// File overview:
+// assets selects pre-generated vectors and icons used by the clock part.
+// Subsystem: part catalog (clock) assets.
+// It supports draw and toolbar registration without runtime SVG parsing.
+// Flow position: static visual resource selector beneath part drawing.
+
 import (
 	"coilforge/internal/part"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// asset handles asset.
 func (c *Clock) asset() part.VectorAsset {
 	if c.OutputHigh {
 		return clockHighAsset
@@ -13,6 +20,7 @@ func (c *Clock) asset() part.VectorAsset {
 	return clockLowAsset
 }
 
+// toolbarIcon handles toolbar icon.
 func toolbarIcon() *ebiten.Image {
 	return nil
 }

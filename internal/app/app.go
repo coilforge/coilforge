@@ -1,8 +1,15 @@
 package app
 
+// File overview:
+// app coordinates frame-level input, mode routing, and top-level draw calls.
+// Subsystem: app orchestration.
+// It calls editor and sim independently while sharing state through world and render.
+// Flow position: primary runtime controller between Ebiten loop and subsystems.
+
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/editor"
+	"coilforge/internal/partmanifest"
 	"coilforge/internal/render"
 	"coilforge/internal/sim"
 	"coilforge/internal/world"
@@ -12,13 +19,15 @@ import (
 )
 
 type App struct {
-	leftDown bool
+	leftDown bool // Tracks previous-frame left mouse state for edge detection.
 }
 
+// New constructs a fresh application instance.
 func New() *App {
 	return &App{}
 }
 
+// Run resets world state, configures the window, and starts the Ebiten loop.
 func Run() error {
 	world.Reset()
 	ebiten.SetWindowSize(1440, 900)
@@ -26,6 +35,10 @@ func Run() error {
 	return ebiten.RunGame(New())
 }
 
+// Update runs one frame of app orchestration and input dispatch.
+// It refreshes viewport size, processes keyboard/mouse input, and routes input
+// into editor or simulation behavior depending on run mode.
+// It also advances simulation frames when run mode is active.
 func (a *App) Update() error {
 	w, h := ebiten.WindowSize()
 	world.ScreenW = w
@@ -49,6 +62,7 @@ func (a *App) Update() error {
 	return nil
 }
 
+// Draw composes scene rendering, editor overlays, and screen-space chrome.
 func (a *App) Draw(screen *ebiten.Image) {
 	render.DrawScene(screen)
 
@@ -63,38 +77,59 @@ func (a *App) Draw(screen *ebiten.Image) {
 	render.DrawStatusBar(screen, a.statusText())
 }
 
+// Layout keeps the game surface the same size as the window.
 func (a *App) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return outsideWidth, outsideHeight
 }
 
+// handleToolHotkeys maps numeric keys to placement tool selection.
 func (a *App) handleToolHotkeys() {
-	toolHotkeys := []struct {
-		key    ebiten.Key
-		typeID core.PartTypeID
-	}{
-		{key: ebiten.Key1, typeID: "relay"},
-		{key: ebiten.Key2, typeID: "vcc"},
-		{key: ebiten.Key3, typeID: "gnd"},
-		{key: ebiten.Key4, typeID: "switch"},
-		{key: ebiten.Key5, typeID: "indicator"},
-		{key: ebiten.Key6, typeID: "diode"},
-		{key: ebiten.Key7, typeID: "rch"},
-		{key: ebiten.Key8, typeID: "clock"},
-	}
-
-	for _, item := range toolHotkeys {
-		if inpututil.IsKeyJustPressed(item.key) {
-			editor.StartPlacement(item.typeID)
+	for _, item := range partmanifest.PlacementTools {
+		key, ok := hotkeyToEbitenKey(item.Hotkey)
+		if ok && inpututil.IsKeyJustPressed(key) {
+			editor.StartPlacement(item.TypeID)
 		}
 	}
 }
 
+// hotkeyToEbitenKey maps toolbar hotkey runes to Ebiten key constants.
+func hotkeyToEbitenKey(hotkey rune) (ebiten.Key, bool) {
+	switch hotkey {
+	case '1':
+		return ebiten.Key1, true
+	case '2':
+		return ebiten.Key2, true
+	case '3':
+		return ebiten.Key3, true
+	case '4':
+		return ebiten.Key4, true
+	case '5':
+		return ebiten.Key5, true
+	case '6':
+		return ebiten.Key6, true
+	case '7':
+		return ebiten.Key7, true
+	case '8':
+		return ebiten.Key8, true
+	case '9':
+		return ebiten.Key9, true
+	case '0':
+		return ebiten.Key0, true
+	case 'w', 'W':
+		return ebiten.KeyW, true
+	default:
+		return 0, false
+	}
+}
+
+// handleEditorHotkeys runs editor-specific keyboard handlers.
 func (a *App) handleEditorHotkeys() {
 	a.handleTransformHotkeys()
 	a.handleHistoryHotkeys()
 	a.handleLabelHotkeys()
 }
 
+// handleTransformHotkeys processes rotate, mirror, delete, and mode keys.
 func (a *App) handleTransformHotkeys() {
 	for _, key := range []ebiten.Key{
 		ebiten.KeyEscape,
@@ -110,6 +145,7 @@ func (a *App) handleTransformHotkeys() {
 	}
 }
 
+// handleHistoryHotkeys processes undo/redo and clipboard actions.
 func (a *App) handleHistoryHotkeys() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyZ) && !world.RunMode {
 		editor.Undo()
@@ -125,6 +161,7 @@ func (a *App) handleHistoryHotkeys() {
 	}
 }
 
+// handleLabelHotkeys starts and commits label editing when available.
 func (a *App) handleLabelHotkeys() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyL) && !world.RunMode && len(editor.Selection) > 0 {
 		editor.StartLabelEdit(editor.Selection[0])
@@ -134,6 +171,7 @@ func (a *App) handleLabelHotkeys() {
 	}
 }
 
+// handleProjectHotkeys processes run-mode and project load/save shortcuts.
 func (a *App) handleProjectHotkeys() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyF5) {
 		ToggleRunMode()
@@ -146,6 +184,7 @@ func (a *App) handleProjectHotkeys() {
 	}
 }
 
+// handleMouse routes click, drag, and release events by active mode.
 func (a *App) handleMouse(pt core.Pt) {
 	leftNow := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
 
@@ -165,6 +204,7 @@ func (a *App) handleMouse(pt core.Pt) {
 	a.leftDown = leftNow
 }
 
+// statusText reports the current top-level operating mode.
 func (a *App) statusText() string {
 	if world.RunMode {
 		return "Run mode active"

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 256" width="512" height="256">
+  <defs>
+    <clipPath id="box">
+      <path d="M166,23 L346,23 A20,20 0 0,1 366,43 L366,213 A20,20 0 0,1 346,233 L166,233 A20,20 0 0,1 146,213 L146,43 A20,20 0 0,1 166,23 Z"/>
+    </clipPath>
+  </defs>
+  <!-- Stem from box to endpoint (512,128) -->
+  <line x1="366" y1="128" x2="512" y2="128" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+  <!-- Yellow background: bottom of box up to gap below low rail -->
+  <rect x="146" y="200" width="220" height="33" fill="#FFBF30" clip-path="url(#box)"/>
+  <!-- Box outline with rounded corners -->
+  <path d="M166,23 L346,23 A20,20 0 0,1 366,43 L366,213 A20,20 0 0,1 346,233 L166,233 A20,20 0 0,1 146,213 L146,43 A20,20 0 0,1 166,23 Z" fill="none" stroke="#000" stroke-width="10"/>
+  <!-- Square wave: short-high, long-low, short-high -->
+  <polyline points="166,78 196,78 196,178 316,178 316,78 346,78" fill="none" stroke="#000" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

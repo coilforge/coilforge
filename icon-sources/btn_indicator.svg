@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!-- Indicator circle -->
+  <circle cx="96" cy="96" r="70" fill="none" stroke="#000" stroke-width="10"/>
+  <!-- X-cross inside circle -->
+  <line x1="47" y1="47" x2="145" y2="145" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+  <line x1="145" y1="47" x2="47" y2="145" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+</svg>

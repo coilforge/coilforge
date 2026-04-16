@@ -15,7 +15,7 @@ reviews:
   path_instructions:
     - path: "internal/part/catalog/**"
       instructions: |
-        Enforce Rule 11: every real component directory must contain the standard file split —
+        Enforce Rule 11: every real catalog part directory must contain the standard file split —
         part.go, draw.go, props.go, sim.go (when needed), assets.go, and *_gen.go for generated code.
         Flag any missing required file or any file that does not belong in this layout.
         Enforce Rule 5: catalog packages may import core and part only.
@@ -32,7 +32,7 @@ reviews:
         Enforce Rule 5 (highest priority):
         - editor must NOT import sim. Flag any import of coilforge/internal/sim.
         - editor must NOT import concrete catalog packages under internal/part/catalog/*.
-          Only app and components are allowed to import concrete catalog packages.
+          Only app and partmanifest are allowed to import concrete catalog packages.
           Flag any import matching coilforge/internal/part/catalog/*.
         Enforce Rule 6: screen-to-world coordinate conversion must not happen here.
         Any call that converts screen coordinates to world coordinates (other than delegating to
@@ -48,10 +48,10 @@ reviews:
 
     - path: "internal/render/**"
       instructions: |
-        Enforce Rule 10: the renderer must not contain per-component drawing logic.
+        Enforce Rule 10: the renderer must not contain per-part-type drawing logic.
         It should assemble scene/chrome state and call Part.Draw; it must not branch on specific
-        part types or draw anything itself on behalf of a specific component.
-        Flag any such per-component drawing logic.
+        part types or draw anything itself on behalf of a specific part type.
+        Flag any such per-part-type drawing logic.
 
     - path: "internal/app/**"
       instructions: |
@@ -96,13 +96,13 @@ reviews:
     - part imports only core.
     - world imports only core and part.
     - part/catalog/* imports core and part, and must NOT import world.
-    - components only blank-imports catalog packages for registration.
+    - partmanifest blank-imports catalog packages for registration (and may hold placement manifest).
     - editor, sim, flatten, render may import core, part, and world.
     - editor must NOT import sim.
     - sim must NOT import editor.
     - editor must NOT import any concrete catalog package under internal/part/catalog/*.
     - app may orchestrate other packages but must NOT import concrete catalog packages.
-    - cmd/coilforge should import only app and components.
+    - cmd/coilforge should import only app and partmanifest.
     Flag every import that crosses these boundaries.
 
     Rule 6 — Use world coordinates for schematic logic.
@@ -115,7 +115,7 @@ reviews:
 
     Rule 8 — Treat wires as normal parts.
     Selection, move, copy, paste, delete, rotate, mirror, undo/redo, serialization,
-    and drawing must use the same part.Part contract as other components.
+    and drawing must use the same part.Part contract as other part types.
     Only wire routing is editor-specific.
 
     Rule 9 — Parts own their own behavior and runtime state.
@@ -124,10 +124,10 @@ reviews:
 
     Rule 10 — Drawing responsibility belongs to the part.
     The renderer assembles scene/chrome state and calls Part.Draw.
-    It must not contain per-component drawing logic.
+    It must not contain per-part-type drawing logic.
 
-    Rule 11 — Keep the component layout consistent.
-    Real components under internal/part/catalog/<name>/ must follow the standard file split:
+    Rule 11 — Keep the catalog part layout consistent.
+    Real part types under internal/part/catalog/<name>/ must follow the standard file split:
     part.go, draw.go, props.go, sim.go (when needed), assets.go, and *_gen.go.
     Flag missing required files or unexpected additions.
 

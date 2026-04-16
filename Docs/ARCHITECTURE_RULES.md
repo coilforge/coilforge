@@ -24,12 +24,12 @@ Review the implementation against these rules:
    - `part` imports only `core`.
    - `world` imports only `core` and `part`.
    - `part/catalog/*` imports `core` and `part`, and must not import `world`.
-   - `components` only blank-imports catalog packages for registration.
+   - `partmanifest` only blank-imports catalog packages for registration (and may hold placement manifest data).
    - `editor`, `sim`, `flatten`, `render` may import `core`, `part`, and `world`.
    - `editor` must not import `sim`.
    - `sim` must not import `editor`.
    - `app` may orchestrate other packages but should not import concrete catalog packages.
-   - `cmd/coilforge` should import only `app` and `components`.
+   - `cmd/coilforge` should import only `app` and `partmanifest`.
 
 6. Use world coordinates for schematic logic.
    Screen-to-world conversion should happen at the app boundary, not deep in editor, sim, flatten, or parts.
@@ -38,17 +38,17 @@ Review the implementation against these rules:
    They may share `world` state, but they should not directly import or call each other.
 
 8. Treat wires as normal parts.
-   Selection, move, copy, paste, delete, rotate, mirror, undo/redo, serialization, and drawing should use the same `part.Part` contract as other components.
+   Selection, move, copy, paste, delete, rotate, mirror, undo/redo, serialization, and drawing should use the same `part.Part` contract as other part types.
    Only wire routing is editor-specific.
 
 9. Parts own their own behavior and runtime state.
    The simulator should call part interfaces such as `Tick`, `SeedNets`, `AddConductive`, and `AddStateEdges` instead of mutating part internals directly.
 
 10. Drawing responsibility belongs to the part.
-    The renderer should assemble scene/chrome state and call `Part.Draw`; it should not contain per-component drawing logic.
+    The renderer should assemble scene/chrome state and call `Part.Draw`; it should not contain per-part-type drawing logic.
 
-11. Keep the component layout consistent.
-    Real components under `internal/part/catalog/<name>/` should follow the standard file split:
+11. Keep the catalog part layout consistent.
+    Real part types under `internal/part/catalog/<name>/` should follow the standard file split:
     `part.go`, `draw.go`, `props.go`, `sim.go` when needed, `assets.go`, and generated `*_gen.go`.
 
 12. Keep file I/O and top-level orchestration in `app`.

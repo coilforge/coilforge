@@ -15,12 +15,12 @@ Unclear/conflicting/underspecified → ask immediately. Never guess.
 - part: imports only core.
 - world: imports only core + part.
 - part/catalog/*: imports only core + part. Never world.
-- components: blank imports for registration only.
+- partmanifest: blank-imports catalog packages for registration; holds placement order/hotkeys manifest.
 - editor/sim/flatten/render: may import core/part/world.
 - editor: no sim import.
 - sim: no editor import.
 - app: orchestrates. No concrete catalog imports.
-- cmd/coilforge: imports only app + components.
+- cmd/coilforge: imports only app + partmanifest.
 
 ### Shared State
 - All broad state in internal/world (parts, camera, nets, mode, screen size…).
@@ -36,9 +36,9 @@ Unclear/conflicting/underspecified → ask immediately. Never guess.
 - All ops (select/move/copy/paste/delete/rotate/mirror/undo/redo/serialize/draw) use uniform part.Part contract.
 - Parts own behavior + runtime state.
 - Simulator: calls interfaces only (Tick/SeedNets/AddConductive/AddStateEdges…). Never mutates internals.
-- Drawing: part responsibility. Renderer supplies context → calls Part.Draw. No per-component logic in renderer.
+- Drawing: part responsibility. Renderer supplies context → calls Part.Draw. No per-part-type drawing logic in renderer.
 
-**Catalog layout per component**  
+**Catalog layout per part type**  
 part.go / draw.go / props.go / sim.go (optional) / assets.go / *_gen.go (generated, never hand-edit).
 
 ### Subsystem Rules
@@ -58,7 +58,7 @@ part.go / draw.go / props.go / sim.go (optional) / assets.go / *_gen.go (generat
 ### Change & Review Rules
 Implement/review using:
 - Simpler code, explicit methods, package clarity, world-state access, part-owned logic.
-- Reject: boundary violations, screen logic in schematic layers, renderer component logic, simulator part mutation, wire-specific general cases.
+- Reject: boundary violations, screen logic in schematic layers, renderer per-part-type logic, simulator part mutation, wire-specific general cases.
 
 **Review output format (when requested)**  
 - Cite file + violated rule.

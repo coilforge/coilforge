@@ -1,7 +1,14 @@
 package clock
 
+// File overview:
+// props declares editable clock properties and applies updates to part state.
+// Subsystem: part catalog (clock) properties.
+// It implements part property contracts used by app/editor property panels.
+// Flow position: part-specific metadata and mutation rules in edit flow.
+
 import "coilforge/internal/part"
 
+// PropSpec handles prop spec.
 func (c *Clock) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
@@ -12,6 +19,7 @@ func (c *Clock) PropSpec() part.PropSpec {
 	}
 }
 
+// ApplyProp handles apply prop.
 func (c *Clock) ApplyProp(action part.PropAction) bool {
 	switch action.Index {
 	case 0:

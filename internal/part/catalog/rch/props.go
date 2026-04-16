@@ -1,7 +1,14 @@
 package rch
 
+// File overview:
+// props declares editable rch properties and applies updates to part state.
+// Subsystem: part catalog (rch) properties.
+// It implements part property contracts used by app/editor property panels.
+// Flow position: part-specific metadata and mutation rules in edit flow.
+
 import "coilforge/internal/part"
 
+// PropSpec handles prop spec.
 func (r *RCH) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
@@ -11,6 +18,7 @@ func (r *RCH) PropSpec() part.PropSpec {
 	}
 }
 
+// ApplyProp handles apply prop.
 func (r *RCH) ApplyProp(action part.PropAction) bool {
 	switch action.Index {
 	case 0:

@@ -1,7 +1,14 @@
 package indicator
 
+// File overview:
+// props declares editable indicator properties and applies updates to part state.
+// Subsystem: part catalog (indicator) properties.
+// It implements part property contracts used by app/editor property panels.
+// Flow position: part-specific metadata and mutation rules in edit flow.
+
 import "coilforge/internal/part"
 
+// PropSpec handles prop spec.
 func (ind *Indicator) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
@@ -10,6 +17,7 @@ func (ind *Indicator) PropSpec() part.PropSpec {
 	}
 }
 
+// ApplyProp handles apply prop.
 func (ind *Indicator) ApplyProp(action part.PropAction) bool {
 	if action.Index != 0 {
 		return false

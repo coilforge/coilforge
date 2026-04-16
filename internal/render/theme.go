@@ -1,12 +1,20 @@
 package render
 
+// File overview:
+// theme centralizes render colors, spacing, and style constants.
+// Subsystem: render theme.
+// It is referenced by scene and chrome drawing helpers for consistent visuals.
+// Flow position: styling dependency beneath all rendering routines.
+
 import (
 	"coilforge/internal/core"
 	"image/color"
 )
 
-var DarkMode = true
+// DarkMode stores package-level state.
+var DarkMode = true // Toggles dark-versus-light theme color selection.
 
+// WireColor returns the display color for a wire by resolved net state.
 func WireColor(state int) color.RGBA {
 	switch state {
 	case core.NetHigh:
@@ -20,6 +28,7 @@ func WireColor(state int) color.RGBA {
 	}
 }
 
+// GridColor returns the schematic grid color for the active theme.
 func GridColor() color.RGBA {
 	if DarkMode {
 		return color.RGBA{R: 42, G: 46, B: 54, A: 255}
@@ -27,10 +36,12 @@ func GridColor() color.RGBA {
 	return color.RGBA{R: 224, G: 228, B: 232, A: 255}
 }
 
+// SelectionColor returns the outline color for selected items.
 func SelectionColor() color.RGBA {
 	return color.RGBA{R: 255, G: 208, B: 64, A: 255}
 }
 
+// GhostTint returns the tint color used for translucent preview visuals.
 func GhostTint() color.RGBA {
 	return color.RGBA{R: 255, G: 255, B: 255, A: 144}
 }

@@ -1,7 +1,14 @@
 package core
 
+// File overview:
+// geometry provides reusable world-space math helpers for points, rects, and transforms.
+// Subsystem: core leaf geometry.
+// It supports part drawing/placement, editor tools, flattening, and simulation setup.
+// Flow position: foundational utility layer beneath all schematic logic.
+
 import "math"
 
+// LocalToWorld handles local to world.
 func LocalToWorld(base BasePart, local Pt) Pt {
 	x := local.X
 	y := local.Y
@@ -21,6 +28,7 @@ func LocalToWorld(base BasePart, local Pt) Pt {
 	return Pt{X: base.Pos.X + x, Y: base.Pos.Y + y}
 }
 
+// WorldToLocal handles world to local.
 func WorldToLocal(base BasePart, world Pt) Pt {
 	x := world.X - base.Pos.X
 	y := world.Y - base.Pos.Y
@@ -41,11 +49,13 @@ func WorldToLocal(base BasePart, world Pt) Pt {
 	return Pt{X: x, Y: y}
 }
 
+// PointInRect handles point in rect.
 func PointInRect(pt Pt, r Rect) bool {
 	r = NormalizeRect(r)
 	return pt.X >= r.Min.X && pt.X <= r.Max.X && pt.Y >= r.Min.Y && pt.Y <= r.Max.Y
 }
 
+// PointNearSeg handles point near seg.
 func PointNearSeg(pt Pt, seg Seg, tolerance float64) bool {
 	dx := seg.B.X - seg.A.X
 	dy := seg.B.Y - seg.A.Y
@@ -68,6 +78,7 @@ func PointNearSeg(pt Pt, seg Seg, tolerance float64) bool {
 	return math.Hypot(pt.X-nearest.X, pt.Y-nearest.Y) <= tolerance
 }
 
+// RotateRect rotates rect.
 func RotateRect(r Rect, rotation int, mirror bool) Rect {
 	corners := []Pt{
 		r.Min,

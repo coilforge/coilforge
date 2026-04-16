@@ -1,53 +1,63 @@
 package relay
 
+// File overview:
+// part defines the relay part type, registration hooks, and clone/decode behavior.
+// Subsystem: part catalog (relay).
+// It works with shared part/core contracts and is complemented by draw/props/sim/assets files.
+// Flow position: concrete catalog part implementation loaded through part registry.
+
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
 	"encoding/json"
 )
 
+// TypeID defines a package-level constant.
 const TypeID core.PartTypeID = "relay"
 
 type ContactState int
 
 const (
-	ContactNC ContactState = iota
-	ContactNO
+	ContactNC ContactState = iota // contact nc constant.
+	ContactNO                     // contact no constant.
 )
 
 type Pole struct {
-	PinCommon core.PinID `json:"pinCommon"`
-	PinNC     core.PinID `json:"pinNC"`
-	PinNO     core.PinID `json:"pinNO"`
+	PinCommon core.PinID `json:"pinCommon"` // pin common value.
+	PinNC     core.PinID `json:"pinNC"`     // pin nc value.
+	PinNO     core.PinID `json:"pinNO"`     // pin no value.
 }
 
 type Relay struct {
-	core.BasePart
-	PinCoilA core.PinID `json:"pinCoilA"`
-	PinCoilB core.PinID `json:"pinCoilB"`
+	core.BasePart            // BasePart carries shared part identity and transform state.
+	PinCoilA      core.PinID `json:"pinCoilA"` // pin coil a value.
+	PinCoilB      core.PinID `json:"pinCoilB"` // pin coil b value.
 
-	Poles     []Pole `json:"poles"`
-	PickupMs  int    `json:"pickupMs"`
-	ReleaseMs int    `json:"releaseMs"`
-	FlightMs  int    `json:"flightMs"`
-	JitterMs  int    `json:"jitterMs"`
+	Poles     []Pole `json:"poles"`     // poles value.
+	PickupMs  int    `json:"pickupMs"`  // pickup ms value.
+	ReleaseMs int    `json:"releaseMs"` // release ms value.
+	FlightMs  int    `json:"flightMs"`  // flight ms value.
+	JitterMs  int    `json:"jitterMs"`  // jitter ms value.
 
-	CoilActive          bool           `json:"coilActive"`
-	Contacts            []ContactState `json:"contacts"`
-	PendingContacts     []ContactState `json:"pendingContacts"`
-	TransitionDueTick   uint64         `json:"transitionDueTick"`
-	TransitionScheduled bool           `json:"transitionScheduled"`
+	CoilActive          bool           `json:"coilActive"`          // coil active value.
+	Contacts            []ContactState `json:"contacts"`            // contacts value.
+	PendingContacts     []ContactState `json:"pendingContacts"`     // pending contacts value.
+	TransitionDueTick   uint64         `json:"transitionDueTick"`   // transition due tick value.
+	TransitionScheduled bool           `json:"transitionScheduled"` // transition scheduled value.
 }
 
+// init registers the part type with the global registry.
 func init() {
 	part.Register(TypeID, part.TypeInfo{
 		New:    newRelay,
 		Decode: decodeRelay,
+		Label:  "Relay",
 		Tools:  []string{"main"},
 		Icon:   toolbarIcon,
 	})
 }
 
+// newRelay handles new relay.
 func newRelay(id int, pos core.Pt) part.Part {
 	r := &Relay{
 		BasePart:  core.BasePart{ID: id, TypeID: TypeID, Pos: pos},
@@ -61,6 +71,7 @@ func newRelay(id int, pos core.Pt) part.Part {
 	return r
 }
 
+// decodeRelay handles decode relay.
 func decodeRelay(data json.RawMessage) (part.Part, error) {
 	var r Relay
 	if err := json.Unmarshal(data, &r); err != nil {
@@ -76,14 +87,17 @@ func decodeRelay(data json.RawMessage) (part.Part, error) {
 	return &r, nil
 }
 
+// Base handles base.
 func (r *Relay) Base() *core.BasePart {
 	return &r.BasePart
 }
 
+// Segments handles segments.
 func (r *Relay) Segments() []core.Seg {
 	return nil
 }
 
+// Clone handles clone.
 func (r *Relay) Clone(newID int, allocPin func() core.PinID) part.Part {
 	c := *r
 	c.ID = newID
@@ -104,11 +118,13 @@ func (r *Relay) Clone(newID int, allocPin func() core.PinID) part.Part {
 	return &c
 }
 
+// MarshalJSON handles marshal json.
 func (r *Relay) MarshalJSON() ([]byte, error) {
 	type relayJSON Relay
 	return json.Marshal((*relayJSON)(r))
 }
 
+// ensureContactSlices handles ensure contact slices.
 func (r *Relay) ensureContactSlices() {
 	if len(r.Poles) == 0 {
 		r.Poles = []Pole{{}}

@@ -1,5 +1,11 @@
 package editor
 
+// File overview:
+// editor implements interactive edit-mode behaviors for selection, placement, and transforms.
+// Subsystem: editor interaction logic.
+// It operates on world and part abstractions and is called by app input orchestration.
+// Flow position: edit pipeline branch, independent from simulation execution.
+
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
@@ -11,6 +17,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// HandleClick handles click.
 func HandleClick(pt core.Pt, button int) {
 	_ = button
 
@@ -34,12 +41,14 @@ func HandleClick(pt core.Pt, button int) {
 	HoverIndex = -1
 }
 
+// HandleRelease handles release.
 func HandleRelease(pt core.Pt, button int) {
 	_, _ = pt, button
 	Dragging = false
 	BoxSelecting = false
 }
 
+// HandleDrag handles drag.
 func HandleDrag(pt core.Pt) {
 	if !Dragging {
 		Dragging = true
@@ -52,6 +61,7 @@ func HandleDrag(pt core.Pt) {
 	DragStart = pt
 }
 
+// HandleKey handles key.
 func HandleKey(key ebiten.Key) {
 	switch key {
 	case ebiten.KeyEscape:
@@ -70,10 +80,12 @@ func HandleKey(key ebiten.Key) {
 	}
 }
 
+// HandleScroll handles scroll.
 func HandleScroll(delta float64) {
 	_ = delta
 }
 
+// StartPlacement starts placement.
 func StartPlacement(typeID core.PartTypeID) {
 	info, ok := part.Registry[typeID]
 	if !ok {
@@ -85,6 +97,7 @@ func StartPlacement(typeID core.PartTypeID) {
 	PlaceMode = true
 }
 
+// MoveSelected handles move selected.
 func MoveSelected(delta core.Pt) {
 	if len(Selection) == 0 {
 		return
@@ -97,6 +110,7 @@ func MoveSelected(delta core.Pt) {
 	}
 }
 
+// RotateSelected rotates selected.
 func RotateSelected() {
 	if len(Selection) == 0 {
 		return
@@ -108,6 +122,7 @@ func RotateSelected() {
 	}
 }
 
+// MirrorSelected mirrors selected.
 func MirrorSelected() {
 	if len(Selection) == 0 {
 		return
@@ -119,6 +134,7 @@ func MirrorSelected() {
 	}
 }
 
+// DeleteSelected deletes selected.
 func DeleteSelected() {
 	if len(Selection) == 0 {
 		return
@@ -135,6 +151,7 @@ func DeleteSelected() {
 	Selection = nil
 }
 
+// CopySelected copies selected.
 func CopySelected() {
 	Clipboard = nil
 	for _, idx := range Selection {
@@ -144,6 +161,7 @@ func CopySelected() {
 	}
 }
 
+// Paste pastes its work.
 func Paste(offset core.Pt) {
 	if len(Clipboard) == 0 {
 		return
@@ -164,6 +182,7 @@ func Paste(offset core.Pt) {
 	}
 }
 
+// StartLabelEdit starts label edit.
 func StartLabelEdit(partIdx int) {
 	if partIdx < 0 || partIdx >= len(world.Parts) {
 		return
@@ -173,6 +192,7 @@ func StartLabelEdit(partIdx int) {
 	LabelBuffer = []rune(world.Parts[partIdx].Base().Label)
 }
 
+// CommitLabelEdit commits label edit.
 func CommitLabelEdit() {
 	if !LabelEditing || LabelIndex < 0 || LabelIndex >= len(world.Parts) {
 		return
@@ -182,6 +202,7 @@ func CommitLabelEdit() {
 	LabelEditing = false
 }
 
+// DrawOverlays draws overlays.
 func DrawOverlays(dst *ebiten.Image) {
 	for _, idx := range Selection {
 		if idx >= 0 && idx < len(world.Parts) {
@@ -209,6 +230,7 @@ func DrawOverlays(dst *ebiten.Image) {
 	}
 }
 
+// commitPlacement handles commit placement.
 func commitPlacement(pos core.Pt) {
 	pushUndo()
 	PlacePreview.Base().Pos = snapToGrid(pos)
@@ -217,6 +239,7 @@ func commitPlacement(pos core.Pt) {
 	PlaceMode = false
 }
 
+// handleWireClick handles handle wire click.
 func handleWireClick(pt core.Pt) {
 	snapped := snapToGridOrPin(pt)
 	WireDraft = append(WireDraft, snapped)
@@ -235,6 +258,7 @@ func handleWireClick(pt core.Pt) {
 	world.Parts = append(world.Parts, info.NewWire(world.AllocPartID(), from, to, world.AllocPinID))
 }
 
+// snapToGrid handles snap to grid.
 func snapToGrid(pt core.Pt) core.Pt {
 	const grid = 16.0
 	snapped := core.Pt{
@@ -244,10 +268,12 @@ func snapToGrid(pt core.Pt) core.Pt {
 	return core.LocalToWorld(core.BasePart{Pos: snapped}, core.Pt{})
 }
 
+// snapToGridOrPin handles snap to grid or pin.
 func snapToGridOrPin(pt core.Pt) core.Pt {
 	return snapToGrid(pt)
 }
 
+// partAt handles part at.
 func partAt(pt core.Pt) int {
 	_ = core.WorldToLocal(core.BasePart{}, pt)
 	for i := len(world.Parts) - 1; i >= 0; i-- {

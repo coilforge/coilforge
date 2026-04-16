@@ -1,24 +1,32 @@
 package skeleton
 
+// File overview:
+// part defines the skeleton part type, registration hooks, and clone/decode behavior.
+// Subsystem: part catalog (skeleton).
+// It works with shared part/core contracts and is complemented by draw/props/sim/assets files.
+// Flow position: concrete catalog part implementation loaded through part registry.
+
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
 	"encoding/json"
 )
 
-// Template is a non-registered reference component for new catalog entries.
+// Template is a non-registered reference part for new catalog entries.
 type Template struct {
-	core.BasePart
-	PinA core.PinID `json:"pinA"`
-	PinB core.PinID `json:"pinB"`
+	core.BasePart            // BasePart carries shared part identity and transform state.
+	PinA          core.PinID `json:"pinA"` // pin a value.
+	PinB          core.PinID `json:"pinB"` // pin b value.
 }
 
+// New constructs its work.
 func New(id int, pos core.Pt) part.Part {
 	return &Template{
 		BasePart: core.BasePart{ID: id, TypeID: "template", Pos: pos},
 	}
 }
 
+// Decode handles decode.
 func Decode(data json.RawMessage) (part.Part, error) {
 	var t Template
 	if err := json.Unmarshal(data, &t); err != nil {
@@ -27,14 +35,17 @@ func Decode(data json.RawMessage) (part.Part, error) {
 	return &t, nil
 }
 
+// Base handles base.
 func (t *Template) Base() *core.BasePart {
 	return &t.BasePart
 }
 
+// Segments handles segments.
 func (t *Template) Segments() []core.Seg {
 	return nil
 }
 
+// Clone handles clone.
 func (t *Template) Clone(newID int, allocPin func() core.PinID) part.Part {
 	c := *t
 	c.ID = newID
@@ -43,6 +54,7 @@ func (t *Template) Clone(newID int, allocPin func() core.PinID) part.Part {
 	return &c
 }
 
+// MarshalJSON handles marshal json.
 func (t *Template) MarshalJSON() ([]byte, error) {
 	type templateJSON Template
 	return json.Marshal((*templateJSON)(t))

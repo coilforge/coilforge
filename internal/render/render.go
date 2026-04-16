@@ -1,5 +1,11 @@
 package render
 
+// File overview:
+// render composes scene draw order for schematic content and UI chrome.
+// Subsystem: render orchestration.
+// It calls part draw methods, theme definitions, and chrome helpers from app.Draw.
+// Flow position: visual output stage after world/editor/sim state updates.
+
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
@@ -8,6 +14,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// DrawScene draws scene.
 func DrawScene(dst *ebiten.Image) {
 	drawGrid(dst)
 
@@ -37,6 +44,7 @@ func DrawScene(dst *ebiten.Image) {
 	}
 }
 
+// drawGrid handles draw grid.
 func drawGrid(dst *ebiten.Image) {
 	_, _ = world.WorldToScreen(world.Cam)
 	_ = GridColor()

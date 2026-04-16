@@ -2,7 +2,7 @@
 
 This document is the architectural blueprint for a ground-up rewrite of
 CoilForge. The rewrite keeps the same outward feature set — schematic editing,
-simulation, the same component catalog — but replaces the internal architecture
+simulation, the same part catalog — but replaces the internal architecture
 with something immediately understandable.
 
 ## Design Philosophy
@@ -37,7 +37,7 @@ with something immediately understandable.
 
 8. **Wires are first-class parts.** Selection, move, copy, paste, delete,
    rotate, undo/redo — all go through the same Part interface as every other
-   component. Only wire *routing* (continuous segment drawing) is a special
+   part instance. Only wire *routing* (continuous segment drawing) is a special
    editor mode.
 
 9. **Parts own their state and behavior.** Each instantiated part holds its
@@ -46,6 +46,12 @@ with something immediately understandable.
    does not reach into parts to mutate them — it asks each part to compute
    its next state given its current inputs (net states, time/tick). The part
    returns or applies its own update.
+
+10. **Vocabulary: part, not “component”.** In docs and code comments, *part*
+    means a schematic element (the `Part` interface and catalog *part types*).
+    The word *component* is reserved for ordinary English (“part of the relay
+    armature”) or for future *modules* (hierarchical sub-schematics), not as a
+    synonym for part types.
 
 ---
 
@@ -60,16 +66,16 @@ internal/
   world/                  shared mutable state: parts, camera, nets, mode
   part/                   Part interface, sim interfaces, registration
     catalog/
-      relay/              concrete component
-      wire/               concrete component
-      clock/              concrete component
-      switches/           concrete component
-      indicator/          concrete component
-      power/              concrete component (vcc + gnd subtypes)
-      diode/              concrete component
-      rch/                concrete component
-      skeleton/           template for new components
-  components/             blank imports for side-effect registration
+      relay/              catalog part
+      wire/               catalog part
+      clock/              catalog part
+      switches/           catalog part
+      indicator/          catalog part
+      power/              catalog part (vcc + gnd subtypes)
+      diode/              catalog part
+      rch/                catalog part
+      skeleton/           template for new part types
+  partmanifest/                blank imports for side-effect registration
   editor/                 schematic editing
   sim/                    simulation engine
   flatten/                net derivation, future module expansion
@@ -87,7 +93,7 @@ ones.
                              │
                             app
                 ┌──────┬─────┼──────┬─────────┐
-             editor   sim  flatten render  components
+             editor   sim  flatten render  partmanifest
                 │      │      │      │          │
                 ├──────┼──────┼──────┘     catalog/*
                 │      │      │                 │
@@ -105,11 +111,11 @@ Rules:
 - `part` imports only `core`.
 - `world` imports `core` and `part` (for the `Part` interface).
 - `part/catalog/*` imports `core` and `part`. Does NOT import `world`.
-- `components` blank-imports all `part/catalog/*` packages.
+- `partmanifest` blank-imports all `part/catalog/*` packages.
 - `editor`, `sim`, `flatten`, `render` each import `core`, `part`, `world`.
 - `editor` does NOT import `sim`. `sim` does NOT import `editor`.
 - `app` imports everything except concrete catalog packages.
-- `cmd/coilforge` imports only `app` and `components`.
+- `cmd/coilforge` imports only `app` and `partmanifest`.
 
 ---
 
@@ -235,13 +241,13 @@ simulation at a time.
 
 ## Part System (`part/`)
 
-Defines the contracts that all components implement. No concrete part code
+Defines the contracts that all catalog part types implement. No concrete part code
 lives here — only interfaces, registration infrastructure, and shared helpers.
 
 ### Part Interface
 
 ```go
-// Part is the contract every component implements.
+// Part is the contract every catalog part type implements.
 type Part interface {
     Base() *core.BasePart
 
@@ -273,7 +279,7 @@ tables, no bound registries.
 
 ```go
 // DrawContext carries everything a Part.Draw call needs.
-// Components do NOT import world — they receive world state here.
+// Catalog packages do NOT import world — they receive world state here.
 type DrawContext struct {
     Dst      *ebiten.Image
     Cam      core.Pt
@@ -291,7 +297,7 @@ type DrawContext struct {
 func (ctx DrawContext) WorldToScreen(pt core.Pt) (float64, float64) { ... }
 ```
 
-Components call `ctx.WorldToScreen(pt)` for drawing. During simulation,
+Parts call `ctx.WorldToScreen(pt)` for drawing. During simulation,
 `ctx.NetState` lets wire and indicator parts color themselves by net state
 without importing the sim or world packages.
 
@@ -442,6 +448,7 @@ type StateEdge struct {
 type TypeInfo struct {
     New    func(id int, pos core.Pt) Part           // create with defaults
     Decode func(data json.RawMessage) (Part, error)  // deserialize
+    Label  string                                     // default toolbar/display label
     Tools  []string                                   // placement tool slots
     Icon   func() *ebiten.Image                       // toolbar icon
 }
@@ -449,19 +456,20 @@ type TypeInfo struct {
 // Registry maps type IDs to their TypeInfo. Populated by init() functions.
 var Registry = map[core.PartTypeID]TypeInfo{}
 
-// Register adds a part type. Called from each component's init().
+// Register adds a part type. Called from each catalog package's init().
 func Register(id core.PartTypeID, info TypeInfo) {
     Registry[id] = info
 }
 ```
 
-Each component's `init()`:
+Each catalog package's `init()`:
 
 ```go
 func init() {
     part.Register(TypeID, part.TypeInfo{
         New:    newIndicator,
         Decode: decodeIndicator,
+        Label:  "Indicator",
         Tools:  []string{"main"},
         Icon:   toolbarIcon,
     })
@@ -498,9 +506,9 @@ renders it. User interactions produce `PropAction` values fed back through
 
 ---
 
-## Component File Layout
+## Part catalog file layout
 
-Every component under `part/catalog/<name>/` follows the same file structure:
+Every part type under `part/catalog/<name>/` follows the same file structure:
 
 | File | Contents |
 | ---- | -------- |
@@ -511,8 +519,8 @@ Every component under `part/catalog/<name>/` follows the same file structure:
 | `assets.go` | Asset selector — picks the right generated vector asset for current state |
 | `*_gen.go` | Generated Ebiten vector commands from SVG sources (do not edit by hand) |
 
-This layout is identical across all "real" components. A contributor opening
-any component finds the same files containing the same categories of code.
+This layout is identical across all "real" part types. A contributor opening
+any catalog package finds the same files containing the same categories of code.
 
 Each part draws itself in `Draw()` by selecting the appropriate generated
 vector asset for its current state and rendering it into the `DrawContext`.
@@ -537,6 +545,7 @@ func init() {
     part.Register(TypeID, part.TypeInfo{
         New:    newIndicator,
         Decode: decodeIndicator,
+        Label:  "Indicator",
         Tools:  []string{"main"},
         Icon:   toolbarIcon,
     })
@@ -570,8 +579,8 @@ func (ind *Indicator) Tick(ctx part.SimContext) bool {
 
 ### Wire
 
-Wire is a first-class component. It implements `Part` exactly like any other
-component, so select, move, copy, paste, delete, undo/redo all work through
+Wire is a first-class part instance. It implements `Part` exactly like any other
+part type, so select, move, copy, paste, delete, undo/redo all work through
 the standard paths with no wire-specific editor code.
 
 ```go
@@ -973,7 +982,7 @@ The `deriveNets` algorithm:
 2. Group pins that share the same world position (coincidence).
 3. Group pins whose anchor points lie on a wire segment (pin-on-segment).
 4. Merge wire segments that share endpoints.
-5. Build connected components. Each component is a Net.
+5. Build connected subgraphs (of the pin graph). Each subgraph becomes a Net.
 6. Assign net IDs and build the `PinID → NetID` mapping.
 
 This algorithm is a pure function of anchors and segments. It lives entirely
@@ -1185,21 +1194,21 @@ like.
 
 Source artwork is SVG. At build time (or via a generator script), each SVG
 is converted into a generated Go file containing Ebiten vector path commands.
-At runtime, each component selects the right pre-generated asset for its
+At runtime, each part type selects the right pre-generated asset for its
 current state and draws it using Ebiten's vector API. No PNG decoding, no
 runtime SVG parsing.
 
 ```text
 icon-sources/<name>/*.svg
     │
-    ▼  scripts/regen-component-vectors.sh
+    ▼  scripts/regen-part-vectors.sh
 part/catalog/<name>/*_gen.go      (generated vector path data)
     │
     ▼  assets.go picks the right asset for current state
 Part.Draw(ctx)                    (draws vectors onto ctx.Dst)
 ```
 
-Each component's `assets.go` is a thin selector:
+Each catalog part's `assets.go` is a thin selector:
 
 ```go
 func (ind *Indicator) asset() VectorAsset {
@@ -1386,22 +1395,18 @@ func LoadProject(path string) error {
 
 ### Toolbar
 
-Toolbar order and hotkeys are defined in app:
+Toolbar order and hotkeys are defined in partmanifest metadata.
+Toolbar labels/icons come from each part's `TypeInfo`:
 
 ```go
-var toolbarItems = []ToolButton{
-    {TypeID: "relay",     Hotkey: '1', Label: "Relay"},
-    {TypeID: "vcc",       Hotkey: '2', Label: "VCC"},
-    {TypeID: "gnd",       Hotkey: '3', Label: "GND"},
-    {TypeID: "switch",    Hotkey: '4', Label: "Switch"},
-    {TypeID: "indicator", Hotkey: '5', Label: "Indicator"},
-    {TypeID: "diode",     Hotkey: '6', Label: "Diode"},
-    {TypeID: "rch",       Hotkey: '7', Label: "RCH"},
-    {TypeID: "clock",     Hotkey: '8', Label: "Clock"},
+var placementTools = []PlacementTool{
+    {TypeID: "relay", Hotkey: '1'},
+    {TypeID: "vcc",   Hotkey: '2'},
+    // ...
 }
 ```
 
-These are string type IDs. No concrete catalog imports.
+Toolbar buttons are assembled by joining `placementTools` with `part.Registry[typeID].Label`.
 
 ---
 
@@ -1480,7 +1485,7 @@ layer. The ebitshim package is not carried forward into v2.
 Testing strategy for Ebiten-linked code:
 
 - Unit tests target pure logic: geometry, net derivation, serialization,
-  component registration, property mutations, state transitions.
+  part type registration, property mutations, state transitions.
 - Ebiten-linked code (drawing, input polling, frame lifecycle) is tested
   through replay fixtures and manual verification.
 - If local `go test` hangs for Ebiten-linked packages, rely on CI and manual
@@ -1516,9 +1521,9 @@ Desktop keyboard+mouse workflow remains first-class. Touch support is additive.
 ## Testing Strategy
 
 - **Unit tests** for pure logic: `core/` geometry, `flatten/` net derivation,
-  component `PropSpec`/`ApplyProp`, serialization round-trips, sim net
+  part `PropSpec`/`ApplyProp`, serialization round-trips, sim net
   resolution, relay timing.
-- **Component registration tests**: verify that each component registers, can
+- **Part type registration tests**: verify that each part type registers, can
   be created with defaults, serialized, and deserialized.
 - **Replay tests**: recorded input sequences replayed against the app, with
   the final schematic state compared to expected output. Covers cross-cutting
@@ -1536,10 +1541,10 @@ and replay tests need Ebiten.
 These are explicitly out of scope for this rewrite:
 
 - Analog / SPICE-like simulation.
-- New component types beyond the current set.
+- New part types beyond the current set.
 - Module / hierarchical schematic support (architecture allows it, but it is
   not implemented in v2).
-- Plugin or dynamic loading of components.
+- Plugin or dynamic loading of part types.
 - Multi-document editing.
 - Collaborative editing.
 - Backend or cloud services.

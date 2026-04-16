@@ -41,10 +41,10 @@ Examples:
 ### Golfing Challenges (Optimization)
 Same problem, scored on efficiency.  
 Metrics (cheat-resistant):
-- Component count
+- Part count
 - Total wire length
 - Simulation settle time (ticks until stable)
-- Hybrid score formula: (components × w1) + (wire_length × w2) + (settle_ticks × w3)
+- Hybrid score formula: (parts × w1) + (wire_length × w2) + (settle_ticks × w3)
 
 **Important Decision**:  
 Do NOT score real-world wall-clock solving time. It discourages learning, enables easy cheating on replays, and adds pressure. Use only in-simulation metrics.
@@ -55,7 +55,7 @@ Win conditions are defined per level and checked by the gamify layer after each 
 
 ### Supported Win Condition Types
 - netStableHigh / netStableLow: A specific pin/net must stay high/low for N ticks
-- componentCountUnder: Total relays/wires ≤ max
+- partCountUnder: Total relays/wires ≤ max
 - settleTimeUnder: Circuit stabilizes within X simulation ticks
 - opponentHealthZero: Arena mode — reduce enemy health to 0
 - opponentPushedOut: Arena mode — push enemy out of the ring
@@ -150,7 +150,7 @@ The level format should include:
   "allowedTools": ["relay", "wire", ...],
   "winConditions": [
     { "type": "netStableHigh", "pin": 42, "forTicks": 500 },
-    { "type": "componentCountUnder", "max": 12 }
+    { "type": "partCountUnder", "max": 12 }
   ],
   "golfScoring": { ... },
   "simSpeed": 50,

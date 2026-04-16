@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!-- Stem from top down to largest bar -->
+  <line x1="96" y1="16" x2="96" y2="64" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+  <!-- Bar 1 (largest) -->
+  <line x1="40" y1="64" x2="152" y2="64" stroke="#000" stroke-width="12" stroke-linecap="round"/>
+  <!-- Bar 2 (medium) -->
+  <line x1="56" y1="100" x2="136" y2="100" stroke="#000" stroke-width="12" stroke-linecap="round"/>
+  <!-- Bar 3 (smallest) -->
+  <line x1="76" y1="136" x2="116" y2="136" stroke="#000" stroke-width="12" stroke-linecap="round"/>
+</svg>

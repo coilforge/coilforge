@@ -1,5 +1,11 @@
 package part
 
+// File overview:
+// part defines the core part interfaces used uniformly across editor, sim, and render.
+// Subsystem: part contracts.
+// It depends only on core and is implemented by each catalog part package.
+// Flow position: abstraction boundary between generic tooling and concrete parts.
+
 import (
 	"coilforge/internal/core"
 	"math/rand"
@@ -7,7 +13,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// Part is the contract every component implements.
+// Part is the contract every catalog part type implements.
 type Part interface {
 	Base() *core.BasePart
 	Bounds() core.Rect
@@ -22,31 +28,32 @@ type Part interface {
 }
 
 type DrawContext struct {
-	Dst      *ebiten.Image
-	Cam      core.Pt
-	Zoom     float64
-	ScreenW  int
-	ScreenH  int
-	Ghost    bool
-	Selected bool
-	NetState func(core.PinID) int
+	Dst      *ebiten.Image        // dst value.
+	Cam      core.Pt              // camera position.
+	Zoom     float64              // zoom factor.
+	ScreenW  int                  // screen width.
+	ScreenH  int                  // screen height.
+	Ghost    bool                 // ghost value.
+	Selected bool                 // selected value.
+	NetState func(core.PinID) int // net state value.
 }
 
+// WorldToScreen handles world to screen.
 func (ctx DrawContext) WorldToScreen(pt core.Pt) (float64, float64) {
 	return (pt.X-ctx.Cam.X)*ctx.Zoom + float64(ctx.ScreenW)/2,
 		(pt.Y-ctx.Cam.Y)*ctx.Zoom + float64(ctx.ScreenH)/2
 }
 
 type HitResult struct {
-	Hit   bool
-	Kind  int
-	PinID core.PinID
+	Hit   bool       // hit value.
+	Kind  int        // kind value.
+	PinID core.PinID // pin id value.
 }
 
 const (
-	HitBody = iota
-	HitLabel
-	HitPin
+	HitBody  = iota // HitBody marks a body hit target.
+	HitLabel        // HitLabel marks a label hit target.
+	HitPin          // HitPin marks a pin hit target.
 )
 
 type SimPart interface {
@@ -54,12 +61,12 @@ type SimPart interface {
 }
 
 type SimContext struct {
-	NetByPin     func(core.PinID) int
-	NetState     func(int) int
-	Tick         uint64
-	TickMicros   int
-	EnableJitter bool
-	Rand         *rand.Rand
+	NetByPin     func(core.PinID) int // net by pin value.
+	NetState     func(int) int        // net state value.
+	Tick         uint64               // tick value.
+	TickMicros   int                  // tick micros value.
+	EnableJitter bool                 // enable jitter value.
+	Rand         *rand.Rand           // rand value.
 }
 
 type NetSeeder interface {
@@ -85,19 +92,20 @@ type NetUnion interface {
 }
 
 type StateGraph struct {
-	Edges []StateEdge
+	Edges []StateEdge // edges value.
 }
 
 type StateEdge struct {
-	FromNet int
-	ToNet   int
-	Drive   int
+	FromNet int // from net value.
+	ToNet   int // to net value.
+	Drive   int // drive value.
 }
 
 type VectorAsset struct {
-	Name string
+	Name string // display name.
 }
 
+// Draw draws its work.
 func (asset VectorAsset) Draw(ctx DrawContext, bounds core.Rect) {
 	_, _ = ctx, bounds
 }
