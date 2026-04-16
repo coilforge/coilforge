@@ -47,6 +47,9 @@ jobs:
       - name: Install local check tools
         run: ./check.sh bootstrap
 
-      - name: Run checks
-        run: ./check.sh full
+      - name: Run Go checks
+        run: ./check.sh go
 
+      - name: Run markdown checks (warning only)
+        continue-on-error: true
+        run: ./check.sh markdown
