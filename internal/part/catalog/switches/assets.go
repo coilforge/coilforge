@@ -17,14 +17,16 @@ import (
 //go:embed toolbar_icon.png
 var toolbarIconPNG []byte
 
-var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG, "switches/toolbar_icon.png")
+var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG)
+var assetOpen = part.VectorAsset{Name: "switch-open"}
+var assetClosed = part.VectorAsset{Name: "switch-closed"}
 
 // asset handles asset.
-func (s *Switch) asset() part.VectorAsset {
-	if s.effectiveClosed() {
-		return switchClosedAsset
+func (self *Switch) asset() part.VectorAsset {
+	if self.effectiveClosed() {
+		return assetClosed
 	}
-	return switchOpenAsset
+	return assetOpen
 }
 
 // toolbarIcon handles toolbar icon.

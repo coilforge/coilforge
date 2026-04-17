@@ -12,34 +12,34 @@ import (
 )
 
 // Bounds handles bounds.
-func (r *Relay) Bounds() core.Rect {
-	rows := len(r.Poles)
+func (self *Relay) Bounds() core.Rect {
+	rows := len(self.Poles)
 	if rows < 1 {
 		rows = 1
 	}
 	height := float64(rows*20 + 24)
 	return core.RectFromPoints(
-		core.Pt{X: r.Pos.X - 28, Y: r.Pos.Y - height/2},
-		core.Pt{X: r.Pos.X + 28, Y: r.Pos.Y + height/2},
+		core.Pt{X: self.Pos.X - 28, Y: self.Pos.Y - height/2},
+		core.Pt{X: self.Pos.X + 28, Y: self.Pos.Y + height/2},
 	)
 }
 
 // Anchors handles anchors.
-func (r *Relay) Anchors() []core.PinAnchor {
-	r.ensureContactSlices()
+func (self *Relay) Anchors() []core.PinAnchor {
+	self.ensureContactSlices()
 
 	anchors := []core.PinAnchor{
-		{Pt: core.Pt{X: r.Pos.X - 12, Y: r.Pos.Y + 24}, PinID: r.PinCoilA},
-		{Pt: core.Pt{X: r.Pos.X + 12, Y: r.Pos.Y + 24}, PinID: r.PinCoilB},
+		{Pt: core.Pt{X: self.Pos.X - 12, Y: self.Pos.Y + 24}, PinID: self.PinCoilA},
+		{Pt: core.Pt{X: self.Pos.X + 12, Y: self.Pos.Y + 24}, PinID: self.PinCoilB},
 	}
 
-	startY := r.Pos.Y - float64((len(r.Poles)-1)*20)/2
-	for i, pole := range r.Poles {
+	startY := self.Pos.Y - float64((len(self.Poles)-1)*20)/2
+	for i, pole := range self.Poles {
 		y := startY + float64(i*20)
 		anchors = append(anchors,
-			core.PinAnchor{Pt: core.Pt{X: r.Pos.X - 28, Y: y}, PinID: pole.PinNC},
-			core.PinAnchor{Pt: core.Pt{X: r.Pos.X, Y: y}, PinID: pole.PinCommon},
-			core.PinAnchor{Pt: core.Pt{X: r.Pos.X + 28, Y: y}, PinID: pole.PinNO},
+			core.PinAnchor{Pt: core.Pt{X: self.Pos.X - 28, Y: y}, PinID: pole.PinNC},
+			core.PinAnchor{Pt: core.Pt{X: self.Pos.X, Y: y}, PinID: pole.PinCommon},
+			core.PinAnchor{Pt: core.Pt{X: self.Pos.X + 28, Y: y}, PinID: pole.PinNO},
 		)
 	}
 
@@ -47,14 +47,14 @@ func (r *Relay) Anchors() []core.PinAnchor {
 }
 
 // HitTest handles hit test.
-func (r *Relay) HitTest(pt core.Pt) part.HitResult {
-	if core.PointInRect(pt, r.Bounds()) {
+func (self *Relay) HitTest(pt core.Pt) part.HitResult {
+	if core.PointInRect(pt, self.Bounds()) {
 		return part.HitResult{Hit: true, Kind: part.HitBody}
 	}
 	return part.HitResult{}
 }
 
 // Draw draws its work.
-func (r *Relay) Draw(ctx part.DrawContext) {
-	r.asset().Draw(ctx, r.Bounds())
+func (self *Relay) Draw(ctx part.DrawContext) {
+	self.asset().Draw(ctx, self.Bounds())
 }

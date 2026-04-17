@@ -12,30 +12,30 @@ import (
 )
 
 // Bounds handles bounds.
-func (c *Clock) Bounds() core.Rect {
+func (self *Clock) Bounds() core.Rect {
 	return core.RectFromPoints(
-		core.Pt{X: c.Pos.X - 18, Y: c.Pos.Y - 12},
-		core.Pt{X: c.Pos.X + 18, Y: c.Pos.Y + 12},
+		core.Pt{X: self.Pos.X - 18, Y: self.Pos.Y - 12},
+		core.Pt{X: self.Pos.X + 18, Y: self.Pos.Y + 12},
 	)
 }
 
 // Anchors handles anchors.
-func (c *Clock) Anchors() []core.PinAnchor {
+func (self *Clock) Anchors() []core.PinAnchor {
 	return []core.PinAnchor{{
-		Pt:    core.Pt{X: c.Pos.X + 20, Y: c.Pos.Y},
-		PinID: c.PinOut,
+		Pt:    core.Pt{X: self.Pos.X + 20, Y: self.Pos.Y},
+		PinID: self.PinOut,
 	}}
 }
 
 // HitTest handles hit test.
-func (c *Clock) HitTest(pt core.Pt) part.HitResult {
-	if core.PointInRect(pt, c.Bounds()) {
+func (self *Clock) HitTest(pt core.Pt) part.HitResult {
+	if core.PointInRect(pt, self.Bounds()) {
 		return part.HitResult{Hit: true, Kind: part.HitBody}
 	}
 	return part.HitResult{}
 }
 
 // Draw draws its work.
-func (c *Clock) Draw(ctx part.DrawContext) {
-	c.asset().Draw(ctx, c.Bounds())
+func (self *Clock) Draw(ctx part.DrawContext) {
+	self.asset().Draw(ctx, self.Bounds())
 }

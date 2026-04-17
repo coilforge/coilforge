@@ -24,23 +24,23 @@ type Indicator struct {
 // init registers the part type with the global registry.
 func init() {
 	part.Register(TypeID, part.TypeInfo{
-		New:    newIndicator,
-		Decode: decodeIndicator,
+		New:    newPart,
+		Decode: decodePart,
 		Label:  "Indicator",
 		Tools:  []string{"main"},
 		Icon:   toolbarIcon,
 	})
 }
 
-// newIndicator handles new indicator.
-func newIndicator(id int, pos core.Pt) part.Part {
+// newPart handles new part.
+func newPart(id int, pos core.Pt) part.Part {
 	return &Indicator{
 		BasePart: core.BasePart{ID: id, TypeID: TypeID, Pos: pos},
 	}
 }
 
-// decodeIndicator handles decode indicator.
-func decodeIndicator(data json.RawMessage) (part.Part, error) {
+// decodePart handles decode part.
+func decodePart(data json.RawMessage) (part.Part, error) {
 	var ind Indicator
 	if err := json.Unmarshal(data, &ind); err != nil {
 		return nil, err
@@ -52,18 +52,18 @@ func decodeIndicator(data json.RawMessage) (part.Part, error) {
 }
 
 // Base handles base.
-func (ind *Indicator) Base() *core.BasePart {
-	return &ind.BasePart
+func (self *Indicator) Base() *core.BasePart {
+	return &self.BasePart
 }
 
 // Segments handles segments.
-func (ind *Indicator) Segments() []core.Seg {
+func (self *Indicator) Segments() []core.Seg {
 	return nil
 }
 
 // Clone handles clone.
-func (ind *Indicator) Clone(newID int, allocPin func() core.PinID) part.Part {
-	c := *ind
+func (self *Indicator) Clone(newID int, allocPin func() core.PinID) part.Part {
+	c := *self
 	c.ID = newID
 	c.PinA = allocPin()
 	c.Lit = false
@@ -71,7 +71,7 @@ func (ind *Indicator) Clone(newID int, allocPin func() core.PinID) part.Part {
 }
 
 // MarshalJSON handles marshal json.
-func (ind *Indicator) MarshalJSON() ([]byte, error) {
-	type indicatorJSON Indicator
-	return json.Marshal((*indicatorJSON)(ind))
+func (self *Indicator) MarshalJSON() ([]byte, error) {
+	type partJSON Indicator
+	return json.Marshal((*partJSON)(self))
 }

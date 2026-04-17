@@ -13,17 +13,22 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+var assetFloat = part.VectorAsset{Name: "wire-float"}
+var assetLow = part.VectorAsset{Name: "wire-low"}
+var assetHigh = part.VectorAsset{Name: "wire-high"}
+var assetShort = part.VectorAsset{Name: "wire-short"}
+
 // asset handles asset.
-func (w *Wire) asset() part.VectorAsset {
-	switch w.State {
+func (self *Wire) asset() part.VectorAsset {
+	switch self.State {
 	case core.NetHigh:
-		return wireHighAsset
+		return assetHigh
 	case core.NetLow:
-		return wireLowAsset
+		return assetLow
 	case core.NetShort:
-		return wireShortAsset
+		return assetShort
 	default:
-		return wireFloatAsset
+		return assetFloat
 	}
 }
 

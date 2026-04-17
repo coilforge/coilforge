@@ -9,39 +9,39 @@ package clock
 import "coilforge/internal/part"
 
 // PropSpec handles prop spec.
-func (c *Clock) PropSpec() part.PropSpec {
+func (self *Clock) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
-			{Label: "Label", Kind: part.PropText, Value: c.Label},
-			{Label: "Period", Kind: part.PropInt, Value: c.PeriodTick, Min: 1, Max: 100000},
-			{Label: "High", Kind: part.PropInt, Value: c.HighTick, Min: 1, Max: 100000},
+			{Label: "Label", Kind: part.PropText, Value: self.Label},
+			{Label: "Period", Kind: part.PropInt, Value: self.PeriodTick, Min: 1, Max: 100000},
+			{Label: "High", Kind: part.PropInt, Value: self.HighTick, Min: 1, Max: 100000},
 		},
 	}
 }
 
 // ApplyProp handles apply prop.
-func (c *Clock) ApplyProp(action part.PropAction) bool {
+func (self *Clock) ApplyProp(action part.PropAction) bool {
 	switch action.Index {
 	case 0:
 		value, ok := action.NewValue.(string)
 		if !ok {
 			return false
 		}
-		c.Label = value
+		self.Label = value
 		return true
 	case 1:
 		value, ok := action.NewValue.(int)
 		if !ok || value <= 0 {
 			return false
 		}
-		c.PeriodTick = value
+		self.PeriodTick = value
 		return true
 	case 2:
 		value, ok := action.NewValue.(int)
 		if !ok || value <= 0 {
 			return false
 		}
-		c.HighTick = value
+		self.HighTick = value
 		return true
 	default:
 		return false

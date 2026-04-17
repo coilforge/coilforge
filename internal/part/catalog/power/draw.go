@@ -12,30 +12,30 @@ import (
 )
 
 // Bounds handles bounds.
-func (p *Power) Bounds() core.Rect {
+func (self *Power) Bounds() core.Rect {
 	return core.RectFromPoints(
-		core.Pt{X: p.Pos.X - 10, Y: p.Pos.Y - 12},
-		core.Pt{X: p.Pos.X + 10, Y: p.Pos.Y + 12},
+		core.Pt{X: self.Pos.X - 10, Y: self.Pos.Y - 12},
+		core.Pt{X: self.Pos.X + 10, Y: self.Pos.Y + 12},
 	)
 }
 
 // Anchors handles anchors.
-func (p *Power) Anchors() []core.PinAnchor {
+func (self *Power) Anchors() []core.PinAnchor {
 	return []core.PinAnchor{{
-		Pt:    core.Pt{X: p.Pos.X, Y: p.Pos.Y + 16},
-		PinID: p.Pin,
+		Pt:    core.Pt{X: self.Pos.X, Y: self.Pos.Y + 16},
+		PinID: self.Pin,
 	}}
 }
 
 // HitTest handles hit test.
-func (p *Power) HitTest(pt core.Pt) part.HitResult {
-	if core.PointInRect(pt, p.Bounds()) {
+func (self *Power) HitTest(pt core.Pt) part.HitResult {
+	if core.PointInRect(pt, self.Bounds()) {
 		return part.HitResult{Hit: true, Kind: part.HitBody}
 	}
 	return part.HitResult{}
 }
 
 // Draw draws its work.
-func (p *Power) Draw(ctx part.DrawContext) {
-	p.asset().Draw(ctx, p.Bounds())
+func (self *Power) Draw(ctx part.DrawContext) {
+	self.asset().Draw(ctx, self.Bounds())
 }

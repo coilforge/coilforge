@@ -12,35 +12,35 @@ import (
 )
 
 // Bounds handles bounds.
-func (ind *Indicator) Bounds() core.Rect {
+func (self *Indicator) Bounds() core.Rect {
 	return core.RectFromPoints(
-		core.Pt{X: ind.Pos.X - 12, Y: ind.Pos.Y - 12},
-		core.Pt{X: ind.Pos.X + 12, Y: ind.Pos.Y + 12},
+		core.Pt{X: self.Pos.X - 12, Y: self.Pos.Y - 12},
+		core.Pt{X: self.Pos.X + 12, Y: self.Pos.Y + 12},
 	)
 }
 
 // Anchors handles anchors.
-func (ind *Indicator) Anchors() []core.PinAnchor {
+func (self *Indicator) Anchors() []core.PinAnchor {
 	return []core.PinAnchor{{
-		Pt:    core.Pt{X: ind.Pos.X, Y: ind.Pos.Y + 16},
-		PinID: ind.PinA,
+		Pt:    core.Pt{X: self.Pos.X, Y: self.Pos.Y + 16},
+		PinID: self.PinA,
 	}}
 }
 
 // HitTest handles hit test.
-func (ind *Indicator) HitTest(pt core.Pt) part.HitResult {
-	for _, anchor := range ind.Anchors() {
+func (self *Indicator) HitTest(pt core.Pt) part.HitResult {
+	for _, anchor := range self.Anchors() {
 		if core.PointNearSeg(pt, core.Seg{A: anchor.Pt, B: anchor.Pt}, 6) {
 			return part.HitResult{Hit: true, Kind: part.HitPin, PinID: anchor.PinID}
 		}
 	}
-	if core.PointInRect(pt, ind.Bounds()) {
+	if core.PointInRect(pt, self.Bounds()) {
 		return part.HitResult{Hit: true, Kind: part.HitBody}
 	}
 	return part.HitResult{}
 }
 
 // Draw draws its work.
-func (ind *Indicator) Draw(ctx part.DrawContext) {
-	ind.asset().Draw(ctx, ind.Bounds())
+func (self *Indicator) Draw(ctx part.DrawContext) {
+	self.asset().Draw(ctx, self.Bounds())
 }

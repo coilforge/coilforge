@@ -26,16 +26,16 @@ type Clock struct {
 // init registers the part type with the global registry.
 func init() {
 	part.Register(TypeID, part.TypeInfo{
-		New:    newClock,
-		Decode: decodeClock,
+		New:    newPart,
+		Decode: decodePart,
 		Label:  "Clock",
 		Tools:  []string{"main"},
 		Icon:   toolbarIcon,
 	})
 }
 
-// newClock handles new clock.
-func newClock(id int, pos core.Pt) part.Part {
+// newPart handles new part.
+func newPart(id int, pos core.Pt) part.Part {
 	return &Clock{
 		BasePart:   core.BasePart{ID: id, TypeID: TypeID, Pos: pos},
 		PeriodTick: 1000,
@@ -43,8 +43,8 @@ func newClock(id int, pos core.Pt) part.Part {
 	}
 }
 
-// decodeClock handles decode clock.
-func decodeClock(data json.RawMessage) (part.Part, error) {
+// decodePart handles decode part.
+func decodePart(data json.RawMessage) (part.Part, error) {
 	var c Clock
 	if err := json.Unmarshal(data, &c); err != nil {
 		return nil, err
@@ -62,18 +62,18 @@ func decodeClock(data json.RawMessage) (part.Part, error) {
 }
 
 // Base handles base.
-func (c *Clock) Base() *core.BasePart {
-	return &c.BasePart
+func (self *Clock) Base() *core.BasePart {
+	return &self.BasePart
 }
 
 // Segments handles segments.
-func (c *Clock) Segments() []core.Seg {
+func (self *Clock) Segments() []core.Seg {
 	return nil
 }
 
 // Clone handles clone.
-func (c *Clock) Clone(newID int, allocPin func() core.PinID) part.Part {
-	clone := *c
+func (self *Clock) Clone(newID int, allocPin func() core.PinID) part.Part {
+	clone := *self
 	clone.ID = newID
 	clone.PinOut = allocPin()
 	clone.OutputHigh = false
@@ -81,7 +81,7 @@ func (c *Clock) Clone(newID int, allocPin func() core.PinID) part.Part {
 }
 
 // MarshalJSON handles marshal json.
-func (c *Clock) MarshalJSON() ([]byte, error) {
-	type clockJSON Clock
-	return json.Marshal((*clockJSON)(c))
+func (self *Clock) MarshalJSON() ([]byte, error) {
+	type partJSON Clock
+	return json.Marshal((*partJSON)(self))
 }

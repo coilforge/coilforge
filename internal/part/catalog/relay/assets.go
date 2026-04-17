@@ -17,14 +17,16 @@ import (
 //go:embed toolbar_icon.png
 var toolbarIconPNG []byte
 
-var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG, "relay/toolbar_icon.png")
+var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG)
+var assetIdle = part.VectorAsset{Name: "relay-idle"}
+var assetActive = part.VectorAsset{Name: "relay-active"}
 
 // asset handles asset.
-func (r *Relay) asset() part.VectorAsset {
-	if r.CoilActive {
-		return relayActiveAsset
+func (self *Relay) asset() part.VectorAsset {
+	if self.CoilActive {
+		return assetActive
 	}
-	return relayIdleAsset
+	return assetIdle
 }
 
 // toolbarIcon handles toolbar icon.

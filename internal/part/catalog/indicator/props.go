@@ -9,16 +9,16 @@ package indicator
 import "coilforge/internal/part"
 
 // PropSpec handles prop spec.
-func (ind *Indicator) PropSpec() part.PropSpec {
+func (self *Indicator) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
-			{Label: "Label", Kind: part.PropText, Value: ind.Label},
+			{Label: "Label", Kind: part.PropText, Value: self.Label},
 		},
 	}
 }
 
 // ApplyProp handles apply prop.
-func (ind *Indicator) ApplyProp(action part.PropAction) bool {
+func (self *Indicator) ApplyProp(action part.PropAction) bool {
 	if action.Index != 0 {
 		return false
 	}
@@ -26,6 +26,6 @@ func (ind *Indicator) ApplyProp(action part.PropAction) bool {
 	if !ok {
 		return false
 	}
-	ind.Label = value
+	self.Label = value
 	return true
 }

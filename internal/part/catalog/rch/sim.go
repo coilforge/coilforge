@@ -9,7 +9,7 @@ package rch
 import "coilforge/internal/part"
 
 // Tick handles tick.
-func (r *RCH) Tick(ctx part.SimContext) bool {
+func (self *RCH) Tick(ctx part.SimContext) bool {
 	_ = ctx
 	return false
 }

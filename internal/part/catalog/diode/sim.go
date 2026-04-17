@@ -1,8 +1,8 @@
 package diode
 
 // File overview:
-// sim implements simulation-facing behavior for diode using part sim interfaces.
-// Subsystem: part catalog (diode) simulation.
+// sim implements simulation-facing behavior using part sim interfaces.
+// Subsystem: part catalog simulation.
 // It is invoked by the sim engine through interfaces and does not depend on editor.
 // Flow position: part sim logic executed during run-mode ticks and net solving.
 
@@ -12,9 +12,9 @@ import (
 )
 
 // AddStateEdges adds state edges.
-func (d *Diode) AddStateEdges(netByPin func(core.PinID) int, graph *part.StateGraph) {
-	from := netByPin(d.PinAnode)
-	to := netByPin(d.PinCathode)
+func (self *Diode) AddStateEdges(netByPin func(core.PinID) int, graph *part.StateGraph) {
+	from := netByPin(self.PinAnode)
+	to := netByPin(self.PinCathode)
 	if from < 0 || to < 0 {
 		return
 	}

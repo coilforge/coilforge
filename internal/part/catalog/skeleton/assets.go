@@ -12,9 +12,11 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+var asset = part.VectorAsset{Name: "template"}
+
 // asset handles asset.
-func (t *Template) asset() part.VectorAsset {
-	return templateAsset
+func (self *Template) asset() part.VectorAsset {
+	return asset
 }
 
 // ToolbarIcon handles toolbar icon.

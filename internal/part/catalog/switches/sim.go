@@ -12,40 +12,40 @@ import (
 )
 
 // AddConductive adds conductive.
-func (s *Switch) AddConductive(union part.NetUnion, netByPin func(core.PinID) int) {
-	if !s.effectiveClosed() {
+func (self *Switch) AddConductive(union part.NetUnion, netByPin func(core.PinID) int) {
+	if !self.effectiveClosed() {
 		return
 	}
-	union.Union(netByPin(s.PinA), netByPin(s.PinB))
+	union.Union(netByPin(self.PinA), netByPin(self.PinB))
 }
 
 // HandleInput handles input.
-func (s *Switch) HandleInput(active bool) (changed, momentary bool) {
-	if s.Momentary {
-		prev := s.Pressed
-		s.Pressed = active
-		return s.Pressed != prev, true
+func (self *Switch) HandleInput(active bool) (changed, momentary bool) {
+	if self.Momentary {
+		prev := self.Pressed
+		self.Pressed = active
+		return self.Pressed != prev, true
 	}
 	if !active {
 		return false, false
 	}
-	s.Closed = !s.Closed
+	self.Closed = !self.Closed
 	return true, false
 }
 
 // ReleaseMomentary handles release momentary.
-func (s *Switch) ReleaseMomentary() bool {
-	if !s.Momentary || !s.Pressed {
+func (self *Switch) ReleaseMomentary() bool {
+	if !self.Momentary || !self.Pressed {
 		return false
 	}
-	s.Pressed = false
+	self.Pressed = false
 	return true
 }
 
 // effectiveClosed handles effective closed.
-func (s *Switch) effectiveClosed() bool {
-	if s.Momentary {
-		return s.Pressed
+func (self *Switch) effectiveClosed() bool {
+	if self.Momentary {
+		return self.Pressed
 	}
-	return s.Closed
+	return self.Closed
 }

@@ -26,9 +26,9 @@ type Wire struct {
 // init registers the part type with the global registry.
 func init() {
 	part.Register(TypeID, part.TypeInfo{
-		New:     newWire,
-		NewWire: newWireSegment,
-		Decode:  decodeWire,
+		New:     newPart,
+		NewWire: newSegment,
+		Decode:  decodePart,
 		Label:   "Wire",
 		Tools:   []string{"wire"},
 		Icon:    toolbarIcon,
@@ -60,21 +60,21 @@ func New(id int, from, to core.Pt, allocPinA, allocPinB func() core.PinID) *Wire
 	return wire
 }
 
-// newWireSegment handles new wire segment.
-func newWireSegment(id int, from, to core.Pt, allocPin func() core.PinID) part.Part {
+// newSegment handles new segment.
+func newSegment(id int, from, to core.Pt, allocPin func() core.PinID) part.Part {
 	return New(id, from, to, allocPin, allocPin)
 }
 
-// newWire handles new wire.
-func newWire(id int, pos core.Pt) part.Part {
+// newPart handles new part.
+func newPart(id int, pos core.Pt) part.Part {
 	return &Wire{
 		BasePart: core.BasePart{ID: id, TypeID: TypeID, Pos: pos},
 		Half:     core.Pt{X: 16, Y: 0},
 	}
 }
 
-// decodeWire handles decode wire.
-func decodeWire(data json.RawMessage) (part.Part, error) {
+// decodePart handles decode part.
+func decodePart(data json.RawMessage) (part.Part, error) {
 	var w Wire
 	if err := json.Unmarshal(data, &w); err != nil {
 		return nil, err
@@ -86,13 +86,13 @@ func decodeWire(data json.RawMessage) (part.Part, error) {
 }
 
 // Base handles base.
-func (w *Wire) Base() *core.BasePart {
-	return &w.BasePart
+func (self *Wire) Base() *core.BasePart {
+	return &self.BasePart
 }
 
 // Clone handles clone.
-func (w *Wire) Clone(newID int, allocPin func() core.PinID) part.Part {
-	c := *w
+func (self *Wire) Clone(newID int, allocPin func() core.PinID) part.Part {
+	c := *self
 	c.ID = newID
 	c.PinA = allocPin()
 	c.PinB = allocPin()
@@ -101,7 +101,7 @@ func (w *Wire) Clone(newID int, allocPin func() core.PinID) part.Part {
 }
 
 // MarshalJSON handles marshal json.
-func (w *Wire) MarshalJSON() ([]byte, error) {
-	type wireJSON Wire
-	return json.Marshal((*wireJSON)(w))
+func (self *Wire) MarshalJSON() ([]byte, error) {
+	type partJSON Wire
+	return json.Marshal((*partJSON)(self))
 }

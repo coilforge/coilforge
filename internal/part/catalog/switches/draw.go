@@ -12,30 +12,30 @@ import (
 )
 
 // Bounds handles bounds.
-func (s *Switch) Bounds() core.Rect {
+func (self *Switch) Bounds() core.Rect {
 	return core.RectFromPoints(
-		core.Pt{X: s.Pos.X - 18, Y: s.Pos.Y - 10},
-		core.Pt{X: s.Pos.X + 18, Y: s.Pos.Y + 10},
+		core.Pt{X: self.Pos.X - 18, Y: self.Pos.Y - 10},
+		core.Pt{X: self.Pos.X + 18, Y: self.Pos.Y + 10},
 	)
 }
 
 // Anchors handles anchors.
-func (s *Switch) Anchors() []core.PinAnchor {
+func (self *Switch) Anchors() []core.PinAnchor {
 	return []core.PinAnchor{
-		{Pt: core.Pt{X: s.Pos.X - 20, Y: s.Pos.Y}, PinID: s.PinA},
-		{Pt: core.Pt{X: s.Pos.X + 20, Y: s.Pos.Y}, PinID: s.PinB},
+		{Pt: core.Pt{X: self.Pos.X - 20, Y: self.Pos.Y}, PinID: self.PinA},
+		{Pt: core.Pt{X: self.Pos.X + 20, Y: self.Pos.Y}, PinID: self.PinB},
 	}
 }
 
 // HitTest handles hit test.
-func (s *Switch) HitTest(pt core.Pt) part.HitResult {
-	if core.PointInRect(pt, s.Bounds()) {
+func (self *Switch) HitTest(pt core.Pt) part.HitResult {
+	if core.PointInRect(pt, self.Bounds()) {
 		return part.HitResult{Hit: true, Kind: part.HitBody}
 	}
 	return part.HitResult{}
 }
 
 // Draw draws its work.
-func (s *Switch) Draw(ctx part.DrawContext) {
-	s.asset().Draw(ctx, s.Bounds())
+func (self *Switch) Draw(ctx part.DrawContext) {
+	self.asset().Draw(ctx, self.Bounds())
 }

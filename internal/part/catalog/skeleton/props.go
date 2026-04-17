@@ -9,16 +9,16 @@ package skeleton
 import "coilforge/internal/part"
 
 // PropSpec handles prop spec.
-func (t *Template) PropSpec() part.PropSpec {
+func (self *Template) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
-			{Label: "Label", Kind: part.PropText, Value: t.Label},
+			{Label: "Label", Kind: part.PropText, Value: self.Label},
 		},
 	}
 }
 
 // ApplyProp handles apply prop.
-func (t *Template) ApplyProp(action part.PropAction) bool {
+func (self *Template) ApplyProp(action part.PropAction) bool {
 	if action.Index != 0 {
 		return false
 	}
@@ -26,6 +26,6 @@ func (t *Template) ApplyProp(action part.PropAction) bool {
 	if !ok {
 		return false
 	}
-	t.Label = value
+	self.Label = value
 	return true
 }

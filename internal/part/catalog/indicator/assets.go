@@ -17,14 +17,16 @@ import (
 //go:embed toolbar_icon.png
 var toolbarIconPNG []byte
 
-var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG, "indicator/toolbar_icon.png")
+var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG)
+var assetOff = part.VectorAsset{Name: "indicator-off"}
+var assetOn = part.VectorAsset{Name: "indicator-on"}
 
 // asset handles asset.
-func (ind *Indicator) asset() part.VectorAsset {
-	if ind.Lit {
-		return indicatorOnAsset
+func (self *Indicator) asset() part.VectorAsset {
+	if self.Lit {
+		return assetOn
 	}
-	return indicatorOffAsset
+	return assetOff
 }
 
 // toolbarIcon handles toolbar icon.

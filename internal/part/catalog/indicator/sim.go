@@ -12,9 +12,9 @@ import (
 )
 
 // Tick handles tick.
-func (ind *Indicator) Tick(ctx part.SimContext) bool {
-	net := ctx.NetByPin(ind.PinA)
-	wasLit := ind.Lit
-	ind.Lit = ctx.NetState(net) == core.NetHigh
-	return ind.Lit != wasLit
+func (self *Indicator) Tick(ctx part.SimContext) bool {
+	net := ctx.NetByPin(self.PinA)
+	wasLit := self.Lit
+	self.Lit = ctx.NetState(net) == core.NetHigh
+	return self.Lit != wasLit
 }

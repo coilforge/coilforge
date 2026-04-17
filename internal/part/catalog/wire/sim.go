@@ -9,10 +9,10 @@ package wire
 import "coilforge/internal/part"
 
 // Tick handles tick.
-func (w *Wire) Tick(ctx part.SimContext) bool {
-	prev := w.State
-	if net := ctx.NetByPin(w.PinA); net >= 0 {
-		w.State = ctx.NetState(net)
+func (self *Wire) Tick(ctx part.SimContext) bool {
+	prev := self.State
+	if net := ctx.NetByPin(self.PinA); net >= 0 {
+		self.State = ctx.NetState(net)
 	}
-	return w.State != prev
+	return self.State != prev
 }

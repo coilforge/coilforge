@@ -36,18 +36,18 @@ func Decode(data json.RawMessage) (part.Part, error) {
 }
 
 // Base handles base.
-func (t *Template) Base() *core.BasePart {
-	return &t.BasePart
+func (self *Template) Base() *core.BasePart {
+	return &self.BasePart
 }
 
 // Segments handles segments.
-func (t *Template) Segments() []core.Seg {
+func (self *Template) Segments() []core.Seg {
 	return nil
 }
 
 // Clone handles clone.
-func (t *Template) Clone(newID int, allocPin func() core.PinID) part.Part {
-	c := *t
+func (self *Template) Clone(newID int, allocPin func() core.PinID) part.Part {
+	c := *self
 	c.ID = newID
 	c.PinA = allocPin()
 	c.PinB = allocPin()
@@ -55,7 +55,7 @@ func (t *Template) Clone(newID int, allocPin func() core.PinID) part.Part {
 }
 
 // MarshalJSON handles marshal json.
-func (t *Template) MarshalJSON() ([]byte, error) {
-	type templateJSON Template
-	return json.Marshal((*templateJSON)(t))
+func (self *Template) MarshalJSON() ([]byte, error) {
+	type partJSON Template
+	return json.Marshal((*partJSON)(self))
 }

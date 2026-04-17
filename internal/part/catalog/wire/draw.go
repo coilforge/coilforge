@@ -12,23 +12,23 @@ import (
 )
 
 // Bounds handles bounds.
-func (w *Wire) Bounds() core.Rect {
-	seg := w.Segments()[0]
+func (self *Wire) Bounds() core.Rect {
+	seg := self.Segments()[0]
 	return core.RectFromPoints(seg.A, seg.B)
 }
 
 // Anchors handles anchors.
-func (w *Wire) Anchors() []core.PinAnchor {
-	seg := w.Segments()[0]
+func (self *Wire) Anchors() []core.PinAnchor {
+	seg := self.Segments()[0]
 	return []core.PinAnchor{
-		{Pt: seg.A, PinID: w.PinA},
-		{Pt: seg.B, PinID: w.PinB},
+		{Pt: seg.A, PinID: self.PinA},
+		{Pt: seg.B, PinID: self.PinB},
 	}
 }
 
 // HitTest handles hit test.
-func (w *Wire) HitTest(pt core.Pt) part.HitResult {
-	seg := w.Segments()[0]
+func (self *Wire) HitTest(pt core.Pt) part.HitResult {
+	seg := self.Segments()[0]
 	if core.PointNearSeg(pt, seg, 6) {
 		return part.HitResult{Hit: true, Kind: part.HitBody}
 	}
@@ -36,14 +36,14 @@ func (w *Wire) HitTest(pt core.Pt) part.HitResult {
 }
 
 // Segments handles segments.
-func (w *Wire) Segments() []core.Seg {
+func (self *Wire) Segments() []core.Seg {
 	return []core.Seg{{
-		A: core.Pt{X: w.Pos.X - w.Half.X, Y: w.Pos.Y - w.Half.Y},
-		B: core.Pt{X: w.Pos.X + w.Half.X, Y: w.Pos.Y + w.Half.Y},
+		A: core.Pt{X: self.Pos.X - self.Half.X, Y: self.Pos.Y - self.Half.Y},
+		B: core.Pt{X: self.Pos.X + self.Half.X, Y: self.Pos.Y + self.Half.Y},
 	}}
 }
 
 // Draw draws its work.
-func (w *Wire) Draw(ctx part.DrawContext) {
-	w.asset().Draw(ctx, w.Bounds())
+func (self *Wire) Draw(ctx part.DrawContext) {
+	self.asset().Draw(ctx, self.Bounds())
 }

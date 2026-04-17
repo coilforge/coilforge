@@ -17,14 +17,16 @@ import (
 //go:embed toolbar_icon.png
 var toolbarIconPNG []byte
 
-var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG, "clock/toolbar_icon.png")
+var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG)
+var assetLow = part.VectorAsset{Name: "clock-low"}
+var assetHigh = part.VectorAsset{Name: "clock-high"}
 
 // asset handles asset.
-func (c *Clock) asset() part.VectorAsset {
-	if c.OutputHigh {
-		return clockHighAsset
+func (self *Clock) asset() part.VectorAsset {
+	if self.OutputHigh {
+		return assetHigh
 	}
-	return clockLowAsset
+	return assetLow
 }
 
 // toolbarIcon handles toolbar icon.

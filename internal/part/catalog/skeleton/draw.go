@@ -12,30 +12,30 @@ import (
 )
 
 // Bounds handles bounds.
-func (t *Template) Bounds() core.Rect {
+func (self *Template) Bounds() core.Rect {
 	return core.RectFromPoints(
-		core.Pt{X: t.Pos.X - 16, Y: t.Pos.Y - 8},
-		core.Pt{X: t.Pos.X + 16, Y: t.Pos.Y + 8},
+		core.Pt{X: self.Pos.X - 16, Y: self.Pos.Y - 8},
+		core.Pt{X: self.Pos.X + 16, Y: self.Pos.Y + 8},
 	)
 }
 
 // Anchors handles anchors.
-func (t *Template) Anchors() []core.PinAnchor {
+func (self *Template) Anchors() []core.PinAnchor {
 	return []core.PinAnchor{
-		{Pt: core.Pt{X: t.Pos.X - 18, Y: t.Pos.Y}, PinID: t.PinA},
-		{Pt: core.Pt{X: t.Pos.X + 18, Y: t.Pos.Y}, PinID: t.PinB},
+		{Pt: core.Pt{X: self.Pos.X - 18, Y: self.Pos.Y}, PinID: self.PinA},
+		{Pt: core.Pt{X: self.Pos.X + 18, Y: self.Pos.Y}, PinID: self.PinB},
 	}
 }
 
 // HitTest handles hit test.
-func (t *Template) HitTest(pt core.Pt) part.HitResult {
-	if core.PointInRect(pt, t.Bounds()) {
+func (self *Template) HitTest(pt core.Pt) part.HitResult {
+	if core.PointInRect(pt, self.Bounds()) {
 		return part.HitResult{Hit: true, Kind: part.HitBody}
 	}
 	return part.HitResult{}
 }
 
 // Draw draws its work.
-func (t *Template) Draw(ctx part.DrawContext) {
-	t.asset().Draw(ctx, t.Bounds())
+func (self *Template) Draw(ctx part.DrawContext) {
+	self.asset().Draw(ctx, self.Bounds())
 }

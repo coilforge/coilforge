@@ -1,8 +1,8 @@
 package diode
 
 // File overview:
-// assets selects pre-generated vectors and icons used by the diode part.
-// Subsystem: part catalog (diode) assets.
+// assets selects pre-generated vectors and icons used by this part.
+// Subsystem: part catalog assets.
 // It supports draw and toolbar registration without runtime SVG parsing.
 // Flow position: static visual resource selector beneath part drawing.
 
@@ -17,11 +17,12 @@ import (
 //go:embed toolbar_icon.png
 var toolbarIconPNG []byte
 
-var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG, "diode/toolbar_icon.png")
+var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG)
+var asset = part.VectorAsset{Name: "diode"}
 
 // asset handles asset.
-func (d *Diode) asset() part.VectorAsset {
-	return diodeAsset
+func (self *Diode) asset() part.VectorAsset {
+	return asset
 }
 
 // toolbarIcon returns the pre-rasterized toolbar bitmap (e.g. 84×84 source, scaled in chrome).

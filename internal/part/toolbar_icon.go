@@ -11,13 +11,13 @@ import (
 )
 
 // LoadToolbarIconPNG decodes embedded PNG bytes into an Ebiten image.
-func LoadToolbarIconPNG(pngData []byte, assetName string) *ebiten.Image {
+func LoadToolbarIconPNG(pngData []byte) *ebiten.Image {
 	if len(pngData) == 0 {
-		log.Fatalf("part: empty toolbar icon data for %s", assetName)
+		log.Fatal("part: empty toolbar icon data")
 	}
 	img, err := png.Decode(bytes.NewReader(pngData))
 	if err != nil {
-		log.Fatalf("part: decode toolbar icon %s: %v", assetName, err)
+		log.Fatalf("part: decode toolbar icon: %v", err)
 	}
 	return ebiten.NewImageFromImage(invertIconRGB(img))
 }

@@ -26,39 +26,39 @@ type Power struct {
 // init registers the part type with the global registry.
 func init() {
 	part.Register(VCCTypeID, part.TypeInfo{
-		New:    newVCC,
-		Decode: decodePower,
+		New:    newPartVCC,
+		Decode: decodePart,
 		Label:  "VCC",
 		Tools:  []string{"main"},
 		Icon:   toolbarIconVCC,
 	})
 	part.Register(GNDTypeID, part.TypeInfo{
-		New:    newGND,
-		Decode: decodePower,
+		New:    newPartGND,
+		Decode: decodePart,
 		Label:  "GND",
 		Tools:  []string{"main"},
 		Icon:   toolbarIconGND,
 	})
 }
 
-// newVCC handles new vcc.
-func newVCC(id int, pos core.Pt) part.Part {
+// newPartVCC handles new vcc part.
+func newPartVCC(id int, pos core.Pt) part.Part {
 	return &Power{
 		BasePart: core.BasePart{ID: id, TypeID: VCCTypeID, Pos: pos},
 		Kind:     "vcc",
 	}
 }
 
-// newGND handles new gnd.
-func newGND(id int, pos core.Pt) part.Part {
+// newPartGND handles new gnd part.
+func newPartGND(id int, pos core.Pt) part.Part {
 	return &Power{
 		BasePart: core.BasePart{ID: id, TypeID: GNDTypeID, Pos: pos},
 		Kind:     "gnd",
 	}
 }
 
-// decodePower handles decode power.
-func decodePower(data json.RawMessage) (part.Part, error) {
+// decodePart handles decode part.
+func decodePart(data json.RawMessage) (part.Part, error) {
 	var p Power
 	if err := json.Unmarshal(data, &p); err != nil {
 		return nil, err
@@ -82,25 +82,25 @@ func decodePower(data json.RawMessage) (part.Part, error) {
 }
 
 // Base handles base.
-func (p *Power) Base() *core.BasePart {
-	return &p.BasePart
+func (self *Power) Base() *core.BasePart {
+	return &self.BasePart
 }
 
 // Segments handles segments.
-func (p *Power) Segments() []core.Seg {
+func (self *Power) Segments() []core.Seg {
 	return nil
 }
 
 // Clone handles clone.
-func (p *Power) Clone(newID int, allocPin func() core.PinID) part.Part {
-	c := *p
+func (self *Power) Clone(newID int, allocPin func() core.PinID) part.Part {
+	c := *self
 	c.ID = newID
 	c.Pin = allocPin()
 	return &c
 }
 
 // MarshalJSON handles marshal json.
-func (p *Power) MarshalJSON() ([]byte, error) {
-	type powerJSON Power
-	return json.Marshal((*powerJSON)(p))
+func (self *Power) MarshalJSON() ([]byte, error) {
+	type partJSON Power
+	return json.Marshal((*partJSON)(self))
 }

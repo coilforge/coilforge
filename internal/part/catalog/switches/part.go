@@ -27,23 +27,23 @@ type Switch struct {
 // init registers the part type with the global registry.
 func init() {
 	part.Register(TypeID, part.TypeInfo{
-		New:    newSwitch,
-		Decode: decodeSwitch,
+		New:    newPart,
+		Decode: decodePart,
 		Label:  "Switch",
 		Tools:  []string{"main"},
 		Icon:   toolbarIcon,
 	})
 }
 
-// newSwitch handles new switch.
-func newSwitch(id int, pos core.Pt) part.Part {
+// newPart handles new part.
+func newPart(id int, pos core.Pt) part.Part {
 	return &Switch{
 		BasePart: core.BasePart{ID: id, TypeID: TypeID, Pos: pos},
 	}
 }
 
-// decodeSwitch handles decode switch.
-func decodeSwitch(data json.RawMessage) (part.Part, error) {
+// decodePart handles decode part.
+func decodePart(data json.RawMessage) (part.Part, error) {
 	var s Switch
 	if err := json.Unmarshal(data, &s); err != nil {
 		return nil, err
@@ -55,18 +55,18 @@ func decodeSwitch(data json.RawMessage) (part.Part, error) {
 }
 
 // Base handles base.
-func (s *Switch) Base() *core.BasePart {
-	return &s.BasePart
+func (self *Switch) Base() *core.BasePart {
+	return &self.BasePart
 }
 
 // Segments handles segments.
-func (s *Switch) Segments() []core.Seg {
+func (self *Switch) Segments() []core.Seg {
 	return nil
 }
 
 // Clone handles clone.
-func (s *Switch) Clone(newID int, allocPin func() core.PinID) part.Part {
-	c := *s
+func (self *Switch) Clone(newID int, allocPin func() core.PinID) part.Part {
+	c := *self
 	c.ID = newID
 	c.PinA = allocPin()
 	c.PinB = allocPin()
@@ -75,7 +75,7 @@ func (s *Switch) Clone(newID int, allocPin func() core.PinID) part.Part {
 }
 
 // MarshalJSON handles marshal json.
-func (s *Switch) MarshalJSON() ([]byte, error) {
-	type switchJSON Switch
-	return json.Marshal((*switchJSON)(s))
+func (self *Switch) MarshalJSON() ([]byte, error) {
+	type partJSON Switch
+	return json.Marshal((*partJSON)(self))
 }

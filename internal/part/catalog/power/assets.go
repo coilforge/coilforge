@@ -20,15 +20,17 @@ var toolbarIconVCCPNG []byte
 //go:embed toolbar_icon_gnd.png
 var toolbarIconGNDPNG []byte
 
-var toolbarIconVCCImage = part.LoadToolbarIconPNG(toolbarIconVCCPNG, "power/toolbar_icon_vcc.png")
-var toolbarIconGNDImage = part.LoadToolbarIconPNG(toolbarIconGNDPNG, "power/toolbar_icon_gnd.png")
+var toolbarIconVCCImage = part.LoadToolbarIconPNG(toolbarIconVCCPNG)
+var toolbarIconGNDImage = part.LoadToolbarIconPNG(toolbarIconGNDPNG)
+var assetVCC = part.VectorAsset{Name: "vcc"}
+var assetGND = part.VectorAsset{Name: "gnd"}
 
 // asset handles asset.
-func (p *Power) asset() part.VectorAsset {
-	if p.Kind == "gnd" {
-		return gndAsset
+func (self *Power) asset() part.VectorAsset {
+	if self.Kind == "gnd" {
+		return assetGND
 	}
-	return vccAsset
+	return assetVCC
 }
 
 // toolbarIconVCC handles toolbar icon.

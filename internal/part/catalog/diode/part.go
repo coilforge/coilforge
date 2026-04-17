@@ -1,8 +1,8 @@
 package diode
 
 // File overview:
-// part defines the diode part type, registration hooks, and clone/decode behavior.
-// Subsystem: part catalog (diode).
+// part defines catalog part type, registration hooks, and clone/decode behavior.
+// Subsystem: part catalog.
 // It works with shared part/core contracts and is complemented by draw/props/sim/assets files.
 // Flow position: concrete catalog part implementation loaded through part registry.
 
@@ -24,23 +24,23 @@ type Diode struct {
 // init registers the part type with the global registry.
 func init() {
 	part.Register(TypeID, part.TypeInfo{
-		New:    newDiode,
-		Decode: decodeDiode,
+		New:    newPart,
+		Decode: decodePart,
 		Label:  "Diode",
 		Tools:  []string{"main"},
 		Icon:   toolbarIcon,
 	})
 }
 
-// newDiode handles new diode.
-func newDiode(id int, pos core.Pt) part.Part {
+// newPart constructs the part instance.
+func newPart(id int, pos core.Pt) part.Part {
 	return &Diode{
 		BasePart: core.BasePart{ID: id, TypeID: TypeID, Pos: pos},
 	}
 }
 
-// decodeDiode handles decode diode.
-func decodeDiode(data json.RawMessage) (part.Part, error) {
+// decodePart decodes persisted part JSON.
+func decodePart(data json.RawMessage) (part.Part, error) {
 	var d Diode
 	if err := json.Unmarshal(data, &d); err != nil {
 		return nil, err
@@ -52,18 +52,18 @@ func decodeDiode(data json.RawMessage) (part.Part, error) {
 }
 
 // Base handles base.
-func (d *Diode) Base() *core.BasePart {
-	return &d.BasePart
+func (self *Diode) Base() *core.BasePart {
+	return &self.BasePart
 }
 
 // Segments handles segments.
-func (d *Diode) Segments() []core.Seg {
+func (self *Diode) Segments() []core.Seg {
 	return nil
 }
 
 // Clone handles clone.
-func (d *Diode) Clone(newID int, allocPin func() core.PinID) part.Part {
-	c := *d
+func (self *Diode) Clone(newID int, allocPin func() core.PinID) part.Part {
+	c := *self
 	c.ID = newID
 	c.PinAnode = allocPin()
 	c.PinCathode = allocPin()
@@ -71,7 +71,7 @@ func (d *Diode) Clone(newID int, allocPin func() core.PinID) part.Part {
 }
 
 // MarshalJSON handles marshal json.
-func (d *Diode) MarshalJSON() ([]byte, error) {
-	type diodeJSON Diode
-	return json.Marshal((*diodeJSON)(d))
+func (self *Diode) MarshalJSON() ([]byte, error) {
+	type partJSON Diode
+	return json.Marshal((*partJSON)(self))
 }

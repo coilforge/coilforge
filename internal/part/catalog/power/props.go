@@ -9,16 +9,16 @@ package power
 import "coilforge/internal/part"
 
 // PropSpec handles prop spec.
-func (p *Power) PropSpec() part.PropSpec {
+func (self *Power) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
-			{Label: "Label", Kind: part.PropText, Value: p.Label},
+			{Label: "Label", Kind: part.PropText, Value: self.Label},
 		},
 	}
 }
 
 // ApplyProp handles apply prop.
-func (p *Power) ApplyProp(action part.PropAction) bool {
+func (self *Power) ApplyProp(action part.PropAction) bool {
 	if action.Index != 0 {
 		return false
 	}
@@ -26,6 +26,6 @@ func (p *Power) ApplyProp(action part.PropAction) bool {
 	if !ok {
 		return false
 	}
-	p.Label = value
+	self.Label = value
 	return true
 }

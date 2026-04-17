@@ -49,16 +49,16 @@ type Relay struct {
 // init registers the part type with the global registry.
 func init() {
 	part.Register(TypeID, part.TypeInfo{
-		New:    newRelay,
-		Decode: decodeRelay,
+		New:    newPart,
+		Decode: decodePart,
 		Label:  "Relay",
 		Tools:  []string{"main"},
 		Icon:   toolbarIcon,
 	})
 }
 
-// newRelay handles new relay.
-func newRelay(id int, pos core.Pt) part.Part {
+// newPart handles new part.
+func newPart(id int, pos core.Pt) part.Part {
 	r := &Relay{
 		BasePart:  core.BasePart{ID: id, TypeID: TypeID, Pos: pos},
 		Poles:     []Pole{{}},
@@ -71,8 +71,8 @@ func newRelay(id int, pos core.Pt) part.Part {
 	return r
 }
 
-// decodeRelay handles decode relay.
-func decodeRelay(data json.RawMessage) (part.Part, error) {
+// decodePart handles decode part.
+func decodePart(data json.RawMessage) (part.Part, error) {
 	var r Relay
 	if err := json.Unmarshal(data, &r); err != nil {
 		return nil, err
@@ -88,23 +88,23 @@ func decodeRelay(data json.RawMessage) (part.Part, error) {
 }
 
 // Base handles base.
-func (r *Relay) Base() *core.BasePart {
-	return &r.BasePart
+func (self *Relay) Base() *core.BasePart {
+	return &self.BasePart
 }
 
 // Segments handles segments.
-func (r *Relay) Segments() []core.Seg {
+func (self *Relay) Segments() []core.Seg {
 	return nil
 }
 
 // Clone handles clone.
-func (r *Relay) Clone(newID int, allocPin func() core.PinID) part.Part {
-	c := *r
+func (self *Relay) Clone(newID int, allocPin func() core.PinID) part.Part {
+	c := *self
 	c.ID = newID
 	c.PinCoilA = allocPin()
 	c.PinCoilB = allocPin()
-	c.Poles = make([]Pole, len(r.Poles))
-	for i := range r.Poles {
+	c.Poles = make([]Pole, len(self.Poles))
+	for i := range self.Poles {
 		c.Poles[i] = Pole{
 			PinCommon: allocPin(),
 			PinNC:     allocPin(),
@@ -119,20 +119,20 @@ func (r *Relay) Clone(newID int, allocPin func() core.PinID) part.Part {
 }
 
 // MarshalJSON handles marshal json.
-func (r *Relay) MarshalJSON() ([]byte, error) {
-	type relayJSON Relay
-	return json.Marshal((*relayJSON)(r))
+func (self *Relay) MarshalJSON() ([]byte, error) {
+	type partJSON Relay
+	return json.Marshal((*partJSON)(self))
 }
 
 // ensureContactSlices handles ensure contact slices.
-func (r *Relay) ensureContactSlices() {
-	if len(r.Poles) == 0 {
-		r.Poles = []Pole{{}}
+func (self *Relay) ensureContactSlices() {
+	if len(self.Poles) == 0 {
+		self.Poles = []Pole{{}}
 	}
-	if len(r.Contacts) != len(r.Poles) {
-		r.Contacts = make([]ContactState, len(r.Poles))
+	if len(self.Contacts) != len(self.Poles) {
+		self.Contacts = make([]ContactState, len(self.Poles))
 	}
-	if len(r.PendingContacts) != len(r.Poles) {
-		r.PendingContacts = make([]ContactState, len(r.Poles))
+	if len(self.PendingContacts) != len(self.Poles) {
+		self.PendingContacts = make([]ContactState, len(self.Poles))
 	}
 }

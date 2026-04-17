@@ -9,31 +9,31 @@ package switches
 import "coilforge/internal/part"
 
 // PropSpec handles prop spec.
-func (s *Switch) PropSpec() part.PropSpec {
+func (self *Switch) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
-			{Label: "Label", Kind: part.PropText, Value: s.Label},
-			{Label: "Momentary", Kind: part.PropBool, Value: s.Momentary},
+			{Label: "Label", Kind: part.PropText, Value: self.Label},
+			{Label: "Momentary", Kind: part.PropBool, Value: self.Momentary},
 		},
 	}
 }
 
 // ApplyProp handles apply prop.
-func (s *Switch) ApplyProp(action part.PropAction) bool {
+func (self *Switch) ApplyProp(action part.PropAction) bool {
 	switch action.Index {
 	case 0:
 		value, ok := action.NewValue.(string)
 		if !ok {
 			return false
 		}
-		s.Label = value
+		self.Label = value
 		return true
 	case 1:
 		value, ok := action.NewValue.(bool)
 		if !ok {
 			return false
 		}
-		s.Momentary = value
+		self.Momentary = value
 		return true
 	default:
 		return false

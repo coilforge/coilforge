@@ -12,23 +12,23 @@ import (
 )
 
 // Tick handles tick.
-func (c *Clock) Tick(ctx part.SimContext) bool {
-	if c.PeriodTick <= 0 {
+func (self *Clock) Tick(ctx part.SimContext) bool {
+	if self.PeriodTick <= 0 {
 		return false
 	}
-	prev := c.OutputHigh
-	phase := int(ctx.Tick % uint64(c.PeriodTick))
-	c.OutputHigh = phase < c.HighTick
-	return c.OutputHigh != prev
+	prev := self.OutputHigh
+	phase := int(ctx.Tick % uint64(self.PeriodTick))
+	self.OutputHigh = phase < self.HighTick
+	return self.OutputHigh != prev
 }
 
 // SeedNets seeds nets.
-func (c *Clock) SeedNets(netByPin func(core.PinID) int, high, low map[int]bool) {
-	net := netByPin(c.PinOut)
+func (self *Clock) SeedNets(netByPin func(core.PinID) int, high, low map[int]bool) {
+	net := netByPin(self.PinOut)
 	if net < 0 {
 		return
 	}
-	if c.OutputHigh {
+	if self.OutputHigh {
 		high[net] = true
 		return
 	}

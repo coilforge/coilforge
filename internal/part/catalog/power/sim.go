@@ -9,12 +9,12 @@ package power
 import "coilforge/internal/core"
 
 // SeedNets seeds nets.
-func (p *Power) SeedNets(netByPin func(core.PinID) int, high, low map[int]bool) {
-	net := netByPin(p.Pin)
+func (self *Power) SeedNets(netByPin func(core.PinID) int, high, low map[int]bool) {
+	net := netByPin(self.Pin)
 	if net < 0 {
 		return
 	}
-	if p.Kind == "gnd" {
+	if self.Kind == "gnd" {
 		low[net] = true
 		return
 	}

@@ -9,16 +9,16 @@ package wire
 import "coilforge/internal/part"
 
 // PropSpec handles prop spec.
-func (w *Wire) PropSpec() part.PropSpec {
+func (self *Wire) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
-			{Label: "Label", Kind: part.PropText, Value: w.Label},
+			{Label: "Label", Kind: part.PropText, Value: self.Label},
 		},
 	}
 }
 
 // ApplyProp handles apply prop.
-func (w *Wire) ApplyProp(action part.PropAction) bool {
+func (self *Wire) ApplyProp(action part.PropAction) bool {
 	if action.Index != 0 {
 		return false
 	}
@@ -26,6 +26,6 @@ func (w *Wire) ApplyProp(action part.PropAction) bool {
 	if !ok {
 		return false
 	}
-	w.Label = value
+	self.Label = value
 	return true
 }

@@ -26,24 +26,24 @@ type RCH struct {
 // init registers the part type with the global registry.
 func init() {
 	part.Register(TypeID, part.TypeInfo{
-		New:    newRCH,
-		Decode: decodeRCH,
+		New:    newPart,
+		Decode: decodePart,
 		Label:  "RCH",
 		Tools:  []string{"main"},
 		Icon:   toolbarIcon,
 	})
 }
 
-// newRCH handles new rch.
-func newRCH(id int, pos core.Pt) part.Part {
+// newPart handles new part.
+func newPart(id int, pos core.Pt) part.Part {
 	return &RCH{
 		BasePart: core.BasePart{ID: id, TypeID: TypeID, Pos: pos},
 		DelayMs:  10,
 	}
 }
 
-// decodeRCH handles decode rch.
-func decodeRCH(data json.RawMessage) (part.Part, error) {
+// decodePart handles decode part.
+func decodePart(data json.RawMessage) (part.Part, error) {
 	var r RCH
 	if err := json.Unmarshal(data, &r); err != nil {
 		return nil, err
@@ -58,18 +58,18 @@ func decodeRCH(data json.RawMessage) (part.Part, error) {
 }
 
 // Base handles base.
-func (r *RCH) Base() *core.BasePart {
-	return &r.BasePart
+func (self *RCH) Base() *core.BasePart {
+	return &self.BasePart
 }
 
 // Segments handles segments.
-func (r *RCH) Segments() []core.Seg {
+func (self *RCH) Segments() []core.Seg {
 	return nil
 }
 
 // Clone handles clone.
-func (r *RCH) Clone(newID int, allocPin func() core.PinID) part.Part {
-	c := *r
+func (self *RCH) Clone(newID int, allocPin func() core.PinID) part.Part {
+	c := *self
 	c.ID = newID
 	c.PinIn = allocPin()
 	c.PinOut = allocPin()
@@ -78,7 +78,7 @@ func (r *RCH) Clone(newID int, allocPin func() core.PinID) part.Part {
 }
 
 // MarshalJSON handles marshal json.
-func (r *RCH) MarshalJSON() ([]byte, error) {
-	type rchJSON RCH
-	return json.Marshal((*rchJSON)(r))
+func (self *RCH) MarshalJSON() ([]byte, error) {
+	type partJSON RCH
+	return json.Marshal((*partJSON)(self))
 }
