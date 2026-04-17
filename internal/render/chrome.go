@@ -134,65 +134,80 @@ func DrawToolbar(dst *ebiten.Image, side int, tools []ToolButton, activeTool int
 		if y+hit > maxY+0.01 {
 			break
 		}
-		btn := tools[i]
-		active := i == activeTool
-		disabled := btn.Disabled
-		if disabled {
-			active = false
-		}
-		hovered := i == hoverTool && !disabled
-		sw := float32(toolbarHitStrokeWidth)
-		if active {
-			sw = toolbarActiveStrokeWidth
-		} else if hovered {
-			sw = 1.5
-		}
-		vector.FillRect(dst, contentLeft, y, hit, hit, ToolbarButtonFillColor(active, hovered, disabled), false)
-		vector.StrokeRect(dst, contentLeft, y, hit, hit, sw, ToolbarButtonOutlineColor(active, hovered, disabled), false)
-		drawButtonBevel(dst, contentLeft, y, hit, active, disabled)
-
-		off := (hit - iconSz) * 0.5
-		ix := contentLeft + off
-		iy := y + off
-		drewIcon := false
-		if info, ok := part.Registry[core.PartTypeID(btn.TypeID)]; ok && info.Icon != nil {
-			if img := info.Icon(); img != nil {
-				b := img.Bounds()
-				iw, ih := b.Dx(), b.Dy()
-				if iw > 0 && ih > 0 {
-					scale := float64(iconSz) / float64(max(iw, ih))
-					drawW := float64(iw) * scale
-					drawH := float64(ih) * scale
-					nudgeX := 0.0
-					nudgeY := 0.0
-					if active || hovered {
-						// Positional nudge reads as press/hover better than icon scaling.
-						nudgeX = 1
-						nudgeY = 1
-					}
-					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Scale(scale, scale)
-					op.GeoM.Translate(
-						float64(ix)+(float64(iconSz)-drawW)*0.5+nudgeX,
-						float64(iy)+(float64(iconSz)-drawH)*0.5+nudgeY,
-					)
-					tint := ToolbarIconTintColor(active, hovered, disabled)
-					op.ColorScale.Scale(
-						float32(tint.R)/255.0,
-						float32(tint.G)/255.0,
-						float32(tint.B)/255.0,
-						1.0,
-					)
-					op.ColorScale.ScaleAlpha(float32(tint.A) / 255.0)
-					dst.DrawImage(img, op)
-					drewIcon = true
-				}
-			}
-		}
-		if !drewIcon {
-			drawToolbarLabel(dst, btn.Label, contentLeft, y, hit, ToolbarLabelColor(active, hovered, disabled))
-		}
+		drawToolbarButton(dst, tools[i], i, activeTool, hoverTool, contentLeft, y, hit, iconSz)
 	}
+}
+
+func drawToolbarButton(dst *ebiten.Image, btn ToolButton, index, activeTool, hoverTool int, contentLeft, y, hit, iconSz float32) {
+	active := index == activeTool
+	disabled := btn.Disabled
+	if disabled {
+		active = false
+	}
+	hovered := index == hoverTool && !disabled
+	sw := toolbarButtonStrokeWidth(active, hovered)
+	vector.FillRect(dst, contentLeft, y, hit, hit, ToolbarButtonFillColor(active, hovered, disabled), false)
+	vector.StrokeRect(dst, contentLeft, y, hit, hit, sw, ToolbarButtonOutlineColor(active, hovered, disabled), false)
+	drawButtonBevel(dst, contentLeft, y, hit, active, disabled)
+	if drawToolbarButtonIcon(dst, btn, contentLeft, y, hit, iconSz, active, hovered, disabled) {
+		return
+	}
+	drawToolbarLabel(dst, btn.Label, contentLeft, y, hit, ToolbarLabelColor(active, hovered, disabled))
+}
+
+func toolbarButtonStrokeWidth(active, hovered bool) float32 {
+	if active {
+		return toolbarActiveStrokeWidth
+	}
+	if hovered {
+		return 1.5
+	}
+	return float32(toolbarHitStrokeWidth)
+}
+
+func drawToolbarButtonIcon(dst *ebiten.Image, btn ToolButton, x, y, hit, iconSz float32, active, hovered, disabled bool) bool {
+	info, ok := part.Registry[core.PartTypeID(btn.TypeID)]
+	if !ok || info.Icon == nil {
+		return false
+	}
+	img := info.Icon()
+	if img == nil {
+		return false
+	}
+	b := img.Bounds()
+	iw, ih := b.Dx(), b.Dy()
+	if iw <= 0 || ih <= 0 {
+		return false
+	}
+	off := (hit - iconSz) * 0.5
+	ix := x + off
+	iy := y + off
+	scale := float64(iconSz) / float64(max(iw, ih))
+	drawW := float64(iw) * scale
+	drawH := float64(ih) * scale
+	nudgeX := 0.0
+	nudgeY := 0.0
+	if active || hovered {
+		// Positional nudge reads as press/hover better than icon scaling.
+		nudgeX = 1
+		nudgeY = 1
+	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(scale, scale)
+	op.GeoM.Translate(
+		float64(ix)+(float64(iconSz)-drawW)*0.5+nudgeX,
+		float64(iy)+(float64(iconSz)-drawH)*0.5+nudgeY,
+	)
+	tint := ToolbarIconTintColor(active, hovered, disabled)
+	op.ColorScale.Scale(
+		float32(tint.R)/255.0,
+		float32(tint.G)/255.0,
+		float32(tint.B)/255.0,
+		1.0,
+	)
+	op.ColorScale.ScaleAlpha(float32(tint.A) / 255.0)
+	dst.DrawImage(img, op)
+	return true
 }
 
 func drawToolbarLabel(dst *ebiten.Image, label string, x, y, size float32, clr color.Color) {

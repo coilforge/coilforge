@@ -85,7 +85,9 @@ func main() {
 	if err != nil {
 		fail("create face: %v", err)
 	}
-	defer face.Close()
+	defer func() {
+		_ = face.Close()
+	}()
 
 	metrics := face.Metrics()
 	ascent := float64(metrics.Ascent) / 64.0
