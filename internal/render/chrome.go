@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	textv2 "github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -197,7 +196,7 @@ func DrawToolbar(dst *ebiten.Image, side int, tools []ToolButton, activeTool int
 }
 
 func drawToolbarLabel(dst *ebiten.Image, label string, x, y, size float32, clr color.Color) {
-	trimmed := strings.TrimSpace(label)
+	trimmed := normalizeUIString(label)
 	if trimmed == "" {
 		return
 	}
@@ -205,33 +204,15 @@ func drawToolbarLabel(dst *ebiten.Image, label string, x, y, size float32, clr c
 	if len(textLabel) > 6 {
 		textLabel = textLabel[:6]
 	}
-	ds := deviceScaleFactor()
-	face := toolbarLabelFaceForScale(ds)
-	w, h := textv2.Measure(textLabel, face, 0)
-	w /= ds
-	h /= ds
-	targetX := snapToDevicePixel(float64(x + (size-float32(w))*0.5))
-	targetY := snapToDevicePixel(float64(y + (size-float32(h))*0.5))
-
-	op := &textv2.DrawOptions{}
-	op.GeoM.Scale(1.0/ds, 1.0/ds)
-	op.GeoM.Translate(targetX, targetY)
-	op.ColorScale.ScaleWithColor(clr)
-	textv2.Draw(dst, textLabel, face, op)
+	atlas := uiLabelAtlas()
+	w, h := atlasMeasure(textLabel, atlas)
+	targetX := snapToLogicalPixel(float64(x + (size-float32(w))*0.5))
+	targetY := snapToLogicalPixel(float64(y + (size-float32(h))*0.5))
+	drawAtlasText(dst, textLabel, targetX, targetY, clr)
 }
 
-func snapToDevicePixel(v float64) float64 {
-	scale := deviceScaleFactor()
-	return math.Round(v*scale) / scale
-}
-
-func deviceScaleFactor() float64 {
-	if monitor := ebiten.Monitor(); monitor != nil {
-		if ds := monitor.DeviceScaleFactor(); ds > 0 {
-			return ds
-		}
-	}
-	return 1
+func snapToLogicalPixel(v float64) float64 {
+	return math.Round(v)
 }
 
 func drawButtonBevel(dst *ebiten.Image, x, y, size float32, active bool, disabled bool) {

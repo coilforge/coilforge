@@ -71,7 +71,7 @@ func (a *App) Draw(screen *ebiten.Image) {
 
 	if !world.RunMode {
 		editor.DrawOverlays(screen)
-		render.DrawToolbar(screen, render.ToolbarLeft, toolbarButtons(), leftToolbarActiveIndex(), a.hoverLeftTool)
+		render.DrawToolbar(screen, render.ToolbarLeft, toolbarButtons(), activeToolIndex(), a.hoverLeftTool)
 	}
 	// Command strip: visible in edit and run mode (actions not wired yet).
 	render.DrawToolbar(screen, render.ToolbarRight, rightToolbarButtons(), -1, a.hoverRightTool)
