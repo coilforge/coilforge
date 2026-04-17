@@ -30,14 +30,14 @@ func init() {
 		Decode: decodePower,
 		Label:  "VCC",
 		Tools:  []string{"main"},
-		Icon:   toolbarIcon,
+		Icon:   toolbarIconVCC,
 	})
 	part.Register(GNDTypeID, part.TypeInfo{
 		New:    newGND,
 		Decode: decodePower,
 		Label:  "GND",
 		Tools:  []string{"main"},
-		Icon:   toolbarIcon,
+		Icon:   toolbarIconGND,
 	})
 }
 

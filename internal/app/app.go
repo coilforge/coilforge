@@ -19,12 +19,14 @@ import (
 )
 
 type App struct {
-	leftDown bool // Tracks previous-frame left mouse state for edge detection.
+	leftDown       bool // Tracks previous-frame left mouse state for edge detection.
+	hoverLeftTool  int  // Hovered placement tool index for left toolbar.
+	hoverRightTool int  // Hovered command tool index for right toolbar.
 }
 
 // New constructs a fresh application instance.
 func New() *App {
-	return &App{}
+	return &App{hoverLeftTool: -1, hoverRightTool: -1}
 }
 
 // Run resets world state, configures the window, and starts the Ebiten loop.
@@ -45,6 +47,7 @@ func (a *App) Update() error {
 	world.ScreenH = h
 	mx, my := ebiten.CursorPosition()
 	pt := world.ScreenToWorld(mx, my)
+	a.updateToolbarHover(mx, my)
 
 	a.handleToolHotkeys()
 	a.handleEditorHotkeys()
@@ -68,9 +71,10 @@ func (a *App) Draw(screen *ebiten.Image) {
 
 	if !world.RunMode {
 		editor.DrawOverlays(screen)
+		render.DrawToolbar(screen, render.ToolbarLeft, toolbarButtons(), leftToolbarActiveIndex(), a.hoverLeftTool)
 	}
-
-	render.DrawToolbar(screen, toolbarButtons(), activeToolIndex())
+	// Command strip: visible in edit and run mode (actions not wired yet).
+	render.DrawToolbar(screen, render.ToolbarRight, rightToolbarButtons(), -1, a.hoverRightTool)
 	if selectedPart := selectedPart(); selectedPart != nil {
 		render.DrawPropPanel(screen, selectedPart.PropSpec())
 	}
@@ -173,6 +177,9 @@ func (a *App) handleLabelHotkeys() {
 
 // handleProjectHotkeys processes run-mode and project load/save shortcuts.
 func (a *App) handleProjectHotkeys() {
+	if inpututil.IsKeyJustPressed(ebiten.KeyF4) {
+		render.DarkMode = !render.DarkMode
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF5) {
 		ToggleRunMode()
 	}
@@ -210,4 +217,30 @@ func (a *App) statusText() string {
 		return "Run mode active"
 	}
 	return "Edit mode active"
+}
+
+// updateToolbarHover computes hovered toolbar button indices from mouse/touch pointer.
+func (a *App) updateToolbarHover(mouseX, mouseY int) {
+	pointerX, pointerY, ok := toolbarPointerPosition(mouseX, mouseY)
+	if !ok {
+		a.hoverLeftTool = -1
+		a.hoverRightTool = -1
+		return
+	}
+	if world.RunMode {
+		a.hoverLeftTool = -1
+	} else {
+		a.hoverLeftTool = render.ToolbarButtonAtScreenPoint(render.ToolbarLeft, toolbarButtons(), pointerX, pointerY)
+	}
+	a.hoverRightTool = render.ToolbarButtonAtScreenPoint(render.ToolbarRight, rightToolbarButtons(), pointerX, pointerY)
+}
+
+// toolbarPointerPosition picks the active pointer for hover (touch preferred, then mouse).
+func toolbarPointerPosition(mouseX, mouseY int) (int, int, bool) {
+	touchIDs := ebiten.AppendTouchIDs(nil)
+	if len(touchIDs) > 0 {
+		tx, ty := ebiten.TouchPosition(touchIDs[0])
+		return tx, ty, true
+	}
+	return mouseX, mouseY, true
 }

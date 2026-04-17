@@ -31,7 +31,27 @@ func toolbarButtons() []render.ToolButton {
 			Label:  label,
 		})
 	}
+	// TEMP: force visual state examples on icon-backed left toolbar.
+	if len(tools) > 5 {
+		tools[5].Disabled = true // Diode
+	}
 	return tools
+}
+
+// rightToolbarButtons lists command-strip placeholders until real actions are wired.
+func rightToolbarButtons() []render.ToolButton {
+	return []render.ToolButton{
+		{TypeID: "_run", Label: "Run"},
+		{TypeID: "_step", Label: "Step"},
+		{TypeID: "_pause", Label: "Pause"},
+		{TypeID: "_save", Label: "Save"},
+		{TypeID: "_load", Label: "Load"},
+	}
+}
+
+// leftToolbarActiveIndex marks a temporary active placement button for visual tuning.
+func leftToolbarActiveIndex() int {
+	return 3 // Switch
 }
 
 // activeToolIndex returns the toolbar index for the currently selected place tool.

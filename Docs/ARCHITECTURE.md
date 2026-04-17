@@ -1258,7 +1258,12 @@ Toolbar and property panel are screen-space. They are drawn after the
 schematic scene and use screen coordinates directly.
 
 ```go
-func DrawToolbar(dst *ebiten.Image, tools []ToolButton, activeTool int)
+const (
+    ToolbarLeft  = 0 // dock side: layout + future submenu direction
+    ToolbarRight = 1
+)
+
+func DrawToolbar(dst *ebiten.Image, side int, tools []ToolButton, activeTool int)
 func DrawPropPanel(dst *ebiten.Image, spec part.PropSpec)
 func DrawStatusBar(dst *ebiten.Image, text string)
 ```
@@ -1326,9 +1331,10 @@ func (a *App) Draw(screen *ebiten.Image) {
         // sim has no overlays currently
     } else {
         editor.DrawOverlays(screen)
+        render.DrawToolbar(screen, render.ToolbarLeft, toolbarItems, activeToolIdx)
     }
 
-    render.DrawToolbar(screen, toolbarItems, activeToolIdx)
+    render.DrawToolbar(screen, render.ToolbarRight, nil, -1) // command strip; replace nil when actions exist
     if sel := selectedPart(); sel != nil {
         render.DrawPropPanel(screen, sel.PropSpec())
     }

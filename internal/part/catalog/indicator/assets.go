@@ -7,10 +7,17 @@ package indicator
 // Flow position: static visual resource selector beneath part drawing.
 
 import (
+	_ "embed"
+
 	"coilforge/internal/part"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
+
+//go:embed toolbar_icon.png
+var toolbarIconPNG []byte
+
+var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG, "indicator/toolbar_icon.png")
 
 // asset handles asset.
 func (ind *Indicator) asset() part.VectorAsset {
@@ -22,5 +29,5 @@ func (ind *Indicator) asset() part.VectorAsset {
 
 // toolbarIcon handles toolbar icon.
 func toolbarIcon() *ebiten.Image {
-	return nil
+	return toolbarIconImage
 }
