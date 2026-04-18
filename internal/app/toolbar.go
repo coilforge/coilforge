@@ -34,7 +34,7 @@ func toolbarButtons() []render.ToolButton {
 	return tools
 }
 
-// rightToolbarButtons lists command-strip placeholders until real actions are wired.
+// rightToolbarButtons lists command-strip buttons (save/load wired in app; run controls still placeholders).
 func rightToolbarButtons() []render.ToolButton {
 	return []render.ToolButton{
 		{TypeID: "_run", Label: "Run"},

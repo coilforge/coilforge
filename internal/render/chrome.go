@@ -152,7 +152,7 @@ func drawToolbarButton(dst *ebiten.Image, btn ToolButton, index, activeTool, hov
 	if drawToolbarButtonIcon(dst, btn, contentLeft, y, hit, iconSz, active, hovered, disabled) {
 		return
 	}
-	drawToolbarLabel(dst, btn.Label, contentLeft, y, hit, ToolbarLabelColor(active, hovered, disabled))
+	drawToolbarLabel(dst, btn.Label, contentLeft, y, hit, ToolbarLabelColor(active, hovered, disabled), active, hovered)
 }
 
 func toolbarButtonStrokeWidth(active, hovered bool) float32 {
@@ -210,7 +210,7 @@ func drawToolbarButtonIcon(dst *ebiten.Image, btn ToolButton, x, y, hit, iconSz 
 	return true
 }
 
-func drawToolbarLabel(dst *ebiten.Image, label string, x, y, size float32, clr color.Color) {
+func drawToolbarLabel(dst *ebiten.Image, label string, x, y, size float32, clr color.Color, active, hovered bool) {
 	trimmed := normalizeUIString(label)
 	if trimmed == "" {
 		return
@@ -220,9 +220,16 @@ func drawToolbarLabel(dst *ebiten.Image, label string, x, y, size float32, clr c
 		textLabel = textLabel[:6]
 	}
 	atlas := uiLabelAtlas()
-	w, h := atlasMeasure(textLabel, atlas)
-	targetX := snapToLogicalPixel(float64(x + (size-float32(w))*0.5))
-	targetY := snapToLogicalPixel(float64(y + (size-float32(h))*0.5))
+	aw, ah := atlasMeasure(textLabel, atlas)
+	nudgeX := 0.0
+	nudgeY := 0.0
+	if active || hovered {
+		// Match icon nudge in drawToolbarButtonIcon — reads as hover/press affordance.
+		nudgeX = 1
+		nudgeY = 1
+	}
+	targetX := snapToLogicalPixel(float64(x+(size-float32(aw))*0.5) + nudgeX)
+	targetY := snapToLogicalPixel(float64(y+(size-float32(ah))*0.5) + nudgeY)
 	drawAtlasText(dst, textLabel, targetX, targetY, clr)
 }
 

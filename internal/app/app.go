@@ -80,7 +80,7 @@ func (a *App) Draw(screen *ebiten.Image) {
 		editor.DrawOverlays(screen)
 		render.DrawToolbar(screen, render.ToolbarLeft, toolbarButtons(), activeToolIndex(), a.hoverLeftTool)
 	}
-	// Command strip: visible in edit and run mode (actions not wired yet).
+	// Command strip: visible in edit and run mode.
 	render.DrawToolbar(screen, render.ToolbarRight, rightToolbarButtons(), -1, a.hoverRightTool)
 	if selectedPart := selectedPart(); selectedPart != nil {
 		render.DrawPropPanel(screen, selectedPart.PropSpec())
@@ -270,8 +270,16 @@ func (a *App) handleToolbarPress(mouseX, mouseY int) bool {
 			return true
 		}
 	}
-	if render.ToolbarButtonAtScreenPoint(render.ToolbarRight, rightToolbarButtons(), mouseX, mouseY) >= 0 {
-		// Command-strip actions are placeholders in this slice; consume clicks without world-side effects.
+	if idx := render.ToolbarButtonAtScreenPoint(render.ToolbarRight, rightToolbarButtons(), mouseX, mouseY); idx >= 0 {
+		cmds := rightToolbarButtons()
+		if idx < len(cmds) {
+			switch cmds[idx].TypeID {
+			case "_save":
+				_ = SaveProject(DefaultProjectPath)
+			case "_load":
+				_ = LoadProject(DefaultProjectPath)
+			}
+		}
 		return true
 	}
 	return false
