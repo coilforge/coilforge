@@ -120,7 +120,8 @@ func RotateSelected() {
 	pushUndo()
 	for _, idx := range Selection {
 		base := world.Parts[idx].Base()
-		base.Rotation = (base.Rotation + 1) % 4
+		slots := rotationStepsForPart(world.Parts[idx])
+		base.Rotation = rotateIndexBackward(slots, base.Rotation)
 	}
 }
 
@@ -130,7 +131,28 @@ func RotatePlacementPreview() {
 		return
 	}
 	b := PlacePreview.Base()
-	b.Rotation = (b.Rotation + 1) % 4
+	slots := rotationStepsForPart(PlacePreview)
+	b.Rotation = rotateIndexBackward(slots, b.Rotation)
+}
+
+// rotateIndexBackward steps the rotation slot backward (CW through baked variants; +1 was CCW for our SVG basis).
+func rotateIndexBackward(slots, idx int) int {
+	if slots <= 0 {
+		return idx
+	}
+	return ((idx-1)%slots + slots) % slots
+}
+
+func rotationStepsForPart(p part.Part) int {
+	if p == nil {
+		return 4
+	}
+	tid := p.Base().TypeID
+	info, ok := part.Registry[tid]
+	if !ok || info.RotationSlots <= 0 {
+		return 4
+	}
+	return info.RotationSlots
 }
 
 // MirrorSelected mirrors selected.

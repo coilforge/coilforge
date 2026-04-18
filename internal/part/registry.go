@@ -20,6 +20,8 @@ type TypeInfo struct {
 	Label   string                                                          // display name used in editor chrome.
 	Tools   []string                                                        // tools value.
 	Icon    func() *ebiten.Image                                            // icon value.
+	// RotationSlots is how many discrete rotations R cycles through (typically 4, or 8 when _45 SVGs exist). Zero means 4.
+	RotationSlots int
 }
 
 // Registry stores constructors and metadata for each part type.

@@ -25,11 +25,12 @@ type Indicator struct {
 // init registers the part type with the global registry.
 func init() {
 	part.Register(TypeID, part.TypeInfo{
-		New:    newPart,
-		Decode: decodePart,
-		Label:  "Indicator",
-		Tools:  []string{"main"},
-		Icon:   toolbarIcon,
+		New:           newPart,
+		Decode:        decodePart,
+		Label:         "Indicator",
+		Tools:         []string{"main"},
+		Icon:          toolbarIcon,
+		RotationSlots: RotationSlots,
 	})
 }
 

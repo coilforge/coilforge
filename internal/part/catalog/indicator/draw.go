@@ -18,9 +18,13 @@ func (self *Indicator) layoutName() string {
 	if self.Lit {
 		stem = "indicator-on"
 	}
-	r := self.Rotation % 4
+	slots := RotationSlots
+	if slots <= 0 {
+		slots = 4
+	}
+	r := self.Rotation % slots
 	if r < 0 {
-		r += 4
+		r += slots
 	}
 	return fmt.Sprintf("%s-%d", stem, r)
 }
