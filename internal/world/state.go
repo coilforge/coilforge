@@ -23,8 +23,28 @@ var NextPinID core.PinID
 // Cam stores package-level state.
 var Cam core.Pt
 
+// defaultZoom is pixels per world unit at startup; with SVGUserUnitToWorld 1/16, a full 512-wide
+// symbol spans ~128 screen pixels so strokes stay visible without wheel zoom.
+const defaultZoom = 4.0
+
 // Zoom stores package-level state.
-var Zoom = 1.0
+var Zoom = defaultZoom
+
+// ZoomMin and ZoomMax clamp keyboard/wheel zoom so coordinates stay sane.
+const (
+	ZoomMin = 0.25
+	ZoomMax = 128.0
+)
+
+// ClampZoom clamps [Zoom] to [ZoomMin, ZoomMax].
+func ClampZoom() {
+	if Zoom < ZoomMin {
+		Zoom = ZoomMin
+	}
+	if Zoom > ZoomMax {
+		Zoom = ZoomMax
+	}
+}
 
 // ScreenW stores package-level state.
 var ScreenW int
@@ -81,7 +101,7 @@ func Reset() {
 	NextPartID = 0
 	NextPinID = 0
 	Cam = core.Pt{}
-	Zoom = 1.0
+	Zoom = defaultZoom
 	RunMode = false
 	Nets = nil
 	NetStates = nil

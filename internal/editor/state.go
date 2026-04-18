@@ -17,8 +17,6 @@ var (
 	PlaceMode    bool            // PlaceMode stores package-level state.
 	PlaceTool    core.PartTypeID // PlaceTool stores package-level state.
 	PlacePreview part.Part       // PlacePreview stores package-level state.
-	WireMode     bool            // WireMode stores package-level state.
-	WireDraft    []core.Pt       // WireDraft stores package-level state.
 	Dragging     bool            // Dragging stores package-level state.
 	DragStart    core.Pt         // DragStart stores package-level state.
 	BoxSelecting bool            // BoxSelecting stores package-level state.
@@ -38,8 +36,6 @@ func Reset() {
 	PlaceMode = false
 	PlaceTool = ""
 	PlacePreview = nil
-	WireMode = false
-	WireDraft = nil
 	Dragging = false
 	DragStart = core.Pt{}
 	BoxSelecting = false
@@ -56,8 +52,6 @@ func Reset() {
 func ClearTransient() {
 	PlaceMode = false
 	PlacePreview = nil
-	WireMode = false
-	WireDraft = nil
 	Dragging = false
 	BoxSelecting = false
 	LabelEditing = false

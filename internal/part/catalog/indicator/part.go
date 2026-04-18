@@ -18,6 +18,7 @@ const TypeID core.PartTypeID = "indicator"
 type Indicator struct {
 	core.BasePart            // BasePart carries shared part identity and transform state.
 	PinA          core.PinID `json:"pinA"` // pin a value.
+	PinB          core.PinID `json:"pinB"` // pin b value.
 	Lit           bool       `json:"lit"`  // lit value.
 }
 
@@ -66,6 +67,7 @@ func (self *Indicator) Clone(newID int, allocPin func() core.PinID) part.Part {
 	c := *self
 	c.ID = newID
 	c.PinA = allocPin()
+	c.PinB = allocPin()
 	c.Lit = false
 	return &c
 }

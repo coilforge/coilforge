@@ -14,20 +14,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed toolbar_icon.png
+//go:embed assets/toolbar_icon.png
 var toolbarIconPNG []byte
 
 var toolbarIconImage = part.LoadToolbarIconPNG(toolbarIconPNG)
-var assetOff = part.VectorAsset{Name: "indicator-off"}
-var assetOn = part.VectorAsset{Name: "indicator-on"}
-
-// asset handles asset.
-func (self *Indicator) asset() part.VectorAsset {
-	if self.Lit {
-		return assetOn
-	}
-	return assetOff
-}
 
 // toolbarIcon handles toolbar icon.
 func toolbarIcon() *ebiten.Image {

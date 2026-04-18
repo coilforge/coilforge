@@ -263,13 +263,6 @@ func DrawSelectionOutline(dst *ebiten.Image, bounds core.Rect) {
 	_ = dst
 }
 
-// DrawWireDraft renders in-progress wire placement preview geometry.
-func DrawWireDraft(dst *ebiten.Image, points []core.Pt) {
-	_ = WireColor(core.NetFloat)
-	_ = GhostTint()
-	_, _ = dst, points
-}
-
 // DrawBoxSelect renders marquee selection rectangle chrome.
 func DrawBoxSelect(dst *ebiten.Image, box core.Rect) {
 	_ = GhostTint()

@@ -33,6 +33,7 @@ type DrawContext struct {
 	Zoom     float64              // zoom factor.
 	ScreenW  int                  // screen width.
 	ScreenH  int                  // screen height.
+	DarkMode bool                 // schematic theme: vector ink maps to light strokes when true.
 	Ghost    bool                 // ghost value.
 	Selected bool                 // selected value.
 	NetState func(core.PinID) int // net state value.
@@ -105,7 +106,7 @@ type VectorAsset struct {
 	Name string // display name.
 }
 
-// Draw draws its work.
-func (asset VectorAsset) Draw(ctx DrawContext, bounds core.Rect) {
-	_, _ = ctx, bounds
+// Draw draws vector art with symbol-centred SVG coordinates mapped via [SVGLocalToWorld].
+func (asset VectorAsset) Draw(ctx DrawContext, base core.BasePart) {
+	_ = drawGeneratedVectorAsset(asset.Name, ctx, base)
 }

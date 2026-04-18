@@ -12,7 +12,7 @@ import (
 )
 
 // DarkMode stores package-level state.
-var DarkMode = false // Toggles dark-versus-light theme color selection.
+var DarkMode = true // Toggles dark-versus-light theme color selection.
 
 // WireColor returns the display color for a wire by resolved net state.
 func WireColor(state int) color.RGBA {
@@ -28,12 +28,34 @@ func WireColor(state int) color.RGBA {
 	}
 }
 
-// GridColor returns the schematic grid color for the active theme.
-func GridColor() color.RGBA {
+// SchematicBackgroundColor fills the schematic canvas behind grid and parts.
+func SchematicBackgroundColor() color.RGBA {
 	if DarkMode {
-		return color.RGBA{R: 42, G: 46, B: 54, A: 255}
+		return color.RGBA{R: 22, G: 24, B: 29, A: 255}
 	}
-	return color.RGBA{R: 224, G: 228, B: 232, A: 255}
+	return color.RGBA{R: 244, G: 246, B: 250, A: 255}
+}
+
+// GridColor returns the schematic grid color for the active theme (major lines).
+func GridColor() color.RGBA {
+	return GridMajorColor()
+}
+
+// GridMinorColor returns fine grid lines (wire routing pitch); kept faint vs [SchematicBackgroundColor].
+// Light mode uses opaque RGB slightly below the canvas so lines never read brighter than the fill.
+func GridMinorColor() color.RGBA {
+	if DarkMode {
+		return color.RGBA{R: 40, G: 44, B: 52, A: 95}
+	}
+	return color.RGBA{R: 214, G: 220, B: 232, A: 255}
+}
+
+// GridMajorColor returns coarse grid lines (part placement pitch); stronger contrast than minor.
+func GridMajorColor() color.RGBA {
+	if DarkMode {
+		return color.RGBA{R: 88, G: 96, B: 112, A: 240}
+	}
+	return color.RGBA{R: 164, G: 172, B: 188, A: 255}
 }
 
 // SelectionColor returns the outline color for selected items.

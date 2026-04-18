@@ -26,11 +26,6 @@ func HandleClick(pt core.Pt, button int) {
 		return
 	}
 
-	if WireMode {
-		handleWireClick(pt)
-		return
-	}
-
 	if idx := partAt(pt); idx >= 0 {
 		Selection = []int{idx}
 		HoverIndex = idx
@@ -67,16 +62,15 @@ func HandleKey(key ebiten.Key) {
 	case ebiten.KeyEscape:
 		ClearTransient()
 	case ebiten.KeyR:
+		if PlaceMode && PlacePreview != nil {
+			RotatePlacementPreview()
+			return
+		}
 		RotateSelected()
 	case ebiten.KeyM:
 		MirrorSelected()
 	case ebiten.KeyDelete, ebiten.KeyBackspace:
 		DeleteSelected()
-	case ebiten.KeyW:
-		WireMode = !WireMode
-		if !WireMode {
-			WireDraft = nil
-		}
 	}
 }
 
@@ -95,6 +89,14 @@ func StartPlacement(typeID core.PartTypeID) {
 	PlaceTool = typeID
 	PlacePreview = info.New(world.AllocPartID(), core.Pt{})
 	PlaceMode = true
+}
+
+// UpdatePlacementPreview moves the ghost preview to the current pointer position.
+func UpdatePlacementPreview(pt core.Pt) {
+	if !PlaceMode || PlacePreview == nil {
+		return
+	}
+	PlacePreview.Base().Pos = snapToGrid(pt)
 }
 
 // MoveSelected handles move selected.
@@ -120,6 +122,15 @@ func RotateSelected() {
 		base := world.Parts[idx].Base()
 		base.Rotation = (base.Rotation + 1) % 4
 	}
+}
+
+// RotatePlacementPreview rotates the ghost part clockwise (same convention as [RotateSelected]).
+func RotatePlacementPreview() {
+	if PlacePreview == nil {
+		return
+	}
+	b := PlacePreview.Base()
+	b.Rotation = (b.Rotation + 1) % 4
 }
 
 // MirrorSelected mirrors selected.
@@ -212,17 +223,14 @@ func DrawOverlays(dst *ebiten.Image) {
 
 	if PlacePreview != nil {
 		PlacePreview.Draw(part.DrawContext{
-			Dst:     dst,
-			Cam:     world.Cam,
-			Zoom:    world.Zoom,
-			ScreenW: world.ScreenW,
-			ScreenH: world.ScreenH,
-			Ghost:   true,
+			Dst:      dst,
+			Cam:      world.Cam,
+			Zoom:     world.Zoom,
+			ScreenW:  world.ScreenW,
+			ScreenH:  world.ScreenH,
+			DarkMode: render.DarkMode,
+			Ghost:    true,
 		})
-	}
-
-	if WireMode && len(WireDraft) > 0 {
-		render.DrawWireDraft(dst, WireDraft)
 	}
 
 	if BoxSelecting {
@@ -239,28 +247,9 @@ func commitPlacement(pos core.Pt) {
 	PlaceMode = false
 }
 
-// handleWireClick handles handle wire click.
-func handleWireClick(pt core.Pt) {
-	snapped := snapToGridOrPin(pt)
-	WireDraft = append(WireDraft, snapped)
-
-	if len(WireDraft) < 2 {
-		return
-	}
-
-	from := WireDraft[len(WireDraft)-2]
-	to := WireDraft[len(WireDraft)-1]
-	info, ok := part.Registry[core.PartTypeID("wire")]
-	if !ok || info.NewWire == nil {
-		return
-	}
-	pushUndo()
-	world.Parts = append(world.Parts, info.NewWire(world.AllocPartID(), from, to, world.AllocPinID))
-}
-
-// snapToGrid handles snap to grid.
+// snapToGrid snaps to the major grid (part placement / pin pitch).
 func snapToGrid(pt core.Pt) core.Pt {
-	const grid = 16.0
+	grid := world.MajorGridWorld
 	snapped := core.Pt{
 		X: math.Round(pt.X/grid) * grid,
 		Y: math.Round(pt.Y/grid) * grid,
@@ -268,14 +257,8 @@ func snapToGrid(pt core.Pt) core.Pt {
 	return core.LocalToWorld(core.BasePart{Pos: snapped}, core.Pt{})
 }
 
-// snapToGridOrPin handles snap to grid or pin.
-func snapToGridOrPin(pt core.Pt) core.Pt {
-	return snapToGrid(pt)
-}
-
 // partAt handles part at.
 func partAt(pt core.Pt) int {
-	_ = core.WorldToLocal(core.BasePart{}, pt)
 	for i := len(world.Parts) - 1; i >= 0; i-- {
 		if world.Parts[i].HitTest(pt).Hit {
 			return i

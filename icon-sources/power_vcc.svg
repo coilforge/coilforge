@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 128" width="512" height="128">
-  <!-- Upward-pointing triangle (outline only) -->
-  <polygon points="256,18 195,90 317,90" fill="none" stroke="#000" stroke-width="10" stroke-linejoin="round"/>
-  <!-- Stem from triangle base center down to endpoint -->
-  <line x1="256" y1="90" x2="256" y2="128" stroke="#000" stroke-width="10" stroke-linecap="round"/>
-</svg>

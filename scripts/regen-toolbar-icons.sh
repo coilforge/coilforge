@@ -3,23 +3,14 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ICON_SOURCES_DIR="$ROOT_DIR/icon-sources"
 
 usage() {
   cat <<'EOF'
 Usage:
   ./scripts/regen-toolbar-icons.sh
 
-Regenerates runtime toolbar PNG assets from icon-sources/btn_*.svg.
-Current mapping:
-  btn_relay.svg -> internal/part/catalog/relay/toolbar_icon.png
-  btn_vcc.svg -> internal/part/catalog/power/toolbar_icon_vcc.png
-  btn_gnd.svg -> internal/part/catalog/power/toolbar_icon_gnd.png
-  btn_button.svg -> internal/part/catalog/switches/toolbar_icon.png
-  btn_indicator.svg -> internal/part/catalog/indicator/toolbar_icon.png
-  btn_diode.svg -> internal/part/catalog/diode/toolbar_icon.png
-  btn_rch.svg -> internal/part/catalog/rch/toolbar_icon.png
-  btn_clock.svg -> internal/part/catalog/clock/toolbar_icon.png
+Regenerates embedded toolbar PNGs from the indicator catalog assets/btn_*.svg (84×84).
+Outputs go to the same assets/ folder (matches //go:embed paths in assets.go).
 EOF
 }
 
@@ -54,19 +45,7 @@ main() {
 
   require_cmd resvg
 
-  if [[ ! -d "$ICON_SOURCES_DIR" ]]; then
-    echo "Missing icon source directory: icon-sources/" >&2
-    exit 1
-  fi
-
-  render_toolbar_icon "icon-sources/btn_relay.svg" "internal/part/catalog/relay/toolbar_icon.png"
-  render_toolbar_icon "icon-sources/btn_vcc.svg" "internal/part/catalog/power/toolbar_icon_vcc.png"
-  render_toolbar_icon "icon-sources/btn_gnd.svg" "internal/part/catalog/power/toolbar_icon_gnd.png"
-  render_toolbar_icon "icon-sources/btn_button.svg" "internal/part/catalog/switches/toolbar_icon.png"
-  render_toolbar_icon "icon-sources/btn_indicator.svg" "internal/part/catalog/indicator/toolbar_icon.png"
-  render_toolbar_icon "icon-sources/btn_diode.svg" "internal/part/catalog/diode/toolbar_icon.png"
-  render_toolbar_icon "icon-sources/btn_rch.svg" "internal/part/catalog/rch/toolbar_icon.png"
-  render_toolbar_icon "icon-sources/btn_clock.svg" "internal/part/catalog/clock/toolbar_icon.png"
+  render_toolbar_icon "internal/part/catalog/indicator/assets/btn_indicator.svg" "internal/part/catalog/indicator/assets/toolbar_icon.png"
 }
 
 main "$@"

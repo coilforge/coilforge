@@ -15,6 +15,9 @@ import (
 	"os"
 )
 
+// DefaultProjectPath is the fixed project file used by F6/F7 save and load shortcuts.
+const DefaultProjectPath = "coilforge.json"
+
 type FileFormat struct {
 	NextPartID int           `json:"nextPartID"` // next part id value.
 	NextPinID  core.PinID    `json:"nextPinID"`  // next pin id value.

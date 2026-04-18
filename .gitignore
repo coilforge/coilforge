@@ -23,6 +23,7 @@ node_modules/
 *~
 
 # Misc
+coilforge.json
 tmp/
 .artifacts/
 /attic

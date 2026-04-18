@@ -10,14 +10,7 @@ package partmanifest
 import "coilforge/internal/core"
 
 import (
-	_ "coilforge/internal/part/catalog/clock"
-	_ "coilforge/internal/part/catalog/diode"
 	_ "coilforge/internal/part/catalog/indicator"
-	_ "coilforge/internal/part/catalog/power"
-	_ "coilforge/internal/part/catalog/rch"
-	_ "coilforge/internal/part/catalog/relay"
-	_ "coilforge/internal/part/catalog/switches"
-	_ "coilforge/internal/part/catalog/wire"
 )
 
 type PlacementTool struct {
@@ -27,13 +20,5 @@ type PlacementTool struct {
 
 // PlacementTools is the single app-level placement order and hotkey list.
 var PlacementTools = []PlacementTool{
-	{TypeID: "relay", Hotkey: '1'},
-	{TypeID: "vcc", Hotkey: '2'},
-	{TypeID: "gnd", Hotkey: '3'},
-	{TypeID: "switch", Hotkey: '4'},
-	{TypeID: "indicator", Hotkey: '5'},
-	{TypeID: "diode", Hotkey: '6'},
-	{TypeID: "rch", Hotkey: '7'},
-	{TypeID: "clock", Hotkey: '8'},
-	{TypeID: "wire", Hotkey: 'W'},
+	{TypeID: "indicator", Hotkey: '1'},
 }

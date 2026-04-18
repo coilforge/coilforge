@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512px" height="512px" viewBox="-256 -256 512 512" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:grid x="256" y="-320" width="64" height="64"/>
+  </defs>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 127.999992, 3.9104)" id="PinA"/>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 384, 3.9104)" id="PinB"/>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 255, 255); stroke-width: 10px;" r="63.158"/>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" d="M -62.94 0 L -134.098 0"/>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" d="M 62.94 0 L 134.098 0"/>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px; transform-box: fill-box; transform-origin: 50% 50%;" d="M 0.378 -64.02 L 0.125 64.261" bx:d="M 0.378 -64.02 U 0.125 64.261 1@0ab4cd44" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0)"/>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; transform-box: fill-box; transform-origin: 50% 50%;" d="M 0 -64 L -0.253 64.281" bx:d="M 0 -64 U -0.253 64.281 1@62418a96" transform="matrix(0.707107, -0.707107, 0.707107, 0.707107, 0, 0)"/>
+</svg>

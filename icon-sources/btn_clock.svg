@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <!-- Rounded box -->
-  <path d="M26,16 L166,16 A16,16 0 0,1 182,32 L182,160 A16,16 0 0,1 166,176 L26,176 A16,16 0 0,1 10,160 L10,32 A16,16 0 0,1 26,16 Z" fill="none" stroke="#000" stroke-width="8"/>
-  <!-- Square wave: short-low, long-high, short-low -->
-  <polyline points="30,136 54,136 54,56 138,56 138,136 162,136" fill="none" stroke="#000" stroke-width="8" stroke-linecap="round" stroke-linejoin="miter"/>
-</svg>

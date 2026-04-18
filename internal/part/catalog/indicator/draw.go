@@ -7,24 +7,45 @@ package indicator
 // Flow position: part-level render leaf beneath render scene orchestration.
 
 import (
+	"fmt"
+
 	"coilforge/internal/core"
 	"coilforge/internal/part"
 )
 
+func (self *Indicator) layoutName() string {
+	stem := "indicator-off"
+	if self.Lit {
+		stem = "indicator-on"
+	}
+	r := self.Rotation % 4
+	if r < 0 {
+		r += 4
+	}
+	return fmt.Sprintf("%s-%d", stem, r)
+}
+
+// drawBase maps SVG through position and mirror only; rotation is baked into layoutName suffix.
+func (self *Indicator) drawBase() core.BasePart {
+	b := self.BasePart
+	b.Rotation = 0
+	return b
+}
+
 // Bounds handles bounds.
 func (self *Indicator) Bounds() core.Rect {
-	return core.RectFromPoints(
-		core.Pt{X: self.Pos.X - 12, Y: self.Pos.Y - 12},
-		core.Pt{X: self.Pos.X + 12, Y: self.Pos.Y + 12},
-	)
+	if r, ok := part.HitBoundsFromVectorLayout(self.layoutName(), self.drawBase()); ok {
+		return r
+	}
+	return core.Rect{}
 }
 
 // Anchors handles anchors.
 func (self *Indicator) Anchors() []core.PinAnchor {
-	return []core.PinAnchor{{
-		Pt:    core.Pt{X: self.Pos.X, Y: self.Pos.Y + 16},
-		PinID: self.PinA,
-	}}
+	return part.AnchorsFromVectorMarkerIDs(self.layoutName(), self.drawBase(), map[string]core.PinID{
+		"PinA": self.PinA,
+		"PinB": self.PinB,
+	})
 }
 
 // HitTest handles hit test.
@@ -42,5 +63,6 @@ func (self *Indicator) HitTest(pt core.Pt) part.HitResult {
 
 // Draw draws its work.
 func (self *Indicator) Draw(ctx part.DrawContext) {
-	self.asset().Draw(ctx, self.Bounds())
+	part.VectorAsset{Name: self.layoutName()}.Draw(ctx, self.drawBase())
+	part.DrawPinMarkers(ctx, self.Anchors())
 }

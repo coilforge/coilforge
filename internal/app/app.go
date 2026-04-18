@@ -22,6 +22,7 @@ type App struct {
 	leftDown       bool // Tracks previous-frame left mouse state for edge detection.
 	hoverLeftTool  int  // Hovered placement tool index for left toolbar.
 	hoverRightTool int  // Hovered command tool index for right toolbar.
+	toolbarCapture bool // True while current mouse press started on toolbar chrome.
 }
 
 // New constructs a fresh application instance.
@@ -46,13 +47,19 @@ func (a *App) Update() error {
 	world.ScreenW = w
 	world.ScreenH = h
 	mx, my := ebiten.CursorPosition()
-	pt := world.ScreenToWorld(mx, my)
 	a.updateToolbarHover(mx, my)
+	if !world.RunMode {
+		pointerX, pointerY, ok := toolbarPointerPosition(mx, my)
+		if ok {
+			editor.UpdatePlacementPreview(world.ScreenToWorld(pointerX, pointerY))
+		}
+	}
 
 	a.handleToolHotkeys()
 	a.handleEditorHotkeys()
 	a.handleProjectHotkeys()
-	a.handleMouse(pt)
+	a.handleZoomHotkeys()
+	a.handleMouse(mx, my)
 
 	if _, wheelY := ebiten.Wheel(); wheelY != 0 && !world.RunMode {
 		editor.HandleScroll(wheelY)
@@ -141,7 +148,6 @@ func (a *App) handleTransformHotkeys() {
 		ebiten.KeyM,
 		ebiten.KeyDelete,
 		ebiten.KeyBackspace,
-		ebiten.KeyW,
 	} {
 		if inpututil.IsKeyJustPressed(key) && !world.RunMode {
 			editor.HandleKey(key)
@@ -184,31 +190,91 @@ func (a *App) handleProjectHotkeys() {
 		ToggleRunMode()
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF6) {
-		_ = SaveProject("coilforge.json")
+		_ = SaveProject(DefaultProjectPath)
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF7) {
-		_ = LoadProject("coilforge.json")
+		_ = LoadProject(DefaultProjectPath)
+	}
+}
+
+// handleZoomHotkeys adjusts camera zoom (+ / −).
+func (a *App) handleZoomHotkeys() {
+	if editor.LabelEditing {
+		return
+	}
+
+	const factor = 1.125
+
+	zoomOut := inpututil.IsKeyJustPressed(ebiten.KeyMinus) ||
+		inpututil.IsKeyJustPressed(ebiten.KeyNumpadSubtract)
+
+	shift := ebiten.IsKeyPressed(ebiten.KeyShiftLeft) || ebiten.IsKeyPressed(ebiten.KeyShiftRight)
+	zoomIn := inpututil.IsKeyJustPressed(ebiten.KeyNumpadAdd) ||
+		inpututil.IsKeyJustPressed(ebiten.KeyKPAdd) ||
+		(inpututil.IsKeyJustPressed(ebiten.KeyEqual) && shift)
+
+	switch {
+	case zoomOut:
+		world.Zoom /= factor
+		world.ClampZoom()
+	case zoomIn:
+		world.Zoom *= factor
+		world.ClampZoom()
 	}
 }
 
 // handleMouse routes click, drag, and release events by active mode.
-func (a *App) handleMouse(pt core.Pt) {
+func (a *App) handleMouse(mouseX, mouseY int) {
 	leftNow := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
 
 	switch {
 	case leftNow && !a.leftDown:
+		if a.handleToolbarPress(mouseX, mouseY) {
+			a.toolbarCapture = true
+			break
+		}
+		pt := world.ScreenToWorld(mouseX, mouseY)
 		if world.RunMode {
 			sim.HandleClick(pt)
 		} else {
 			editor.HandleClick(pt, int(ebiten.MouseButtonLeft))
 		}
 	case leftNow && a.leftDown && !world.RunMode:
+		if a.toolbarCapture {
+			break
+		}
+		pt := world.ScreenToWorld(mouseX, mouseY)
 		editor.HandleDrag(pt)
 	case !leftNow && a.leftDown && !world.RunMode:
+		if a.toolbarCapture {
+			a.toolbarCapture = false
+			break
+		}
+		pt := world.ScreenToWorld(mouseX, mouseY)
 		editor.HandleRelease(pt, int(ebiten.MouseButtonLeft))
+	case !leftNow && a.leftDown:
+		a.toolbarCapture = false
 	}
 
 	a.leftDown = leftNow
+}
+
+// handleToolbarPress applies toolbar click behavior and reports whether a press hit toolbar chrome.
+func (a *App) handleToolbarPress(mouseX, mouseY int) bool {
+	if !world.RunMode {
+		if idx := render.ToolbarButtonAtScreenPoint(render.ToolbarLeft, toolbarButtons(), mouseX, mouseY); idx >= 0 {
+			tools := toolbarButtons()
+			if idx < len(tools) {
+				editor.StartPlacement(core.PartTypeID(tools[idx].TypeID))
+			}
+			return true
+		}
+	}
+	if render.ToolbarButtonAtScreenPoint(render.ToolbarRight, rightToolbarButtons(), mouseX, mouseY) >= 0 {
+		// Command-strip actions are placeholders in this slice; consume clicks without world-side effects.
+		return true
+	}
+	return false
 }
 
 // statusText reports the current top-level operating mode.
