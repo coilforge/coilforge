@@ -14,8 +14,9 @@ import (
 	"math/rand"
 )
 
-// TickMicros defines a package-level constant.
-const TickMicros = 10
+// FrameAdvanceMicros is how much simulated time advances each run-mode frame.
+// Legacy mapping: 1000 abstract steps × 10 µs/step.
+const FrameAdvanceMicros = 10_000
 
 // maxResolveIterations defines a package-level constant.
 const maxResolveIterations = 8
@@ -26,7 +27,7 @@ var simRand = rand.New(rand.NewSource(1))
 // Start starts its work.
 func Start() {
 	flatten.BuildNets()
-	world.SimTick = 0
+	world.SimTimeMicros = 0
 	resolveAndTick()
 }
 
@@ -35,16 +36,13 @@ func Stop() {
 	world.Nets = nil
 	world.NetStates = nil
 	world.PinNet = nil
-	world.SimTick = 0
+	world.SimTimeMicros = 0
 }
 
 // AdvanceFrame handles advance frame.
 func AdvanceFrame() {
-	target := world.SimTick + 1000
-	for world.SimTick < target {
-		world.SimTick = nextInterestingTick(target)
-		resolveAndTick()
-	}
+	world.SimTimeMicros += FrameAdvanceMicros
+	resolveAndTick()
 }
 
 // HandleClick handles click.
@@ -72,8 +70,7 @@ func resolveAndTick() {
 		ctx := part.SimContext{
 			NetByPin:     netByPin,
 			NetState:     netStateLookup,
-			Tick:         world.SimTick,
-			TickMicros:   TickMicros,
+			NowMicros:    world.SimTimeMicros,
 			EnableJitter: true,
 			Rand:         simRand,
 		}
@@ -138,11 +135,6 @@ func resolveFromSeeds(union *unionFind, high, low map[int]bool, graph *part.Stat
 		}
 	}
 	return out
-}
-
-// nextInterestingTick handles next interesting tick.
-func nextInterestingTick(target uint64) uint64 {
-	return target
 }
 
 // netByPin handles net by pin.

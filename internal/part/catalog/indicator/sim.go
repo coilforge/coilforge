@@ -9,7 +9,6 @@ package indicator
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
-	"fmt"
 )
 
 // Tick handles tick.
@@ -18,11 +17,5 @@ func (self *Indicator) Tick(ctx part.SimContext) bool {
 	net := ctx.NetByPin(self.TerminalA)
 	wasLit := self.Lit
 	self.Lit = ctx.NetState(net) == core.NetHigh
-	fmt.Println("Tick", ctx.Tick, " micros", ctx.TickMicros)
-	if ctx.Tick%1000 > 500 {
-		self.Lit = false
-	} else {
-		self.Lit = true
-	}
 	return self.Lit != wasLit
 }

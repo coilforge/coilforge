@@ -210,7 +210,7 @@ var RunMode    bool
 // Simulation results — populated during sim, empty during editing.
 var Nets       []core.Net
 var NetStates  map[int]int    // net ID → NetFloat/Low/High/Short
-var SimTick    uint64
+var SimTimeMicros uint64   // µs since sim start
 
 // ID allocation helpers.
 func AllocPartID() int           { NextPartID++; return NextPartID - 1 }
@@ -338,8 +338,8 @@ type SimPart interface {
     // Tick receives the current sim context and lets the part update
     // its own internal state. Returns true if the part's state changed
     // in a way that could affect other parts (e.g. contact flipped,
-    // output toggled). Time (tick) is one of the inputs — a relay
-    // uses it to decide whether a scheduled transition is due.
+    // output toggled). Simulation time (`NowMicros`) is one of the inputs —
+    // a relay uses it to decide whether a scheduled transition is due.
     Tick(ctx SimContext) bool
 }
 
@@ -347,8 +347,7 @@ type SimPart interface {
 type SimContext struct {
     NetByPin     func(core.PinID) int
     NetState     func(int) int
-    Tick         uint64
-    TickMicros   int
+    NowMicros    uint64 // monotonic simulated time since sim start, in microseconds
     EnableJitter bool
     Rand         *rand.Rand
 }
@@ -647,7 +646,7 @@ type Relay struct {
     CoilActive          bool
     Contacts            []ContactState
     PendingContacts     []ContactState
-    TransitionDueTick   uint64
+    TransitionDueMicros uint64
     TransitionScheduled bool
 }
 
@@ -670,8 +669,8 @@ func (r *Relay) AddConductive(union part.NetUnion, netByPin func(core.PinID) int
 func (r *Relay) Tick(ctx part.SimContext) bool {
     changed := false
 
-    // 1. Fire any pending transitions that are due at this tick.
-    if r.TransitionScheduled && ctx.Tick >= r.TransitionDueTick {
+    // 1. Fire any pending transitions that are due at this instant.
+    if r.TransitionScheduled && ctx.NowMicros >= r.TransitionDueMicros {
         for i := range r.Contacts {
             r.Contacts[i] = r.PendingContacts[i]
         }
@@ -685,14 +684,14 @@ func (r *Relay) Tick(ctx part.SimContext) bool {
     if coilHigh != r.CoilActive {
         r.CoilActive = coilHigh
         // Schedule a future contact state change.
-        delay := r.pickupTicks(ctx.TickMicros)
+        delay := r.pickupMicros()
         if !coilHigh {
-            delay = r.releaseTicks(ctx.TickMicros)
+            delay = r.releaseMicros()
         }
         if ctx.EnableJitter {
-            delay += r.jitterTicks(ctx.TickMicros, ctx.Rand)
+            delay += r.jitterMicros(ctx.Rand)
         }
-        r.TransitionDueTick = ctx.Tick + uint64(delay)
+        r.TransitionDueMicros = ctx.NowMicros + delay
         r.TransitionScheduled = true
         // Compute what the contacts will be after transition.
         r.computePendingContacts()
@@ -1031,9 +1030,9 @@ own state and updates itself when asked via `Tick()`.
 The simulator's job:
 
 1. Resolve net states (who is connected to what, what is driven).
-2. Ask each part to update itself given the current net states and tick.
+2. Ask each part to update itself given the current net states and `NowMicros`.
 3. If any part changed (e.g. relay flipped contacts), re-resolve and repeat.
-4. Advance time to the next interesting tick.
+4. Between frames, advance `SimTimeMicros` by `FrameAdvanceMicros` (future work may jump to the next scheduled event instead).
 
 ### Lifecycle
 
@@ -1042,7 +1041,7 @@ package sim
 
 func Start() {
     flatten.BuildNets()
-    world.SimTick = 0
+    world.SimTimeMicros = 0
     resolveAndTick()  // initial resolve + first Tick pass
 }
 
@@ -1050,7 +1049,7 @@ func Stop() {
     world.Nets = nil
     world.NetStates = nil
     world.PinNet = nil
-    world.SimTick = 0
+    world.SimTimeMicros = 0
 }
 ```
 
@@ -1106,9 +1105,9 @@ fully idealized, globally deterministic Boolean world: when relay timings are
 **at the edge**, **non-deterministic** outcomes (order, jitter) are **acceptable**
 and may differ run-to-run. A proper design still works under modeled variation.
 
-The **current** tick loop (below) is fixed-step and uses a net relaxation pass;
-future work may use a single **simulation time in microseconds**, explicit
-event stepping, and **seeded** randomness for pickup/drop jitter. A separate
+The **current** tick loop (below) is fixed-step with a **single clock in microseconds** and
+uses a net relaxation pass; future work may add explicit
+event stepping (next-due optimization) and **seeded** randomness for pickup/drop jitter. A separate
 **deterministic / educational** mode (fixed seed, no jitter) remains useful for
 **tests, CI, and tutorials** without ruling out the default **physical** flavor.
 
@@ -1120,15 +1119,11 @@ parts and jitter**, not from a single global tie-break that pretends two relays
 always close in the same order (see above).
 
 ```go
-const TickMicros = 10  // 10 µs per tick
+const FrameAdvanceMicros = 10_000  // ~10 ms of sim time per run-mode frame
 
 func AdvanceFrame() {
-    target := world.SimTick + 1000  // ~10 ms of sim time per frame
-
-    for world.SimTick < target {
-        world.SimTick = nextInterestingTick(target)
-        resolveAndTick()
-    }
+    world.SimTimeMicros += FrameAdvanceMicros
+    resolveAndTick()
 }
 
 func resolveAndTick() {
@@ -1138,8 +1133,7 @@ func resolveAndTick() {
         ctx := part.SimContext{
             NetByPin:     netByPin,
             NetState:     netStateLookup,
-            Tick:         world.SimTick,
-            TickMicros:   TickMicros,
+            NowMicros:    world.SimTimeMicros,
             EnableJitter: true,
             Rand:         simRand,
         }
@@ -1162,10 +1156,8 @@ func resolveAndTick() {
 }
 ```
 
-`nextInterestingTick` advances to the earliest tick at which something is
-scheduled to happen. Each `SimPart` that has pending timed events (relays)
-can be queried for its next due tick. If nothing is pending, we jump
-straight to the frame target.
+Future work may advance time in **non-uniform** steps by jumping `SimTimeMicros` to
+the earliest scheduled event (timed sweeps), if large designs need it.
 
 ### Relay Timing
 

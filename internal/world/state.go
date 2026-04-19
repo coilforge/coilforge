@@ -64,8 +64,8 @@ var NetStates map[int]int
 // PinNet stores package-level state.
 var PinNet map[core.PinID]int
 
-// SimTick stores package-level state.
-var SimTick uint64
+// SimTimeMicros is monotonic simulated time since run-mode sim start, in microseconds.
+var SimTimeMicros uint64
 
 // AllocPartID handles alloc part id.
 func AllocPartID() int {
@@ -106,5 +106,5 @@ func Reset() {
 	Nets = nil
 	NetStates = nil
 	PinNet = nil
-	SimTick = 0
+	SimTimeMicros = 0
 }

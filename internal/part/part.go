@@ -64,8 +64,7 @@ type SimPart interface {
 type SimContext struct {
 	NetByPin     func(core.PinID) int // net by pin value.
 	NetState     func(int) int        // net state value.
-	Tick         uint64               // tick value.
-	TickMicros   int                  // tick micros value.
+	NowMicros    uint64               // monotonic simulated time since sim start, in microseconds.
 	EnableJitter bool                 // enable jitter value.
 	Rand         *rand.Rand           // rand value.
 }
