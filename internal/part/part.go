@@ -27,6 +27,12 @@ type Part interface {
 	MarshalJSON() ([]byte, error)
 }
 
+// WorldOffsettable is implemented by parts whose geometry is not represented solely by moving [core.BasePart].Pos
+// (e.g. polyline wires). Drag/paste applies [ApplyWorldOffset] instead of shifting only Pos.
+type WorldOffsettable interface {
+	ApplyWorldOffset(delta core.Pt)
+}
+
 type DrawContext struct {
 	Dst      *ebiten.Image        // dst value.
 	Cam      core.Pt              // camera position.

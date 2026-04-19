@@ -14,6 +14,7 @@ import (
 	_ "coilforge/internal/part/catalog/gnd"
 	_ "coilforge/internal/part/catalog/indicator"
 	_ "coilforge/internal/part/catalog/vcc"
+	_ "coilforge/internal/part/catalog/wire"
 )
 
 type PlacementTool struct {
@@ -27,4 +28,5 @@ var PlacementTools = []PlacementTool{
 	{TypeID: "gnd", Hotkey: '2'},
 	{TypeID: "vcc", Hotkey: '3'},
 	{TypeID: "clock", Hotkey: '4'},
+	{TypeID: "wire", Hotkey: '5'},
 }

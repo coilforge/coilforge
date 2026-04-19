@@ -9,6 +9,7 @@ package editor
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
+	"coilforge/internal/part/catalog/wire"
 	"coilforge/internal/render"
 	"coilforge/internal/world"
 	"math"
@@ -16,6 +17,9 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
+
+// wireToolID matches [wire.TypeID]; editor avoids importing catalog packages for routing helpers only.
+const wireToolID core.PartTypeID = "wire"
 
 // HandleMouseDown handles mouse down (edit mode): part pick, placement commit, or marquee start.
 func HandleMouseDown(pt core.Pt, button int) {
@@ -27,6 +31,11 @@ func HandleMouseDown(pt core.Pt, button int) {
 	DragMoved = false
 	DragUndoRecorded = false
 	BoxSelecting = false
+
+	if PlaceMode && PlaceTool == wireToolID {
+		handleWirePlaceClick(pt)
+		return
+	}
 
 	if PlaceMode && PlacePreview != nil {
 		commitPlacement(pt)
@@ -145,13 +154,31 @@ func StartPlacement(typeID core.PartTypeID) {
 	}
 
 	PlaceTool = typeID
+	if typeID == wireToolID {
+		PlacePreview = nil
+		WireAnchorSet = false
+		WireAnchor = core.Pt{}
+		WireHoverWorld = core.Pt{}
+		PlaceMode = true
+		return
+	}
+	if info.New == nil {
+		return
+	}
 	PlacePreview = info.New(world.AllocPartID(), core.Pt{})
 	PlaceMode = true
 }
 
 // UpdatePlacementPreview moves the ghost preview to the current pointer position.
 func UpdatePlacementPreview(pt core.Pt) {
-	if !PlaceMode || PlacePreview == nil {
+	if !PlaceMode {
+		return
+	}
+	if PlaceTool == wireToolID {
+		WireHoverWorld = snapToGrid(pt)
+		return
+	}
+	if PlacePreview == nil {
 		return
 	}
 	PlacePreview.Base().Pos = snapToGrid(pt)
@@ -169,7 +196,12 @@ func MoveSelected(delta core.Pt) {
 		}
 	}
 	for _, idx := range Selection {
-		base := world.Parts[idx].Base()
+		p := world.Parts[idx]
+		if wo, ok := p.(part.WorldOffsettable); ok {
+			wo.ApplyWorldOffset(delta)
+			continue
+		}
+		base := p.Base()
 		base.Pos.X += delta.X
 		base.Pos.Y += delta.Y
 	}
@@ -329,6 +361,12 @@ func MirrorSelected() {
 	}
 	pushUndo()
 	for _, idx := range Selection {
+		if idx < 0 || idx >= len(world.Parts) {
+			continue
+		}
+		if _, ok := world.Parts[idx].(part.WorldOffsettable); ok {
+			continue
+		}
 		base := world.Parts[idx].Base()
 		base.Mirror = !base.Mirror
 	}
@@ -371,8 +409,13 @@ func Paste(offset core.Pt) {
 	start := len(world.Parts)
 	for _, orig := range Clipboard {
 		cloned := orig.Clone(world.AllocPartID(), world.AllocPinID)
-		cloned.Base().Pos.X += offset.X
-		cloned.Base().Pos.Y += offset.Y
+		if wo, ok := cloned.(part.WorldOffsettable); ok {
+			wo.ApplyWorldOffset(offset)
+		} else {
+			b := cloned.Base()
+			b.Pos.X += offset.X
+			b.Pos.Y += offset.Y
+		}
 		world.Parts = append(world.Parts, cloned)
 	}
 
@@ -425,6 +468,21 @@ func DrawOverlays(dst *ebiten.Image) {
 	if BoxSelecting {
 		render.DrawBoxSelect(dst, BoxRect, BoxSelectCrossing)
 	}
+
+	if PlaceMode && PlaceTool == wireToolID && WireAnchorSet {
+		pts := orthRoutePreview(WireAnchor, WireHoverWorld)
+		if len(pts) >= 2 {
+			wire.DrawOrthogonalPolyline(part.DrawContext{
+				Dst:      dst,
+				Cam:      world.Cam,
+				Zoom:     world.Zoom,
+				ScreenW:  world.ScreenW,
+				ScreenH:  world.ScreenH,
+				DarkMode: render.DarkMode,
+				Ghost:    true,
+			}, pts, render.GhostTint())
+		}
+	}
 }
 
 // commitPlacement handles commit placement.
@@ -463,7 +521,11 @@ func snapSelectedToMajorGrid() {
 		if idx < 0 || idx >= len(world.Parts) {
 			continue
 		}
-		base := world.Parts[idx].Base()
+		p := world.Parts[idx]
+		if _, ok := p.(part.WorldOffsettable); ok {
+			continue
+		}
+		base := p.Base()
 		next := snapToGrid(base.Pos)
 		if next.X != base.Pos.X || next.Y != base.Pos.Y {
 			moves = append(moves, move{idx: idx, pos: next})
@@ -507,4 +569,40 @@ func collectBoxSelection(r core.Rect, crossing bool) []int {
 		}
 	}
 	return out
+}
+
+func handleWirePlaceClick(pt core.Pt) {
+	a := snapToGrid(pt)
+	if !WireAnchorSet {
+		WireAnchor = a
+		WireAnchorSet = true
+		WireHoverWorld = a
+		return
+	}
+	b := snapToGrid(pt)
+	if len(orthRoutePreview(WireAnchor, b)) < 2 {
+		return
+	}
+	info, ok := part.Registry[wireToolID]
+	if !ok || info.NewWire == nil {
+		return
+	}
+	w := info.NewWire(world.AllocPartID(), WireAnchor, b, world.AllocPinID)
+	if w == nil {
+		return
+	}
+	pushUndo()
+	world.Parts = append(world.Parts, w)
+	WireAnchorSet = false
+}
+
+// orthRoutePreview matches [wire.OrthogonalRoute] (kept here to avoid editor → catalog import).
+func orthRoutePreview(a, b core.Pt) []core.Pt {
+	if a.X == b.X && a.Y == b.Y {
+		return nil
+	}
+	if a.X == b.X || a.Y == b.Y {
+		return []core.Pt{a, b}
+	}
+	return []core.Pt{a, {X: b.X, Y: a.Y}, b}
 }

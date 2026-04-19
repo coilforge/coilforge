@@ -47,8 +47,11 @@ func rightToolbarButtons() []render.ToolButton {
 
 // activeToolIndex returns the toolbar index for the currently selected place tool.
 func activeToolIndex() int {
-	for idx, item := range toolbarButtons() {
-		if part.Registry[partType(item.TypeID)].New != nil && string(editor.PlaceTool) == item.TypeID {
+	if !editor.PlaceMode {
+		return -1
+	}
+	for idx, item := range partmanifest.PlacementTools {
+		if editor.PlaceTool == item.TypeID {
 			return idx
 		}
 	}

@@ -8,6 +8,20 @@ import "coilforge/internal/core"
 // 1/8 makes symbols and stroke widths twice as large in world space vs the earlier 1/16 mapping.
 const SVGUserUnitToWorld = 1.0 / 8.0
 
+// TypicalVectorStrokeSVG is the stroke width in SVG user units used by most catalog symbols
+// (see generated DrawVG* calls). Matches [vgStrokeWidth] so screen thickness stays consistent.
+const TypicalVectorStrokeSVG = 10.0
+
+// SchematicStrokeScreenPx returns stroke thickness in framebuffer pixels for the same convention
+// as vector part outlines (TypicalVectorStrokeSVG user units → world → screen via zoom).
+func SchematicStrokeScreenPx(zoom float64) float32 {
+	px := TypicalVectorStrokeSVG * SVGUserUnitToWorld * zoom
+	if px < 0.5 {
+		px = 0.5
+	}
+	return float32(px)
+}
+
 // SVGLocalToWorld maps symbol-centred SVG user coordinates through [core.LocalToWorld]
 // (position, rotation, mirror).
 func SVGLocalToWorld(base core.BasePart, svgX, svgY float64) core.Pt {

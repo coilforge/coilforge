@@ -37,6 +37,11 @@ var (
 	ViewportPanDrag bool // Space+drag pan: move world.Cam with primary button held.
 	PanLastScreenX  int  // Last pointer position during viewport pan (screen px).
 	PanLastScreenY  int
+
+	// Wire placement: first click sets anchor; second click commits an orthogonal route.
+	WireAnchorSet  bool
+	WireAnchor     core.Pt
+	WireHoverWorld core.Pt
 )
 
 // Reset resets its work.
@@ -65,6 +70,9 @@ func Reset() {
 	ViewportPanDrag = false
 	PanLastScreenX = 0
 	PanLastScreenY = 0
+	WireAnchorSet = false
+	WireAnchor = core.Pt{}
+	WireHoverWorld = core.Pt{}
 }
 
 // ClearTransient handles clear transient.
@@ -80,4 +88,5 @@ func ClearTransient() {
 	BoxSelectCrossing = false
 	LabelEditing = false
 	ViewportPanDrag = false
+	WireAnchorSet = false
 }

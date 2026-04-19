@@ -65,10 +65,11 @@ func fillSchematicBackground(dst *ebiten.Image) {
 	)
 }
 
-// Grid visibility vs zoom (pixels per world unit): below 3 no grid; from 3 major only; from 7 minor too.
+// Grid visibility vs zoom (pixels per world unit): below 3 no grid; from 3 draw major only.
+// Minor (1-world-unit) lines are disabled for now—layout reads clearly at current symbol scale without them.
 const (
-	gridShowMajorMinZoom = 3.0 // Zoom < this: omit minor and major
-	gridShowMinorMinZoom = 7.0 // Zoom < this: omit minor (major still drawn if Zoom >= gridShowMajorMinZoom)
+	gridShowMajorMinZoom = 3.0 // Zoom < this: omit grid entirely
+	drawMinorGridLines     = false
 )
 
 // drawGrid draws world-space minor (wire) and major (part pitch) grid lines in screen space.
@@ -79,7 +80,7 @@ func drawGrid(dst *ebiten.Image) {
 	}
 
 	showMajor := world.Zoom >= gridShowMajorMinZoom
-	showMinor := world.Zoom >= gridShowMinorMinZoom
+	showMinor := drawMinorGridLines && world.Zoom >= gridShowMajorMinZoom
 
 	minor := world.MinorGridWorld
 	major := world.MajorGridWorld
