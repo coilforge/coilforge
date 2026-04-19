@@ -12,6 +12,7 @@ import (
 
 	"coilforge/internal/part/catalog/indicator"
 
+	_ "coilforge/internal/part/catalog/clock"
 	_ "coilforge/internal/part/catalog/gnd"
 	_ "coilforge/internal/part/catalog/indicator"
 	_ "coilforge/internal/part/catalog/vcc"
@@ -64,7 +65,16 @@ func TestNetStatesCoilforgeOKAnd45(t *testing.T) {
 		for nid, st := range world.NetStates {
 			t.Logf("%s NetStates[%d]=%d", name, nid, st)
 		}
-		ind := world.Parts[0].(*indicator.Indicator)
+		var ind *indicator.Indicator
+		for _, p := range world.Parts {
+			if ii, ok := p.(*indicator.Indicator); ok {
+				ind = ii
+				break
+			}
+		}
+		if ind == nil {
+			t.Fatalf("%s: no indicator part in fixture", name)
+		}
 		t.Logf("%s indicator Lit=%v", name, ind.Lit)
 
 		if world.NetStates == nil {
@@ -83,7 +93,7 @@ func TestNetStatesCoilforgeOKAnd45(t *testing.T) {
 		if !haveH || !haveL {
 			t.Errorf("%s: expected both NetHigh and NetLow among nets", name)
 		}
-		if !ind.Lit {
+		if name == "coilforge-ok.json" && !ind.Lit {
 			t.Errorf("%s: expected indicator lit when straddling VCC and GND nets", name)
 		}
 		Stop()

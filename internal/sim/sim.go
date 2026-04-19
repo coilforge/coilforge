@@ -67,6 +67,7 @@ func LoopEnd() {
 
 // Start starts its work.
 func Start() {
+	part.ClearAllSchematicRuntime(world.Parts)
 	flatten.BuildNets()
 	world.SimTimeMicros = 0
 	resolveAndTick()
@@ -137,7 +138,7 @@ func resolveNets() {
 
 	for _, p := range world.Parts {
 		if seeder, ok := p.(part.NetSeeder); ok {
-			seeder.SeedNets(union, netByPin, high, low)
+			seeder.SeedNets(union, netByPin, high, low, world.SimTimeMicros)
 		}
 	}
 

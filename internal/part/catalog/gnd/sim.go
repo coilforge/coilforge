@@ -12,7 +12,8 @@ import (
 )
 
 // SeedNets marks the union root for this part's terminal as a forced-low seed.
-func (self *Gnd) SeedNets(union part.NetUnion, netByPin func(core.PinID) int, high, low map[int]bool) {
+func (self *Gnd) SeedNets(union part.NetUnion, netByPin func(core.PinID) int, high, low map[int]bool, nowMicros uint64) {
+	_ = nowMicros
 	netID := netByPin(self.GND)
 	if netID < 0 {
 		return

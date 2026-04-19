@@ -1,8 +1,8 @@
-package indicator
+package clock
 
 // File overview:
-// part defines the indicator part type, registration hooks, and clone/decode behavior.
-// Subsystem: part catalog (indicator).
+// part defines the clock part type, registration hooks, and clone/decode behavior.
+// Subsystem: part catalog (clock).
 // It works with shared part/core contracts and is complemented by draw/props/sim/assets files.
 // Flow position: concrete catalog part implementation loaded through part registry.
 
@@ -13,12 +13,11 @@ import (
 )
 
 // TypeID defines a package-level constant.
-const TypeID core.PartTypeID = "indicator"
+const TypeID core.PartTypeID = "clock"
 
-type Indicator struct {
+type Clock struct {
 	core.BasePart // BasePart carries shared part identity and transform state.
-	IndicatorPinIDs
-	Lit bool `json:"-"` // Driven by simulation in run mode; not persisted (see ClearSchematicRuntime).
+	ClockPinIDs
 }
 
 // init registers the part type with the global registry.
@@ -26,7 +25,7 @@ func init() {
 	part.Register(TypeID, part.TypeInfo{
 		New:           newPart,
 		Decode:        decodePart,
-		Label:         "Indicator",
+		Label:         "Clock",
 		Tools:         []string{"main"},
 		Icon:          toolbarIcon,
 		RotationSlots: RotationSlots,
@@ -35,54 +34,43 @@ func init() {
 
 // newPart handles new part.
 func newPart(id int, pos core.Pt) part.Part {
-	return &Indicator{
+	return &Clock{
 		BasePart: core.BasePart{ID: id, TypeID: TypeID, Pos: pos},
 	}
 }
 
 // decodePart handles decode part.
 func decodePart(data json.RawMessage) (part.Part, error) {
-	var ind Indicator
-	if err := json.Unmarshal(data, &ind); err != nil {
+	var c Clock
+	if err := json.Unmarshal(data, &c); err != nil {
 		return nil, err
 	}
-	if ind.TypeID == "" {
-		ind.TypeID = TypeID
+	if c.TypeID == "" {
+		c.TypeID = TypeID
 	}
-	ind.Rotation = normalizeIndicatorRotation(ind.Rotation)
-	return &ind, nil
-}
-
-func normalizeIndicatorRotation(r int) int {
-	return (r%8 + 8) % 8
-}
-
-// ClearSchematicRuntime resets draw/sim runtime fields after load or before sim runs.
-func (self *Indicator) ClearSchematicRuntime() {
-	self.Lit = false
+	return &c, nil
 }
 
 // Base handles base.
-func (self *Indicator) Base() *core.BasePart {
+func (self *Clock) Base() *core.BasePart {
 	return &self.BasePart
 }
 
 // Segments handles segments.
-func (self *Indicator) Segments() []core.Seg {
+func (self *Clock) Segments() []core.Seg {
 	return nil
 }
 
 // Clone handles clone.
-func (self *Indicator) Clone(newID int, allocPin func() core.PinID) part.Part {
+func (self *Clock) Clone(newID int, allocPin func() core.PinID) part.Part {
 	c := *self
 	c.ID = newID
-	assignNewIndicatorPins(&c, allocPin)
-	c.Lit = false
+	assignNewClockPins(&c, allocPin)
 	return &c
 }
 
 // MarshalJSON handles marshal json.
-func (self *Indicator) MarshalJSON() ([]byte, error) {
-	type partJSON Indicator
+func (self *Clock) MarshalJSON() ([]byte, error) {
+	type partJSON Clock
 	return json.Marshal((*partJSON)(self))
 }

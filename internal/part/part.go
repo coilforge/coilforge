@@ -75,7 +75,7 @@ func (ctx SimContext) PinNetState(pin core.PinID) int {
 }
 
 type NetSeeder interface {
-	SeedNets(union NetUnion, netByPin func(core.PinID) int, high, low map[int]bool)
+	SeedNets(union NetUnion, netByPin func(core.PinID) int, high, low map[int]bool, nowMicros uint64)
 }
 
 type Conductor interface {

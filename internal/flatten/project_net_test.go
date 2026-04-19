@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"testing"
 
+	_ "coilforge/internal/part/catalog/clock"
 	_ "coilforge/internal/part/catalog/gnd"
 	_ "coilforge/internal/part/catalog/indicator"
 	_ "coilforge/internal/part/catalog/vcc"

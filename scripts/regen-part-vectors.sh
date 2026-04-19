@@ -7,7 +7,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-CATALOG_PKGS=(indicator gnd vcc)
+CATALOG_PKGS=(indicator gnd vcc clock)
 
 for pkg in "${CATALOG_PKGS[@]}"; do
   echo "# gen vectors: $pkg"

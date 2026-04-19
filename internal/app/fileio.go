@@ -73,6 +73,7 @@ func LoadProject(path string) error {
 	world.Parts = parts
 	world.NextPartID = file.NextPartID
 	world.NextPinID = file.NextPinID
+	part.ClearAllSchematicRuntime(world.Parts)
 	editor.Reset()
 	return nil
 }
