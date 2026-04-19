@@ -1,0 +1,53 @@
+{
+  "nextPartID": 3,
+  "nextPinID": 4,
+  "parts": [
+    {
+      "type": "indicator",
+      "data": {
+        "id": 0,
+        "type": "indicator",
+        "pos": {
+          "X": -12,
+          "Y": 4
+        },
+        "rotation": 0,
+        "mirror": false,
+        "label": "",
+        "terminalA": 0,
+        "terminalB": 1,
+        "lit": false
+      }
+    },
+    {
+      "type": "gnd",
+      "data": {
+        "id": 1,
+        "type": "gnd",
+        "pos": {
+          "X": -20,
+          "Y": 4
+        },
+        "rotation": 0,
+        "mirror": false,
+        "label": "",
+        "gND": 2
+      }
+    },
+    {
+      "type": "vcc",
+      "data": {
+        "id": 2,
+        "type": "vcc",
+        "pos": {
+          "X": -4,
+          "Y": 4
+        },
+        "rotation": 0,
+        "mirror": false,
+        "label": "",
+        "vCC": 3
+      }
+    }
+  ]
+}

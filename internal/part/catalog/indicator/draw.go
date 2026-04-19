@@ -20,7 +20,7 @@ func (self *Indicator) layoutName() string {
 	}
 	slots := RotationSlots
 	if slots <= 0 {
-		slots = 4
+		slots = 8
 	}
 	r := self.Rotation % slots
 	if r < 0 {

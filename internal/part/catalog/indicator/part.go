@@ -49,7 +49,12 @@ func decodePart(data json.RawMessage) (part.Part, error) {
 	if ind.TypeID == "" {
 		ind.TypeID = TypeID
 	}
+	ind.Rotation = normalizeIndicatorRotation(ind.Rotation)
 	return &ind, nil
+}
+
+func normalizeIndicatorRotation(r int) int {
+	return (r%8 + 8) % 8
 }
 
 // Base handles base.

@@ -68,6 +68,14 @@ func GhostTint() color.RGBA {
 	return color.RGBA{R: 255, G: 255, B: 255, A: 144}
 }
 
+// BoxSelectFillColor returns translucent marquee fill: window (L→R) vs crossing (R→L).
+func BoxSelectFillColor(crossing bool) color.RGBA {
+	if crossing {
+		return color.RGBA{R: 72, G: 220, B: 140, A: 48}
+	}
+	return color.RGBA{R: 72, G: 140, B: 255, A: 48}
+}
+
 // ToolbarPanelColor returns the background fill for chrome toolbar panels.
 func ToolbarPanelColor() color.RGBA {
 	if DarkMode {

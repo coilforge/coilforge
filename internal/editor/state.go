@@ -18,9 +18,14 @@ var (
 	PlaceTool    core.PartTypeID // PlaceTool stores package-level state.
 	PlacePreview part.Part       // PlacePreview stores package-level state.
 	Dragging     bool            // Dragging stores package-level state.
+	DragMoved    bool            // DragMoved is true after a non-zero move delta while dragging a part.
 	DragStart    core.Pt         // DragStart stores package-level state.
+	PressWorld   core.Pt         // PressWorld is mouse-down origin in world space (marquee corner / move baseline).
+	PointerDownPart = -1        // PointerDownPart is index under press, or -1 when starting on empty canvas.
+	MouseDownOnEmpty bool       // MouseDownOnEmpty is true when the latest press began on empty canvas (not placement).
 	BoxSelecting bool            // BoxSelecting stores package-level state.
 	BoxRect      core.Rect       // BoxRect stores package-level state.
+	BoxSelectCrossing bool       // BoxSelectCrossing: R→L marquee on screen uses crossing (intersect) vs window (fully inside).
 	UndoStack    []Snapshot      // UndoStack stores package-level state.
 	RedoStack    []Snapshot      // RedoStack stores package-level state.
 	Clipboard    []part.Part     // Clipboard stores package-level state.
@@ -37,9 +42,14 @@ func Reset() {
 	PlaceTool = ""
 	PlacePreview = nil
 	Dragging = false
+	DragMoved = false
 	DragStart = core.Pt{}
+	PressWorld = core.Pt{}
+	PointerDownPart = -1
+	MouseDownOnEmpty = false
 	BoxSelecting = false
 	BoxRect = core.Rect{}
+	BoxSelectCrossing = false
 	UndoStack = nil
 	RedoStack = nil
 	Clipboard = nil
@@ -53,6 +63,10 @@ func ClearTransient() {
 	PlaceMode = false
 	PlacePreview = nil
 	Dragging = false
+	DragMoved = false
 	BoxSelecting = false
+	PointerDownPart = -1
+	MouseDownOnEmpty = false
+	BoxSelectCrossing = false
 	LabelEditing = false
 }

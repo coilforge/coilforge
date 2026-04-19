@@ -83,3 +83,9 @@ func (r Rect) Intersects(other Rect) bool {
 		r.Min.Y <= other.Max.Y &&
 		r.Max.Y >= other.Min.Y
 }
+
+// ContainsRect reports whether r fully contains other (inclusive edges).
+func (r Rect) ContainsRect(other Rect) bool {
+	return r.Min.X <= other.Min.X && r.Max.X >= other.Max.X &&
+		r.Min.Y <= other.Min.Y && r.Max.Y >= other.Max.Y
+}

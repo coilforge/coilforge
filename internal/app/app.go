@@ -244,7 +244,7 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 			sim.HandleClick(pt)
 			world.SimMu.Unlock()
 		} else {
-			editor.HandleClick(pt, int(ebiten.MouseButtonLeft))
+			editor.HandleMouseDown(pt, int(ebiten.MouseButtonLeft))
 		}
 	case leftNow && a.leftDown && !world.RunMode:
 		if a.toolbarCapture {
@@ -258,7 +258,7 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 			break
 		}
 		pt := world.ScreenToWorld(mouseX, mouseY)
-		editor.HandleRelease(pt, int(ebiten.MouseButtonLeft))
+		editor.HandleMouseUp(pt, int(ebiten.MouseButtonLeft))
 	case !leftNow && a.leftDown:
 		a.toolbarCapture = false
 	}

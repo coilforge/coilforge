@@ -12,4 +12,4 @@ if [[ ! -f "$ATLAS_PNG" || ! -f "$ATLAS_JSON" ]]; then
   "$ROOT_DIR/scripts/regen-ui-font-atlas.sh"
 fi
 
-COILFORGE_FLATTEN_TRACE=1 go run "$ROOT_DIR/cmd/coilforge" "$@"
+go run "$ROOT_DIR/cmd/coilforge" "$@"

@@ -17,43 +17,100 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// HandleClick handles click.
-func HandleClick(pt core.Pt, button int) {
+// HandleMouseDown handles mouse down (edit mode): part pick, placement commit, or marquee start.
+func HandleMouseDown(pt core.Pt, button int) {
 	_ = button
+	PressWorld = pt
+	MouseDownOnEmpty = false
+	PointerDownPart = -1
+	Dragging = false
+	DragMoved = false
+	BoxSelecting = false
 
 	if PlaceMode && PlacePreview != nil {
 		commitPlacement(pt)
 		return
 	}
 
-	if idx := partAt(pt); idx >= 0 {
-		Selection = []int{idx}
+	idx := partAt(pt)
+	PointerDownPart = idx
+	MouseDownOnEmpty = idx < 0
+	if idx >= 0 {
+		if !selectionContains(idx) {
+			Selection = []int{idx}
+		}
 		HoverIndex = idx
+	}
+}
+
+func selectionContains(idx int) bool {
+	for _, i := range Selection {
+		if i == idx {
+			return true
+		}
+	}
+	return false
+}
+
+// HandleMouseUp handles mouse up: finalize marquee selection or apply empty-click clearing.
+func HandleMouseUp(pt core.Pt, button int) {
+	_ = button
+	if BoxSelecting {
+		sx0, _ := world.WorldToScreen(PressWorld)
+		sx1, _ := world.WorldToScreen(pt)
+		crossing := sx1 < sx0
+		r := core.NormalizeRect(core.RectFromPoints(PressWorld, pt))
+		Selection = collectBoxSelection(r, crossing)
+		if len(Selection) == 0 {
+			Selection = nil
+			HoverIndex = -1
+		} else {
+			HoverIndex = Selection[len(Selection)-1]
+		}
+	} else if MouseDownOnEmpty {
+		Selection = nil
+		HoverIndex = -1
+	}
+	if !BoxSelecting && DragMoved {
+		snapSelectedToMajorGrid()
+	}
+	Dragging = false
+	DragMoved = false
+	BoxSelecting = false
+	PointerDownPart = -1
+	MouseDownOnEmpty = false
+}
+
+// HandleDrag handles drag: move selection, or update marquee when the press began on empty canvas.
+func HandleDrag(pt core.Pt) {
+	if PlaceMode && PlacePreview != nil {
 		return
 	}
+	if PointerDownPart >= 0 {
+		if !Dragging {
+			Dragging = true
+			DragStart = pt
+			return
+		}
 
-	Selection = nil
-	HoverIndex = -1
-}
-
-// HandleRelease handles release.
-func HandleRelease(pt core.Pt, button int) {
-	_, _ = pt, button
-	Dragging = false
-	BoxSelecting = false
-}
-
-// HandleDrag handles drag.
-func HandleDrag(pt core.Pt) {
-	if !Dragging {
-		Dragging = true
+		delta := core.Pt{X: pt.X - DragStart.X, Y: pt.Y - DragStart.Y}
+		if delta.X != 0 || delta.Y != 0 {
+			DragMoved = true
+		}
+		MoveSelected(delta)
 		DragStart = pt
 		return
 	}
-
-	delta := core.Pt{X: pt.X - DragStart.X, Y: pt.Y - DragStart.Y}
-	MoveSelected(delta)
-	DragStart = pt
+	if PointerDownPart < 0 {
+		if !dragExceedsMarqueeThreshold(PressWorld, pt) {
+			return
+		}
+		BoxSelecting = true
+		BoxRect = core.NormalizeRect(core.RectFromPoints(PressWorld, pt))
+		sx0, _ := world.WorldToScreen(PressWorld)
+		sx1, _ := world.WorldToScreen(pt)
+		BoxSelectCrossing = sx1 < sx0
+	}
 }
 
 // HandleKey handles key.
@@ -117,11 +174,39 @@ func RotateSelected() {
 	if len(Selection) == 0 {
 		return
 	}
-	pushUndo()
-	for _, idx := range Selection {
+	if !selectionCanRotate() {
+		return
+	}
+	if len(Selection) == 1 {
+		idx := Selection[0]
+		if idx < 0 || idx >= len(world.Parts) {
+			return
+		}
+		pushUndo()
 		base := world.Parts[idx].Base()
-		slots := rotationStepsForPart(world.Parts[idx])
+		slots := registryRotationSlots(world.Parts[idx])
 		base.Rotation = rotateIndexBackward(slots, base.Rotation)
+		return
+	}
+
+	u, ok := selectionUnionBounds()
+	if !ok {
+		return
+	}
+	pushUndo()
+	g := rectCenter(u)
+	for _, idx := range Selection {
+		if idx < 0 || idx >= len(world.Parts) {
+			continue
+		}
+		p := world.Parts[idx]
+		base := p.Base()
+		slots := registryRotationSlots(p)
+		steps := quarterTurnSlotSteps(slots)
+		base.Rotation = rotateIndexBackwardN(slots, base.Rotation, steps)
+		d := rotateVectorQuarterWorld(core.Pt{X: base.Pos.X - g.X, Y: base.Pos.Y - g.Y})
+		base.Pos.X = g.X + d.X
+		base.Pos.Y = g.Y + d.Y
 	}
 }
 
@@ -130,8 +215,11 @@ func RotatePlacementPreview() {
 	if PlacePreview == nil {
 		return
 	}
+	slots := registryRotationSlots(PlacePreview)
+	if slots <= 0 {
+		return
+	}
 	b := PlacePreview.Base()
-	slots := rotationStepsForPart(PlacePreview)
 	b.Rotation = rotateIndexBackward(slots, b.Rotation)
 }
 
@@ -143,16 +231,89 @@ func rotateIndexBackward(slots, idx int) int {
 	return ((idx-1)%slots + slots) % slots
 }
 
-func rotationStepsForPart(p part.Part) int {
+func rotateIndexBackwardN(slots, idx, steps int) int {
+	r := idx
+	for i := 0; i < steps; i++ {
+		r = rotateIndexBackward(slots, r)
+	}
+	return r
+}
+
+// quarterTurnSlotSteps is how many discrete baked-orientation steps equal one 90° world turn.
+func quarterTurnSlotSteps(slots int) int {
+	if slots <= 0 {
+		return 1
+	}
+	st := int(math.Round(float64(slots) / 4.0))
+	if st < 1 {
+		st = 1
+	}
+	return st
+}
+
+// rotateVectorQuarterWorld rotates offset vector by 90° (same quarter as a 4-slot single-step rotate).
+func rotateVectorQuarterWorld(v core.Pt) core.Pt {
+	return core.Pt{X: v.Y, Y: -v.X}
+}
+
+func selectionUnionBounds() (core.Rect, bool) {
+	var u core.Rect
+	ok := false
+	for _, idx := range Selection {
+		if idx < 0 || idx >= len(world.Parts) {
+			continue
+		}
+		b := core.NormalizeRect(world.Parts[idx].Bounds())
+		if !ok {
+			u = b
+			ok = true
+			continue
+		}
+		u = unionRects(u, b)
+	}
+	return u, ok
+}
+
+func unionRects(a, b core.Rect) core.Rect {
+	a = core.NormalizeRect(a)
+	b = core.NormalizeRect(b)
+	return core.NormalizeRect(core.Rect{
+		Min: core.Pt{X: math.Min(a.Min.X, b.Min.X), Y: math.Min(a.Min.Y, b.Min.Y)},
+		Max: core.Pt{X: math.Max(a.Max.X, b.Max.X), Y: math.Max(a.Max.Y, b.Max.Y)},
+	})
+}
+
+func rectCenter(r core.Rect) core.Pt {
+	r = core.NormalizeRect(r)
+	return core.Pt{X: (r.Min.X + r.Max.X) * 0.5, Y: (r.Min.Y + r.Max.Y) * 0.5}
+}
+
+// registryRotationSlots returns 4 or 8 from the part type registry, else 0 (non-rotatable).
+func registryRotationSlots(p part.Part) int {
 	if p == nil {
-		return 4
+		return 0
 	}
-	tid := p.Base().TypeID
-	info, ok := part.Registry[tid]
-	if !ok || info.RotationSlots <= 0 {
-		return 4
+	info, ok := part.Registry[p.Base().TypeID]
+	if !ok {
+		return 0
 	}
-	return info.RotationSlots
+	s := info.RotationSlots
+	if !part.AllowsDiscreteRotation(s) {
+		return 0
+	}
+	return s
+}
+
+func selectionCanRotate() bool {
+	for _, idx := range Selection {
+		if idx < 0 || idx >= len(world.Parts) {
+			return false
+		}
+		if registryRotationSlots(world.Parts[idx]) <= 0 {
+			return false
+		}
+	}
+	return true
 }
 
 // MirrorSelected mirrors selected.
@@ -256,7 +417,7 @@ func DrawOverlays(dst *ebiten.Image) {
 	}
 
 	if BoxSelecting {
-		render.DrawBoxSelect(dst, BoxRect)
+		render.DrawBoxSelect(dst, BoxRect, BoxSelectCrossing)
 	}
 }
 
@@ -282,6 +443,35 @@ func snapToGrid(pt core.Pt) core.Pt {
 	return core.LocalToWorld(core.BasePart{Pos: snapped}, core.Pt{})
 }
 
+// snapSelectedToMajorGrid snaps placed part origins after a drag drop (same grid as placement).
+func snapSelectedToMajorGrid() {
+	if len(Selection) == 0 {
+		return
+	}
+	type move struct {
+		idx int
+		pos core.Pt
+	}
+	var moves []move
+	for _, idx := range Selection {
+		if idx < 0 || idx >= len(world.Parts) {
+			continue
+		}
+		base := world.Parts[idx].Base()
+		next := snapToGrid(base.Pos)
+		if next.X != base.Pos.X || next.Y != base.Pos.Y {
+			moves = append(moves, move{idx: idx, pos: next})
+		}
+	}
+	if len(moves) == 0 {
+		return
+	}
+	pushUndo()
+	for _, m := range moves {
+		world.Parts[m.idx].Base().Pos = m.pos
+	}
+}
+
 // partAt handles part at.
 func partAt(pt core.Pt) int {
 	for i := len(world.Parts) - 1; i >= 0; i-- {
@@ -290,4 +480,26 @@ func partAt(pt core.Pt) int {
 		}
 	}
 	return -1
+}
+
+const marqueeThresholdPx = 4.0
+
+func dragExceedsMarqueeThreshold(a, b core.Pt) bool {
+	sx0, sy0 := world.WorldToScreen(a)
+	sx1, sy1 := world.WorldToScreen(b)
+	dx := sx1 - sx0
+	dy := sy1 - sy0
+	return dx*dx+dy*dy >= marqueeThresholdPx*marqueeThresholdPx
+}
+
+func collectBoxSelection(r core.Rect, crossing bool) []int {
+	var out []int
+	for i := range world.Parts {
+		b := core.NormalizeRect(world.Parts[i].Bounds())
+		ok := (crossing && r.Intersects(b)) || (!crossing && r.ContainsRect(b))
+		if ok {
+			out = append(out, i)
+		}
+	}
+	return out
 }

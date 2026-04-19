@@ -20,8 +20,16 @@ type TypeInfo struct {
 	Label   string                                                          // display name used in editor chrome.
 	Tools   []string                                                        // tools value.
 	Icon    func() *ebiten.Image                                            // icon value.
-	// RotationSlots is how many discrete rotations R cycles through (typically 4, or 8 when _45 SVGs exist). Zero means 4.
+	// RotationSlots: 0 = not rotatable (R does nothing). 4 = four quarter-turn layouts.
+	// 8 = eight baked orientations; single selection / preview steps all 8, while group rotate advances
+	// by [quarterTurnSlotSteps] (2) per 90° so 8-way parts stay aligned with the group.
+	// Any other value is treated as non-rotatable.
 	RotationSlots int
+}
+
+// AllowsDiscreteRotation reports whether the part type supports R-key rotation (4- or 8-step only).
+func AllowsDiscreteRotation(registrySlots int) bool {
+	return registrySlots == 4 || registrySlots == 8
 }
 
 // Registry stores constructors and metadata for each part type.

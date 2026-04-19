@@ -265,13 +265,40 @@ func DrawStatusBar(dst *ebiten.Image, text string) {
 
 // DrawSelectionOutline renders a highlight around selected geometry.
 func DrawSelectionOutline(dst *ebiten.Image, bounds core.Rect) {
-	_ = core.RotateRect(bounds, 0, false)
-	_ = SelectionColor()
-	_ = dst
+	x0, y0 := world.WorldToScreen(core.Pt{X: bounds.Min.X, Y: bounds.Min.Y})
+	x1, y1 := world.WorldToScreen(core.Pt{X: bounds.Max.X, Y: bounds.Max.Y})
+	minX := min(x0, x1)
+	maxX := max(x0, x1)
+	minY := min(y0, y1)
+	maxY := max(y0, y1)
+	sw := float32(maxX - minX)
+	sh := float32(maxY - minY)
+	if sw < 1 {
+		sw = 1
+	}
+	if sh < 1 {
+		sh = 1
+	}
+	vector.StrokeRect(dst, float32(minX), float32(minY), sw, sh, 1.5, SelectionColor(), false)
 }
 
-// DrawBoxSelect renders marquee selection rectangle chrome.
-func DrawBoxSelect(dst *ebiten.Image, box core.Rect) {
-	_ = GhostTint()
-	_, _ = dst, box
+// DrawBoxSelect renders marquee selection rectangle chrome (world-space rect).
+func DrawBoxSelect(dst *ebiten.Image, box core.Rect, crossing bool) {
+	x0, y0 := world.WorldToScreen(core.Pt{X: box.Min.X, Y: box.Min.Y})
+	x1, y1 := world.WorldToScreen(core.Pt{X: box.Max.X, Y: box.Max.Y})
+	minX := min(x0, x1)
+	maxX := max(x0, x1)
+	minY := min(y0, y1)
+	maxY := max(y0, y1)
+	sw := float32(maxX - minX)
+	sh := float32(maxY - minY)
+	if sw < 1 {
+		sw = 1
+	}
+	if sh < 1 {
+		sh = 1
+	}
+	fill := BoxSelectFillColor(crossing)
+	vector.FillRect(dst, float32(minX), float32(minY), sw, sh, fill, false)
+	vector.StrokeRect(dst, float32(minX), float32(minY), sw, sh, 1.0, SelectionColor(), false)
 }
