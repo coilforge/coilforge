@@ -5,8 +5,8 @@
       <bx:file format="svg"></bx:file>
     </bx:export>
   </defs>
-  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 128, 131.9104)" id="PinA"></circle>
-  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 384, -124.0896)" id="PinB"></circle>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 128, 131.9104)" id="TerminalA"></circle>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 384, -124.0896)" id="TerminalB"></circle>
   <circle style="stroke: rgb(0, 0, 0); stroke-width: 10px; fill: rgb(255, 255, 255); transform-box: fill-box; transform-origin: 50% 50%;" r="63.158" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 0.000007, 0.000003)"></circle>
   <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px; transform-origin: 0.092px 0.263px;" d="M 45.536 -45.002 L -45.351 45.527" bx:d="M 45.536 -45.002 U -45.351 45.527 1@6af36890" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 0.000005, 0.000001)"></path>
   <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; transform-origin: -0.189px 0.011px;" d="M -45.454 -45.433 L 45.075 45.454" bx:d="M -45.454 -45.433 U 45.075 45.454 1@460804ba" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, -0.000003)"></path>

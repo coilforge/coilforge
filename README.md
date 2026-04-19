@@ -58,9 +58,12 @@ Available check commands:
 
 ## Generated vector code
 
-Schematic SVGs live under `internal/part/catalog/<pkg>/assets/`. The generator (`scripts/gen_part_vectors.go`, invoked via `./scripts/regen-part-vectors.sh` or `go run -tags genpartvectors ./scripts/gen_part_vectors.go <pkg>`) writes `vectors_gen.go` next to the catalog package (registered draw funcs, pin layouts, hit bounds).
+Schematic SVGs live under `internal/part/catalog/<pkg>/assets/`. The generator (`scripts/gen_part_vectors.go`, invoked via `./scripts/regen-part-vectors.sh` or `go run -tags genpartvectors ./scripts/gen_part_vectors.go <pkg>`) writes:
 
-**Committed generated files:** `*_gen.go` outputs are checked into git so a plain `go build` / clone does not require running codegen, PRs can show the full emitted diff, and git history reflects the exact registrations shipped. After editing SVGs or the generator, regenerate and commit the updated `vectors_gen.go` with those changes.
+- **`vectors_gen.go`** — registered draw funcs, pin layouts from red marker positions, hit bounds.
+- **`pins_gen.go`** (when circles have `id="..."`) — `…PinIDs` struct fields named after those ids (exported identifiers, e.g. `TerminalA`), JSON tags, `…PinMarkerMap(*T)` for `Anchors`, and `assignNew…Pins` for clone pin allocation — embed the struct in your part type and use `self.TerminalA`-style fields in sim code.
+
+**Committed generated files:** these `*_gen.go` outputs are checked into git so a plain `go build` / clone does not require running codegen, PRs can show the full emitted diff, and git history reflects the exact registrations shipped. After editing SVGs or the generator, regenerate and commit the updated generated files with those changes.
 
 ## CI notes
 

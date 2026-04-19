@@ -3,8 +3,8 @@
   <defs>
     <bx:grid x="256" y="-320" width="64" height="64"/>
   </defs>
-  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 127.999992, 3.9104)" id="PinA"/>
-  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 384, 3.9104)" id="PinB"/>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 127.999992, 3.9104)" id="TerminalA"/>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 384, 3.9104)" id="TerminalB"/>
   <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 255, 255); stroke-width: 10px;" r="63.158"/>
   <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" d="M -62.94 0 L -134.098 0"/>
   <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" d="M 62.94 0 L 134.098 0"/>

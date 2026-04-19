@@ -46,10 +46,7 @@ func (self *Indicator) Bounds() core.Rect {
 
 // Anchors handles anchors.
 func (self *Indicator) Anchors() []core.PinAnchor {
-	return part.AnchorsFromVectorMarkerIDs(self.layoutName(), self.drawBase(), map[string]core.PinID{
-		"PinA": self.PinA,
-		"PinB": self.PinB,
-	})
+	return part.AnchorsFromVectorMarkerIDs(self.layoutName(), self.drawBase(), indicatorPinMarkerMap(self))
 }
 
 // HitTest handles hit test.

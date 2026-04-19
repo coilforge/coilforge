@@ -19,8 +19,8 @@ func init() {
 		{X:-128.000000, Y:0.000000},
 		{X:128.000000, Y:0.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-off-0", -134.098000, -63.158000, 134.098000, 63.158000)
 	part.RegisterVectorDraw("indicator-off-1", drawVector_indicator_off_1)
@@ -28,8 +28,8 @@ func init() {
 		{X:-128.000000, Y:128.000000},
 		{X:128.000000, Y:-128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-off-1", -128.000000, -128.839996, 128.840996, 128.000000)
 	part.RegisterVectorDraw("indicator-off-2", drawVector_indicator_off_2)
@@ -37,8 +37,8 @@ func init() {
 		{X:-0.000000, Y:-128.000000},
 		{X:-0.000000, Y:128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-off-2", -63.158000, -134.098000, 63.158000, 134.098000)
 	part.RegisterVectorDraw("indicator-off-3", drawVector_indicator_off_3)
@@ -46,8 +46,8 @@ func init() {
 		{X:-128.000000, Y:-128.000000},
 		{X:128.000000, Y:128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-off-3", -128.000000, -128.000000, 128.839996, 128.840996)
 	part.RegisterVectorDraw("indicator-off-4", drawVector_indicator_off_4)
@@ -55,8 +55,8 @@ func init() {
 		{X:128.000000, Y:-0.000000},
 		{X:-128.000000, Y:-0.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-off-4", -134.098000, -63.158000, 134.098000, 63.158000)
 	part.RegisterVectorDraw("indicator-off-5", drawVector_indicator_off_5)
@@ -64,8 +64,8 @@ func init() {
 		{X:128.000000, Y:-128.000000},
 		{X:-128.000000, Y:128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-off-5", -128.840996, -128.000000, 128.000000, 128.839996)
 	part.RegisterVectorDraw("indicator-off-6", drawVector_indicator_off_6)
@@ -73,8 +73,8 @@ func init() {
 		{X:0.000000, Y:128.000000},
 		{X:0.000000, Y:-128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-off-6", -63.158000, -134.098000, 63.158000, 134.098000)
 	part.RegisterVectorDraw("indicator-off-7", drawVector_indicator_off_7)
@@ -82,8 +82,8 @@ func init() {
 		{X:128.000000, Y:128.000000},
 		{X:-128.000000, Y:-128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-off-7", -128.839996, -128.840996, 128.000000, 128.000000)
 	part.RegisterVectorDraw("indicator-on-0", drawVector_indicator_on_0)
@@ -91,8 +91,8 @@ func init() {
 		{X:-128.000000, Y:0.000000},
 		{X:128.000000, Y:0.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-on-0", -128.000000, -63.158000, 128.000000, 63.158000)
 	part.RegisterVectorDraw("indicator-on-1", drawVector_indicator_on_1)
@@ -100,8 +100,8 @@ func init() {
 		{X:-128.000000, Y:128.000000},
 		{X:128.000000, Y:-128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-on-1", -128.000000, -128.839996, 128.840996, 128.000000)
 	part.RegisterVectorDraw("indicator-on-2", drawVector_indicator_on_2)
@@ -109,8 +109,8 @@ func init() {
 		{X:-0.000000, Y:-128.000000},
 		{X:-0.000000, Y:128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-on-2", -63.158000, -128.000000, 63.158000, 128.000000)
 	part.RegisterVectorDraw("indicator-on-3", drawVector_indicator_on_3)
@@ -118,8 +118,8 @@ func init() {
 		{X:-128.000000, Y:-128.000000},
 		{X:128.000000, Y:128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-on-3", -128.000000, -128.000000, 128.839996, 128.840996)
 	part.RegisterVectorDraw("indicator-on-4", drawVector_indicator_on_4)
@@ -127,8 +127,8 @@ func init() {
 		{X:128.000000, Y:-0.000000},
 		{X:-128.000000, Y:-0.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-on-4", -128.000000, -63.158000, 128.000000, 63.158000)
 	part.RegisterVectorDraw("indicator-on-5", drawVector_indicator_on_5)
@@ -136,8 +136,8 @@ func init() {
 		{X:128.000000, Y:-128.000000},
 		{X:-128.000000, Y:128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-on-5", -128.840996, -128.000000, 128.000000, 128.839996)
 	part.RegisterVectorDraw("indicator-on-6", drawVector_indicator_on_6)
@@ -145,8 +145,8 @@ func init() {
 		{X:0.000000, Y:128.000000},
 		{X:0.000000, Y:-128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-on-6", -63.158000, -128.000000, 63.158000, 128.000000)
 	part.RegisterVectorDraw("indicator-on-7", drawVector_indicator_on_7)
@@ -154,8 +154,8 @@ func init() {
 		{X:128.000000, Y:128.000000},
 		{X:-128.000000, Y:-128.000000},
 	}, []string{
-		"PinA",
-		"PinB",
+		"TerminalA",
+		"TerminalB",
 	})
 	part.RegisterVectorHitBounds("indicator-on-7", -128.839996, -128.840996, 128.000000, 128.000000)
 }

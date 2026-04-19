@@ -49,9 +49,9 @@ Review the implementation against these rules:
 
 11. Keep the catalog part layout consistent.
     Real part types under `internal/part/catalog/<name>/` should follow the standard file split:
-    `part.go`, `draw.go`, `props.go`, `sim.go` when needed, `assets.go`, and generated `*_gen.go`.
+    `part.go`, `draw.go`, `props.go`, `sim.go` when needed, `assets.go`, and generated `vectors_gen.go` plus optional `pins_gen.go` when pin circles carry ids.
 
-12. Commit generated catalog vector output (`vectors_gen.go` / `*_gen.go` from the part-vector generator) in git so the default build does not require running codegen; regenerate and commit that file whenever SVG sources or the generator change.
+12. Commit generated catalog vector output (`vectors_gen.go`, `pins_gen.go`, from the part-vector generator) in git so the default build does not require running codegen; regenerate and commit those files whenever SVG sources or the generator change.
 
 13. Keep file I/O and top-level orchestration in `app`.
     Package lifecycle, Ebiten lifecycle, input polling, mode switching, and save/load belong there.

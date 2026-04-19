@@ -517,7 +517,8 @@ Every part type under `part/catalog/<name>/` follows the same file structure:
 | `props.go` | `PropSpec()`, `ApplyProp()` |
 | `sim.go` | `Tick()` and any other sim interface methods (omit if part has no sim behavior) |
 | `assets.go` | Asset selector — picks the right generated vector asset for current state |
-| `*_gen.go` | Generated Ebiten vector commands from SVG sources (do not edit by hand; **committed** so default builds need no codegen step) |
+| `vectors_gen.go` | Generated vector draw registrations and pin-layout data from SVG sources (do not edit by hand; **committed**) |
+| `pins_gen.go` | Optional: generated `…PinIDs` struct + marker map + clone helpers from SVG pin circle `id`s (committed when present) |
 
 This layout is identical across all "real" part types. A contributor opening
 any catalog package finds the same files containing the same categories of code.
@@ -1092,9 +1093,31 @@ func resolveNets() {
 }
 ```
 
+### Physical timing, jitter, and non-determinism
+
+Electromechanical relays are physical devices: pickup and drop times **spread**,
+and two coils energized at the **same** simulation instant do **not** have a
+guaranteed closure order or a fixed, repeatable delta between them. A sound
+**real-world** ladder design takes that spread into account and keeps **timing
+margin** so correct operation does not depend on winning a hairline race.
+
+**Design intent for CoilForge** is to lean **toward the bench** rather than a
+fully idealized, globally deterministic Boolean world: when relay timings are
+**at the edge**, **non-deterministic** outcomes (order, jitter) are **acceptable**
+and may differ run-to-run. A proper design still works under modeled variation.
+
+The **current** tick loop (below) is fixed-step and uses a net relaxation pass;
+future work may use a single **simulation time in microseconds**, explicit
+event stepping, and **seeded** randomness for pickup/drop jitter. A separate
+**deterministic / educational** mode (fixed seed, no jitter) remains useful for
+**tests, CI, and tutorials** without ruling out the default **physical** flavor.
+
 ### Tick Loop
 
-Fixed-timestep, single-threaded, deterministic.
+Fixed-timestep, single-threaded; the relaxation loop is **deterministic** for a
+given tick stream. **Relay-scale variation** is intended to come from **timed
+parts and jitter**, not from a single global tie-break that pretends two relays
+always close in the same order (see above).
 
 ```go
 const TickMicros = 10  // 10 µs per tick

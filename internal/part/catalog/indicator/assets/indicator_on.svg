@@ -5,8 +5,8 @@
       <bx:file format="svg"></bx:file>
     </bx:export>
   </defs>
-  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 127.999992, 3.9104)" id="PinA"></circle>
-  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 384, 3.9104)" id="PinB"></circle>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 127.999992, 3.9104)" id="TerminalA"></circle>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 384, 3.9104)" id="TerminalB"></circle>
   <circle style="stroke: rgb(0, 0, 0); stroke-width: 10px; fill: rgb(255, 172, 0);" r="63.158"></circle>
   <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" d="M -64 0 L -128 0"></path>
   <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" d="M 64 0 L 128 0"></path>

@@ -45,3 +45,9 @@
 - [ ] Manual check: run mode blocks left-toolbar placement flow.
 - [ ] `go test ./...` passes.
 - [ ] `./check.sh go` passes.
+
+## Parts / catalog draw (follow-up)
+
+- **Wire:** treat as an almost internal-only special case (routing/editor-centric; not the same vector-baked stem pattern as discrete components).
+- **Relay:** special structure handling today; patterns there might theoretically be reused by another authored part, but nothing obvious yet — revisit if a second relay-like type appears.
+- [ ] **Extract generic vector draw helpers:** move most repeated `draw.go` boilerplate (layout name suffix, `drawBase` with rotation cleared, bounds/anchors/hit-test/draw wiring using generated `vectors_gen.go` / `pins_gen.go`) into a **shared helper** under `internal/part` or a thin subpackage, so catalog packages mostly supply stem selection + type-specific quirks (relay/wire excluded or handled via small hooks).
