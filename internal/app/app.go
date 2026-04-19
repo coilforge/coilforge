@@ -7,6 +7,9 @@ package app
 // Flow position: primary runtime controller between Ebiten loop and subsystems.
 
 import (
+	"fmt"
+	"os"
+
 	"coilforge/internal/core"
 	"coilforge/internal/editor"
 	"coilforge/internal/partmanifest"
@@ -294,10 +297,25 @@ func (a *App) handleToolbarPress(mouseX, mouseY int) bool {
 
 // statusText reports the current top-level operating mode.
 func (a *App) statusText() string {
+	base := "Edit mode active"
 	if world.RunMode {
-		return "Run mode active"
+		base = "Run mode active"
 	}
-	return "Edit mode active"
+	if os.Getenv("COILFORGE_UNDO_MEM") == "" {
+		return base
+	}
+	u, r := editor.UndoRedoStacksApproxBytes()
+	return fmt.Sprintf("%s  undo~%s redo~%s", base, formatApproxBytes(u), formatApproxBytes(r))
+}
+
+func formatApproxBytes(n int64) string {
+	if n < 1024 {
+		return fmt.Sprintf("%dB", n)
+	}
+	if n < 1024*1024 {
+		return fmt.Sprintf("%.1fKB", float64(n)/1024)
+	}
+	return fmt.Sprintf("%.1fMB", float64(n)/(1024*1024))
 }
 
 // updateToolbarHover computes hovered toolbar button indices from mouse/touch pointer.

@@ -25,6 +25,7 @@ func HandleMouseDown(pt core.Pt, button int) {
 	PointerDownPart = -1
 	Dragging = false
 	DragMoved = false
+	DragUndoRecorded = false
 	BoxSelecting = false
 
 	if PlaceMode && PlacePreview != nil {
@@ -76,6 +77,7 @@ func HandleMouseUp(pt core.Pt, button int) {
 	}
 	Dragging = false
 	DragMoved = false
+	DragUndoRecorded = false
 	BoxSelecting = false
 	PointerDownPart = -1
 	MouseDownOnEmpty = false
@@ -161,7 +163,12 @@ func MoveSelected(delta core.Pt) {
 	if len(Selection) == 0 {
 		return
 	}
-	pushUndo()
+	if delta.X != 0 || delta.Y != 0 {
+		if !DragUndoRecorded {
+			pushUndo()
+			DragUndoRecorded = true
+		}
+	}
 	for _, idx := range Selection {
 		base := world.Parts[idx].Base()
 		base.Pos.X += delta.X
@@ -466,7 +473,6 @@ func snapSelectedToMajorGrid() {
 	if len(moves) == 0 {
 		return
 	}
-	pushUndo()
 	for _, m := range moves {
 		world.Parts[m.idx].Base().Pos = m.pos
 	}

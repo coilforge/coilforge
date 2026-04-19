@@ -198,6 +198,14 @@ func ToolbarIconTintColor(active, hovered, disabled bool) color.RGBA {
 	return color.RGBA{R: 56, G: 62, B: 74, A: 255}
 }
 
+// StatusBarTextColor is muted chrome text for the bottom status line.
+func StatusBarTextColor() color.RGBA {
+	if DarkMode {
+		return color.RGBA{R: 168, G: 176, B: 190, A: 255}
+	}
+	return color.RGBA{R: 92, G: 98, B: 110, A: 255}
+}
+
 // ToolbarLabelColor returns fallback label color when an icon is unavailable.
 func ToolbarLabelColor(active, hovered, disabled bool) color.RGBA {
 	if disabled {

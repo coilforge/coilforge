@@ -41,6 +41,8 @@ const (
 	toolbarIconSlotPx        = 28 // Icon drawn scaled inside this square.
 	toolbarHitStrokeWidth    = 1.0
 	toolbarActiveStrokeWidth = 2.0
+
+	statusBarBottomMarginPx = 10
 )
 
 // ToolbarButtonAtScreenPoint returns the button index under a screen-space pointer,
@@ -259,8 +261,32 @@ func DrawPropPanel(dst *ebiten.Image, spec part.PropSpec) {
 
 // DrawStatusBar renders bottom status text chrome.
 func DrawStatusBar(dst *ebiten.Image, text string) {
-	_ = SelectionColor()
-	_, _ = dst, text
+	text = strings.TrimSpace(normalizeUIString(text))
+	if text == "" {
+		return
+	}
+	w, h := world.ScreenW, world.ScreenH
+	if w <= 0 || h <= 0 {
+		return
+	}
+	atlas := uiLabelAtlas()
+	tw, th := atlasMeasure(text, atlas)
+	margin := float64(chromeEdgeMargin)
+	maxW := float64(w) - 2*margin
+	s := text
+	runes := []rune(s)
+	for tw > maxW && len(runes) > 4 {
+		runes = runes[:len(runes)-1]
+		s = string(runes)
+		tw, th = atlasMeasure(s, atlas)
+	}
+	if tw > maxW {
+		s = "..."
+		tw, th = atlasMeasure(s, atlas)
+	}
+	targetX := snapToLogicalPixel(margin)
+	targetY := snapToLogicalPixel(float64(h) - float64(statusBarBottomMarginPx) - th)
+	drawAtlasText(dst, s, targetX, targetY, StatusBarTextColor())
 }
 
 // DrawSelectionOutline renders a highlight around selected geometry.

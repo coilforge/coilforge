@@ -19,6 +19,7 @@ var (
 	PlacePreview part.Part       // PlacePreview stores package-level state.
 	Dragging     bool            // Dragging stores package-level state.
 	DragMoved    bool            // DragMoved is true after a non-zero move delta while dragging a part.
+	DragUndoRecorded bool        // DragUndoRecorded is true after pushUndo for the current drag gesture (one undo per drag, including snap).
 	DragStart    core.Pt         // DragStart stores package-level state.
 	PressWorld   core.Pt         // PressWorld is mouse-down origin in world space (marquee corner / move baseline).
 	PointerDownPart = -1        // PointerDownPart is index under press, or -1 when starting on empty canvas.
@@ -43,6 +44,7 @@ func Reset() {
 	PlacePreview = nil
 	Dragging = false
 	DragMoved = false
+	DragUndoRecorded = false
 	DragStart = core.Pt{}
 	PressWorld = core.Pt{}
 	PointerDownPart = -1
@@ -64,6 +66,7 @@ func ClearTransient() {
 	PlacePreview = nil
 	Dragging = false
 	DragMoved = false
+	DragUndoRecorded = false
 	BoxSelecting = false
 	PointerDownPart = -1
 	MouseDownOnEmpty = false
