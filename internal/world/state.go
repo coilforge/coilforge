@@ -37,8 +37,8 @@ var Zoom = defaultZoom
 
 // ZoomMin and ZoomMax clamp keyboard/wheel zoom so coordinates stay sane.
 const (
-	ZoomMin = 1.25
-	ZoomMax = 10.0
+	ZoomMin = 0.75
+	ZoomMax = 15.0
 )
 
 // ClampZoom clamps [Zoom] to [ZoomMin, ZoomMax].
