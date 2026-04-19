@@ -9,7 +9,7 @@ usage() {
 Usage:
   ./scripts/regen-toolbar-icons.sh
 
-Regenerates embedded toolbar PNGs from the indicator catalog assets/btn_*.svg (84×84).
+Regenerates embedded toolbar PNGs from the indicator catalog assets/btn_*.svg (168×168).
 Outputs go to the same assets/ folder (matches //go:embed paths in assets.go).
 EOF
 }
@@ -33,8 +33,8 @@ render_toolbar_icon() {
   fi
 
   mkdir -p "$(dirname "$dst")"
-  echo "resvg $src_rel -> $dst_rel (84x84)"
-  resvg "$src" "$dst" --width 84 --height 84
+  echo "resvg $src_rel -> $dst_rel (168x168)"
+  resvg "$src" "$dst" --width 168 --height 168
 }
 
 main() {

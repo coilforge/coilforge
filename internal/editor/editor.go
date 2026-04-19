@@ -56,6 +56,10 @@ func selectionContains(idx int) bool {
 // HandleMouseUp handles mouse up: finalize marquee selection or apply empty-click clearing.
 func HandleMouseUp(pt core.Pt, button int) {
 	_ = button
+	if ViewportPanDrag {
+		endViewportPan()
+		return
+	}
 	if BoxSelecting {
 		sx0, _ := world.WorldToScreen(PressWorld)
 		sx1, _ := world.WorldToScreen(pt)
@@ -131,11 +135,6 @@ func HandleKey(key ebiten.Key) {
 	case ebiten.KeyDelete, ebiten.KeyBackspace:
 		DeleteSelected()
 	}
-}
-
-// HandleScroll handles scroll.
-func HandleScroll(delta float64) {
-	_ = delta
 }
 
 // StartPlacement starts placement.

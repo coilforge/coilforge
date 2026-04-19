@@ -8,6 +8,7 @@ package app
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"time"
 
@@ -61,9 +62,10 @@ func Run() error {
 // into editor or simulation behavior depending on run mode.
 // Run-mode simulation advances in sim.LoopBegin's background goroutine, not here.
 func (a *App) Update() error {
-	w, h := ebiten.WindowSize()
-	world.ScreenW = w
-	world.ScreenH = h
+	winW, winH := ebiten.WindowSize()
+	sw, sh := a.LayoutF(float64(winW), float64(winH))
+	world.ScreenW = int(math.Ceil(sw))
+	world.ScreenH = int(math.Ceil(sh))
 	mx, my := ebiten.CursorPosition()
 	a.updateToolbarHover(mx, my)
 	if !world.RunMode {
@@ -79,8 +81,8 @@ func (a *App) Update() error {
 	a.handleZoomHotkeys()
 	a.handleMouse(mx, my)
 
-	if _, wheelY := ebiten.Wheel(); wheelY != 0 && !world.RunMode {
-		editor.HandleScroll(wheelY)
+	if wx, wy := ebiten.Wheel(); wx != 0 || wy != 0 {
+		handleViewportWheel(mx, my, wx, wy)
 	}
 
 	a.updateSimRealtimeHUD()
@@ -105,9 +107,25 @@ func (a *App) Draw(screen *ebiten.Image) {
 	render.DrawSimRealtimeHUD(screen, a.simRealtimeHUDText())
 }
 
-// Layout keeps the game surface the same size as the window.
+// Layout satisfies [ebiten.Game] (used when LayoutF is unavailable).
 func (a *App) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return outsideWidth, outsideHeight
+	wf, hf := a.LayoutF(float64(outsideWidth), float64(outsideHeight))
+	return int(math.Ceil(wf)), int(math.Ceil(hf))
+}
+
+// LayoutF scales the framebuffer by the monitor device scale factor so HiDPI / Retina draws at native
+// resolution instead of upscaling a low-res buffer (fixes soft UI and vector strokes).
+func (a *App) LayoutF(outsideWidth, outsideHeight float64) (float64, float64) {
+	if outsideWidth <= 0 || outsideHeight <= 0 {
+		return outsideWidth, outsideHeight
+	}
+	s := 1.0
+	if m := ebiten.Monitor(); m != nil {
+		if f := m.DeviceScaleFactor(); f > 0 {
+			s = f
+		}
+	}
+	return outsideWidth * s, outsideHeight * s
 }
 
 // handleToolHotkeys maps numeric keys to placement tool selection.
@@ -253,6 +271,10 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 			a.toolbarCapture = true
 			break
 		}
+		if ebiten.IsKeyPressed(ebiten.KeySpace) && !editor.LabelEditing {
+			editor.BeginViewportPan(mouseX, mouseY)
+			break
+		}
 		pt := world.ScreenToWorld(mouseX, mouseY)
 		if world.RunMode {
 			world.SimMu.Lock()
@@ -261,21 +283,26 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 		} else {
 			editor.HandleMouseDown(pt, int(ebiten.MouseButtonLeft))
 		}
-	case leftNow && a.leftDown && !world.RunMode:
+	case leftNow && a.leftDown:
 		if a.toolbarCapture {
+			break
+		}
+		if editor.ViewportPanActive() {
+			editor.HandleViewportPanDrag(mouseX, mouseY)
+			break
+		}
+		if world.RunMode {
 			break
 		}
 		pt := world.ScreenToWorld(mouseX, mouseY)
 		editor.HandleDrag(pt)
-	case !leftNow && a.leftDown && !world.RunMode:
+	case !leftNow && a.leftDown:
 		if a.toolbarCapture {
 			a.toolbarCapture = false
 			break
 		}
 		pt := world.ScreenToWorld(mouseX, mouseY)
 		editor.HandleMouseUp(pt, int(ebiten.MouseButtonLeft))
-	case !leftNow && a.leftDown:
-		a.toolbarCapture = false
 	}
 
 	a.leftDown = leftNow

@@ -12,27 +12,31 @@ import (
 )
 
 var (
-	Selection    []int           // Selection stores package-level state.
-	HoverIndex   = -1            // HoverIndex stores package-level state.
-	PlaceMode    bool            // PlaceMode stores package-level state.
-	PlaceTool    core.PartTypeID // PlaceTool stores package-level state.
-	PlacePreview part.Part       // PlacePreview stores package-level state.
-	Dragging     bool            // Dragging stores package-level state.
-	DragMoved    bool            // DragMoved is true after a non-zero move delta while dragging a part.
-	DragUndoRecorded bool        // DragUndoRecorded is true after pushUndo for the current drag gesture (one undo per drag, including snap).
-	DragStart    core.Pt         // DragStart stores package-level state.
-	PressWorld   core.Pt         // PressWorld is mouse-down origin in world space (marquee corner / move baseline).
-	PointerDownPart = -1        // PointerDownPart is index under press, or -1 when starting on empty canvas.
-	MouseDownOnEmpty bool       // MouseDownOnEmpty is true when the latest press began on empty canvas (not placement).
-	BoxSelecting bool            // BoxSelecting stores package-level state.
-	BoxRect      core.Rect       // BoxRect stores package-level state.
-	BoxSelectCrossing bool       // BoxSelectCrossing: R→L marquee on screen uses crossing (intersect) vs window (fully inside).
-	UndoStack    []Snapshot      // UndoStack stores package-level state.
-	RedoStack    []Snapshot      // RedoStack stores package-level state.
-	Clipboard    []part.Part     // Clipboard stores package-level state.
-	LabelEditing bool            // LabelEditing stores package-level state.
-	LabelIndex   = -1            // LabelIndex stores package-level state.
-	LabelBuffer  []rune          // LabelBuffer stores package-level state.
+	Selection         []int           // Selection stores package-level state.
+	HoverIndex        = -1            // HoverIndex stores package-level state.
+	PlaceMode         bool            // PlaceMode stores package-level state.
+	PlaceTool         core.PartTypeID // PlaceTool stores package-level state.
+	PlacePreview      part.Part       // PlacePreview stores package-level state.
+	Dragging          bool            // Dragging stores package-level state.
+	DragMoved         bool            // DragMoved is true after a non-zero move delta while dragging a part.
+	DragUndoRecorded  bool            // DragUndoRecorded is true after pushUndo for the current drag gesture (one undo per drag, including snap).
+	DragStart         core.Pt         // DragStart stores package-level state.
+	PressWorld        core.Pt         // PressWorld is mouse-down origin in world space (marquee corner / move baseline).
+	PointerDownPart   = -1            // PointerDownPart is index under press, or -1 when starting on empty canvas.
+	MouseDownOnEmpty  bool            // MouseDownOnEmpty is true when the latest press began on empty canvas (not placement).
+	BoxSelecting      bool            // BoxSelecting stores package-level state.
+	BoxRect           core.Rect       // BoxRect stores package-level state.
+	BoxSelectCrossing bool            // BoxSelectCrossing: R→L marquee on screen uses crossing (intersect) vs window (fully inside).
+	UndoStack         []Snapshot      // UndoStack stores package-level state.
+	RedoStack         []Snapshot      // RedoStack stores package-level state.
+	Clipboard         []part.Part     // Clipboard stores package-level state.
+	LabelEditing      bool            // LabelEditing stores package-level state.
+	LabelIndex        = -1            // LabelIndex stores package-level state.
+	LabelBuffer       []rune          // LabelBuffer stores package-level state.
+
+	ViewportPanDrag bool // Space+drag pan: move world.Cam with primary button held.
+	PanLastScreenX  int  // Last pointer position during viewport pan (screen px).
+	PanLastScreenY  int
 )
 
 // Reset resets its work.
@@ -58,6 +62,9 @@ func Reset() {
 	LabelEditing = false
 	LabelIndex = -1
 	LabelBuffer = nil
+	ViewportPanDrag = false
+	PanLastScreenX = 0
+	PanLastScreenY = 0
 }
 
 // ClearTransient handles clear transient.
@@ -72,4 +79,5 @@ func ClearTransient() {
 	MouseDownOnEmpty = false
 	BoxSelectCrossing = false
 	LabelEditing = false
+	ViewportPanDrag = false
 }

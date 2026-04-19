@@ -28,8 +28,8 @@ var NextPinID core.PinID
 // Cam stores package-level state.
 var Cam core.Pt
 
-// defaultZoom is pixels per world unit at startup; with SVGUserUnitToWorld 1/16, a full 512-wide
-// symbol spans ~128 screen pixels so strokes stay visible without wheel zoom.
+// defaultZoom is pixels per world unit at startup; with SVGUserUnitToWorld 1/8, a full 512-wide
+// symbol spans ~256 screen pixels so strokes stay visible without wheel zoom.
 const defaultZoom = 4.0
 
 // Zoom stores package-level state.
@@ -37,8 +37,8 @@ var Zoom = defaultZoom
 
 // ZoomMin and ZoomMax clamp keyboard/wheel zoom so coordinates stay sane.
 const (
-	ZoomMin = 0.25
-	ZoomMax = 128.0
+	ZoomMin = 1.25
+	ZoomMax = 10.0
 )
 
 // ClampZoom clamps [Zoom] to [ZoomMin, ZoomMax].

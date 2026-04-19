@@ -65,12 +65,21 @@ func fillSchematicBackground(dst *ebiten.Image) {
 	)
 }
 
+// Grid visibility vs zoom (pixels per world unit): below 3 no grid; from 3 major only; from 7 minor too.
+const (
+	gridShowMajorMinZoom = 3.0 // Zoom < this: omit minor and major
+	gridShowMinorMinZoom = 7.0 // Zoom < this: omit minor (major still drawn if Zoom >= gridShowMajorMinZoom)
+)
+
 // drawGrid draws world-space minor (wire) and major (part pitch) grid lines in screen space.
 func drawGrid(dst *ebiten.Image) {
 	w, h := world.ScreenW, world.ScreenH
 	if w <= 0 || h <= 0 {
 		return
 	}
+
+	showMajor := world.Zoom >= gridShowMajorMinZoom
+	showMinor := world.Zoom >= gridShowMinorMinZoom
 
 	minor := world.MinorGridWorld
 	major := world.MajorGridWorld
@@ -106,6 +115,12 @@ func drawGrid(dst *ebiten.Image) {
 		if runSim && !isMajor {
 			continue
 		}
+		if isMajor && !showMajor {
+			continue
+		}
+		if !isMajor && !showMinor {
+			continue
+		}
 		col := minorCol
 		sw := swMinor
 		if isMajor {
@@ -125,6 +140,12 @@ func drawGrid(dst *ebiten.Image) {
 		}
 		isMajor := modJ == 0
 		if runSim && !isMajor {
+			continue
+		}
+		if isMajor && !showMajor {
+			continue
+		}
+		if !isMajor && !showMinor {
 			continue
 		}
 		col := minorCol

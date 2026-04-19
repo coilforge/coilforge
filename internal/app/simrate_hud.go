@@ -66,14 +66,16 @@ func (a *App) updateSimRealtimeHUD() {
 // simRealtimeHUDText is a short line for the lower-right corner: rate vs realtime and step quantum.
 func (a *App) simRealtimeHUDText() string {
 	step := sim.StepMicros
+	// TEMP: show world.Zoom while tuning zoom limits / grid visibility; remove when done.
+	z := fmt.Sprintf("  zoom=%.4g", world.Zoom)
 	if !world.RunMode {
-		return fmt.Sprintf("Sim --  %dus step", step)
+		return fmt.Sprintf("Sim --  %dus step%s", step, z)
 	}
 	pace := simPaceHUDLabel()
 	if !a.simRTSmoothInit {
-		return fmt.Sprintf("Sim ...%s  %dus step", pace, step)
+		return fmt.Sprintf("Sim ...%s  %dus step%s", pace, step, z)
 	}
-	return fmt.Sprintf("Sim %s%s  %dus step", formatSimRTPercent(a.simRTRatio), pace, step)
+	return fmt.Sprintf("Sim %s%s  %dus step%s", formatSimRTPercent(a.simRTRatio), pace, step, z)
 }
 
 // simPaceHUDLabel reports full-speed vs paced target for the HUD (F8 toggles while running).

@@ -5,7 +5,8 @@ import "coilforge/internal/core"
 // SVGUserUnitToWorld is how many schematic world units one SVG user unit covers.
 // A 512-unit-wide path is 512*this world units long; a 64-unit shape is 1/8 of that.
 // Adjust this single constant to set global schematic scale for vector parts.
-const SVGUserUnitToWorld = 1.0 / 16.0
+// 1/8 makes symbols and stroke widths twice as large in world space vs the earlier 1/16 mapping.
+const SVGUserUnitToWorld = 1.0 / 8.0
 
 // SVGLocalToWorld maps symbol-centred SVG user coordinates through [core.LocalToWorld]
 // (position, rotation, mirror).

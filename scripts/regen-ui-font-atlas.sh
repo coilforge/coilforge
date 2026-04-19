@@ -17,7 +17,7 @@ go run "$ROOT_DIR/scripts/gen_ui_font_atlas.go" \
   --font "$TMP_FONT" \
   --out-png "$ROOT_DIR/internal/render/fonts/ui_label_atlas.png" \
   --out-json "$ROOT_DIR/internal/render/fonts/ui_label_atlas.json" \
-  --size 10 \
+  --size 20 \
   --dpi 72 \
-  --tex-w 512 \
-  --padding 1
+  --tex-w 1024 \
+  --padding 2

@@ -32,19 +32,20 @@ const (
 )
 
 // Chrome layout for vertical toolbar strips (screen pixels).
+// Kept ~2× the original design to match doubled schematic scale (SVGUserUnitToWorld) + larger UI font atlas.
 const (
-	chromeEdgeMargin         = 8
-	toolbarStripWidthPx      = 56
-	toolbarPanelInnerPadPx   = 4
-	toolbarButtonHitPx       = 48 // Touch-style hit target; fits inside strip with inner pad.
-	toolbarButtonGapPx       = 6
-	toolbarIconSlotPx        = 28 // Icon drawn scaled inside this square.
-	toolbarHitStrokeWidth    = 1.0
-	toolbarActiveStrokeWidth = 2.0
+	chromeEdgeMargin         = 16
+	toolbarStripWidthPx      = 112
+	toolbarPanelInnerPadPx   = 8
+	toolbarButtonHitPx       = 96 // Touch-style hit target; fits inside strip with inner pad.
+	toolbarButtonGapPx       = 12
+	toolbarIconSlotPx        = 56 // Icon drawn scaled inside this square.
+	toolbarHitStrokeWidth    = 2.0
+	toolbarActiveStrokeWidth = 4.0
 
-	statusBarBottomMarginPx = 10
-	// simRealtimeRightPad is space from the right window edge to the end of the right toolbar strip + margin.
-	simRealtimeRightPad = chromeEdgeMargin + toolbarStripWidthPx + chromeEdgeMargin
+	statusBarBottomMarginPx = 20
+	// simRealtimeRightPad is space from the right window edge reserved for the right toolbar (flush to edge).
+	simRealtimeRightPad = toolbarStripWidthPx
 )
 
 // ToolbarButtonAtScreenPoint returns the button index under a screen-space pointer,
@@ -114,7 +115,7 @@ func DrawToolbar(dst *ebiten.Image, side int, tools []ToolButton, activeTool int
 	case ToolbarLeft:
 		x = margin
 	case ToolbarRight:
-		x = float32(w) - margin - bw
+		x = float32(w) - bw // Flush to window right edge (no outer margin).
 	default:
 		return
 	}
@@ -164,7 +165,7 @@ func toolbarButtonStrokeWidth(active, hovered bool) float32 {
 		return toolbarActiveStrokeWidth
 	}
 	if hovered {
-		return 1.5
+		return 3.0
 	}
 	return float32(toolbarHitStrokeWidth)
 }
@@ -193,8 +194,8 @@ func drawToolbarButtonIcon(dst *ebiten.Image, btn ToolButton, x, y, hit, iconSz 
 	nudgeY := 0.0
 	if active || hovered {
 		// Positional nudge reads as press/hover better than icon scaling.
-		nudgeX = 1
-		nudgeY = 1
+		nudgeX = 2
+		nudgeY = 2
 	}
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(scale, scale)
@@ -229,8 +230,8 @@ func drawToolbarLabel(dst *ebiten.Image, label string, x, y, size float32, clr c
 	nudgeY := 0.0
 	if active || hovered {
 		// Match icon nudge in drawToolbarButtonIcon — reads as hover/press affordance.
-		nudgeX = 1
-		nudgeY = 1
+		nudgeX = 2
+		nudgeY = 2
 	}
 	targetX := snapToLogicalPixel(float64(x+(size-float32(aw))*0.5) + nudgeX)
 	targetY := snapToLogicalPixel(float64(y+(size-float32(ah))*0.5) + nudgeY)
@@ -248,12 +249,14 @@ func drawButtonBevel(dst *ebiten.Image, x, y, size float32, active bool, disable
 		// In light mode, non-active buttons should read raised rather than inset.
 		light, dark = dark, light
 	}
+	inset := float32(2)
+	sw := float32(2)
 	// Top + left edge.
-	vector.StrokeLine(dst, x+1, y+1, x+size-1, y+1, 1, light, false)
-	vector.StrokeLine(dst, x+1, y+1, x+1, y+size-1, 1, light, false)
+	vector.StrokeLine(dst, x+inset, y+inset, x+size-inset, y+inset, sw, light, false)
+	vector.StrokeLine(dst, x+inset, y+inset, x+inset, y+size-inset, sw, light, false)
 	// Bottom + right edge.
-	vector.StrokeLine(dst, x+1, y+size-1, x+size-1, y+size-1, 1, dark, false)
-	vector.StrokeLine(dst, x+size-1, y+1, x+size-1, y+size-1, 1, dark, false)
+	vector.StrokeLine(dst, x+inset, y+size-inset, x+size-inset, y+size-inset, sw, dark, false)
+	vector.StrokeLine(dst, x+size-inset, y+inset, x+size-inset, y+size-inset, sw, dark, false)
 }
 
 // DrawPropPanel renders the selected-part property panel chrome.
@@ -344,7 +347,7 @@ func DrawSelectionOutline(dst *ebiten.Image, bounds core.Rect) {
 	if sh < 1 {
 		sh = 1
 	}
-	vector.StrokeRect(dst, float32(minX), float32(minY), sw, sh, 1.5, SelectionColor(), false)
+	vector.StrokeRect(dst, float32(minX), float32(minY), sw, sh, 3.0, SelectionColor(), false)
 }
 
 // DrawBoxSelect renders marquee selection rectangle chrome (world-space rect).
@@ -365,5 +368,5 @@ func DrawBoxSelect(dst *ebiten.Image, box core.Rect, crossing bool) {
 	}
 	fill := BoxSelectFillColor(crossing)
 	vector.FillRect(dst, float32(minX), float32(minY), sw, sh, fill, false)
-	vector.StrokeRect(dst, float32(minX), float32(minY), sw, sh, 1.0, SelectionColor(), false)
+	vector.StrokeRect(dst, float32(minX), float32(minY), sw, sh, 2.0, SelectionColor(), false)
 }
