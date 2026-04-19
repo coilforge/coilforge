@@ -51,10 +51,12 @@ Review the implementation against these rules:
     Real part types under `internal/part/catalog/<name>/` should follow the standard file split:
     `part.go`, `draw.go`, `props.go`, `sim.go` when needed, `assets.go`, and generated `*_gen.go`.
 
-12. Keep file I/O and top-level orchestration in `app`.
+12. Commit generated catalog vector output (`vectors_gen.go` / `*_gen.go` from the part-vector generator) in git so the default build does not require running codegen; regenerate and commit that file whenever SVG sources or the generator change.
+
+13. Keep file I/O and top-level orchestration in `app`.
     Package lifecycle, Ebiten lifecycle, input polling, mode switching, and save/load belong there.
 
-13. Favor simple whole-schematic state management.
+14. Favor simple whole-schematic state management.
     Undo/redo and file save/load can operate on full snapshots rather than complex incremental object graphs.
 
 ## Review Output Contract

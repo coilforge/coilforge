@@ -56,6 +56,12 @@ Available check commands:
 - `./check.sh architecture` runs the optional architecture review script
 - `./check.sh full` runs Go lint and Markdown lint, and includes architecture review when `COILFORGE_ARCH_LLM_CMD` is configured
 
+## Generated vector code
+
+Schematic SVGs live under `internal/part/catalog/<pkg>/assets/`. The generator (`scripts/gen_part_vectors.go`, invoked via `./scripts/regen-part-vectors.sh` or `go run -tags genpartvectors ./scripts/gen_part_vectors.go <pkg>`) writes `vectors_gen.go` next to the catalog package (registered draw funcs, pin layouts, hit bounds).
+
+**Committed generated files:** `*_gen.go` outputs are checked into git so a plain `go build` / clone does not require running codegen, PRs can show the full emitted diff, and git history reflects the exact registrations shipped. After editing SVGs or the generator, regenerate and commit the updated `vectors_gen.go` with those changes.
+
 ## CI notes
 
 GitHub Actions in [`.github/workflows/ci.yml`](/Users/mats/Projects/CoilForge/.github/workflows/ci.yml) currently:
@@ -85,4 +91,4 @@ GitHub Actions in [`.github/workflows/ci.yml`](/Users/mats/Projects/CoilForge/.g
 
 ## Architecture
 
-Architecture notes live in [`Docs/ARCHITECTURE.md`](/Users/mats/Projects/CoilForge/Docs/ARCHITECTURE.md), with compact contributor rules in [`Docs/ARCHITECTURE_RULES.md`](/Users/mats/Projects/CoilForge/Docs/ARCHITECTURE_RULES.md).
+Architecture notes live in [`Docs/ARCHITECTURE.md`](Docs/ARCHITECTURE.md), with compact contributor rules in [`Docs/ARCHITECTURE_RULES.md`](Docs/ARCHITECTURE_RULES.md).

@@ -517,7 +517,7 @@ Every part type under `part/catalog/<name>/` follows the same file structure:
 | `props.go` | `PropSpec()`, `ApplyProp()` |
 | `sim.go` | `Tick()` and any other sim interface methods (omit if part has no sim behavior) |
 | `assets.go` | Asset selector — picks the right generated vector asset for current state |
-| `*_gen.go` | Generated Ebiten vector commands from SVG sources (do not edit by hand) |
+| `*_gen.go` | Generated Ebiten vector commands from SVG sources (do not edit by hand; **committed** so default builds need no codegen step) |
 
 This layout is identical across all "real" part types. A contributor opening
 any catalog package finds the same files containing the same categories of code.
@@ -1199,14 +1199,23 @@ current state and draws it using Ebiten's vector API. No PNG decoding, no
 runtime SVG parsing.
 
 ```text
-icon-sources/<name>/*.svg
+part/catalog/<pkg>/assets/*.svg   (schematic art; toolbar btn_*.svg excluded)
     │
-    ▼  scripts/regen-part-vectors.sh
-part/catalog/<name>/*_gen.go      (generated vector path data)
+    ▼  go run -tags genpartvectors ./scripts/gen_part_vectors.go <pkg>
+    │  (or ./scripts/regen-part-vectors.sh)
+part/catalog/<pkg>/vectors_gen.go  (generated registrations + draw functions)
     │
-    ▼  assets.go picks the right asset for current state
+    ▼  draw code names a vector; part module init() registers it
 Part.Draw(ctx)                    (draws vectors onto ctx.Dst)
 ```
+
+**Version control:** generated `vectors_gen.go` (and similar `*_gen.go` under
+catalogs) is **checked in**. That keeps `go build` working without running
+the generator, makes code review and `git bisect` see the real shipped
+output, and matches the “source of truth = SVG + generator; artifact = Go”
+split. Any change to SVGs or to `gen_part_vectors.go` should be followed by
+regenerating and committing the updated `*_gen.go` in the same change (or
+immediately after) so the tree never drifts.
 
 Each catalog part's `assets.go` is a thin selector:
 
