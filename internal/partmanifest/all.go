@@ -10,7 +10,9 @@ package partmanifest
 import "coilforge/internal/core"
 
 import (
+	_ "coilforge/internal/part/catalog/gnd"
 	_ "coilforge/internal/part/catalog/indicator"
+	_ "coilforge/internal/part/catalog/vcc"
 )
 
 type PlacementTool struct {
@@ -21,4 +23,6 @@ type PlacementTool struct {
 // PlacementTools is the single app-level placement order and hotkey list.
 var PlacementTools = []PlacementTool{
 	{TypeID: "indicator", Hotkey: '1'},
+	{TypeID: "gnd", Hotkey: '2'},
+	{TypeID: "vcc", Hotkey: '3'},
 }

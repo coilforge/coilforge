@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512px" height="512px" viewBox="-256 -256 512 512" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:grid x="256" y="-320" width="64" height="64"></bx:grid>
+    <bx:export>
+      <bx:file format="svg"></bx:file>
+    </bx:export>
+  </defs>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-256" r="9.999" transform="matrix(1, 0.015275, 0, 1, 256.471008, 3.890765)" id="VCC"></circle>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" x1="0.471" y1="0" x2="0.758" y2="-63.529"></line>
+  <circle style="stroke: rgb(0, 0, 0); stroke-width: 10px; fill: rgb(255, 255, 255);" cx="0" cy="-128" r="64" transform="matrix(0.755164, 0, 0, 0.748125, -0.287, -16.119991)"></circle>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10;" x1="-0.287" y1="-80.118" x2="0" y2="-143.64"></line>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; transform-origin: 0.748px -112.02px;" x1="32.518" y1="-111.88" x2="-31.002" y2="-112.16"></line>
+</svg>

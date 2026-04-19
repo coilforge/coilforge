@@ -263,8 +263,11 @@ func DrawOverlays(dst *ebiten.Image) {
 // commitPlacement handles commit placement.
 func commitPlacement(pos core.Pt) {
 	pushUndo()
-	PlacePreview.Base().Pos = snapToGrid(pos)
-	world.Parts = append(world.Parts, PlacePreview)
+	// New() does not allocate pin IDs; Clone does. Re-clone the preview with the same part id
+	// so every placed part gets unique [core.PinID] values (required for net map and save).
+	placed := PlacePreview.Clone(PlacePreview.Base().ID, world.AllocPinID)
+	placed.Base().Pos = snapToGrid(pos)
+	world.Parts = append(world.Parts, placed)
 	PlacePreview = nil
 	PlaceMode = false
 }

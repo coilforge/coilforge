@@ -137,7 +137,7 @@ func resolveNets() {
 
 	for _, p := range world.Parts {
 		if seeder, ok := p.(part.NetSeeder); ok {
-			seeder.SeedNets(netByPin, high, low)
+			seeder.SeedNets(union, netByPin, high, low)
 		}
 	}
 

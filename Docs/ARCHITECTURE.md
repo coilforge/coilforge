@@ -353,9 +353,9 @@ type SimContext struct {
 }
 
 // NetSeeder marks nets as driven high or low (power sources, clocks).
-// Called during net resolution before state propagation.
+// Called during net resolution after unions are built; use union.Find(netID) to key high/low.
 type NetSeeder interface {
-    SeedNets(netByPin func(core.PinID) int, high, low map[int]bool)
+    SeedNets(union NetUnion, netByPin func(core.PinID) int, high, low map[int]bool)
 }
 
 // Conductor unions nets through closed contacts (relays, switches).
@@ -398,7 +398,7 @@ for _, p := range world.Parts {
 // 2. Seed net states from power sources and clocks.
 for _, p := range world.Parts {
     if s, ok := p.(part.NetSeeder); ok {
-        s.SeedNets(netByPin, high, low)
+        s.SeedNets(union, netByPin, high, low)
     }
 }
 
@@ -1076,7 +1076,7 @@ func resolveNets() {
     // Power sources and clocks declare which nets they drive.
     for _, p := range world.Parts {
         if s, ok := p.(part.NetSeeder); ok {
-            s.SeedNets(netByPin, high, low)
+            s.SeedNets(union, netByPin, high, low)
         }
     }
 

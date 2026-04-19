@@ -14,8 +14,13 @@ import (
 // Tick handles tick.
 // Pin fields TerminalA / TerminalB come from generated IndicatorPinIDs (SVG ids); compare nets or states as needed.
 func (self *Indicator) Tick(ctx part.SimContext) bool {
-	net := ctx.NetByPin(self.TerminalA)
 	wasLit := self.Lit
-	self.Lit = ctx.NetState(net) == core.NetHigh
+	a := ctx.PinNetState(self.TerminalA)
+	b := ctx.PinNetState(self.TerminalB)
+	if a != core.NetFloat && b != core.NetFloat && a != b {
+		self.Lit = true
+	} else {
+		self.Lit = false
+	}
 	return self.Lit != wasLit
 }

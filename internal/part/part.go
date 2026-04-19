@@ -69,8 +69,13 @@ type SimContext struct {
 	Rand         *rand.Rand           // rand value.
 }
 
+// PinNetState returns the solved electrical level for the net connected to pin (core.NetFloat, NetLow, …).
+func (ctx SimContext) PinNetState(pin core.PinID) int {
+	return ctx.NetState(ctx.NetByPin(pin))
+}
+
 type NetSeeder interface {
-	SeedNets(netByPin func(core.PinID) int, high, low map[int]bool)
+	SeedNets(union NetUnion, netByPin func(core.PinID) int, high, low map[int]bool)
 }
 
 type Conductor interface {
