@@ -25,6 +25,10 @@ type App struct {
 	toolbarCapture bool // True while current mouse press started on toolbar chrome.
 }
 
+// windowTPS is how many times per second Ebiten calls Update (and typically Draw).
+// Simulation runs in a separate goroutine; this only controls input polling and redraw cadence (~100ms at 10 TPS).
+const windowTPS = 10
+
 // New constructs a fresh application instance.
 func New() *App {
 	return &App{hoverLeftTool: -1, hoverRightTool: -1}
@@ -35,13 +39,14 @@ func Run() error {
 	world.Reset()
 	ebiten.SetWindowSize(1440, 900)
 	ebiten.SetWindowTitle("CoilForge")
+	ebiten.SetTPS(windowTPS)
 	return ebiten.RunGame(New())
 }
 
 // Update runs one frame of app orchestration and input dispatch.
 // It refreshes viewport size, processes keyboard/mouse input, and routes input
 // into editor or simulation behavior depending on run mode.
-// It also advances simulation frames when run mode is active.
+// Run-mode simulation advances in sim.LoopBegin's background goroutine, not here.
 func (a *App) Update() error {
 	w, h := ebiten.WindowSize()
 	world.ScreenW = w
@@ -65,15 +70,15 @@ func (a *App) Update() error {
 		editor.HandleScroll(wheelY)
 	}
 
-	if world.RunMode {
-		sim.AdvanceFrame()
-	}
-
 	return nil
 }
 
 // Draw composes scene rendering, editor overlays, and screen-space chrome.
 func (a *App) Draw(screen *ebiten.Image) {
+	if world.RunMode {
+		world.SimMu.RLock()
+		defer world.SimMu.RUnlock()
+	}
 	render.DrawScene(screen)
 
 	if !world.RunMode {
@@ -235,7 +240,9 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 		}
 		pt := world.ScreenToWorld(mouseX, mouseY)
 		if world.RunMode {
+			world.SimMu.Lock()
 			sim.HandleClick(pt)
+			world.SimMu.Unlock()
 		} else {
 			editor.HandleClick(pt, int(ebiten.MouseButtonLeft))
 		}

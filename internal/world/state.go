@@ -9,7 +9,12 @@ package world
 import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
+	"sync"
 )
+
+// SimMu guards simulation mutations (nets, net states, part tick state) against concurrent reads during Draw.
+// Writers: background sim loop and run-mode click handling. Readers: Draw while RunMode is true.
+var SimMu sync.RWMutex
 
 // Parts stores package-level state.
 var Parts []part.Part

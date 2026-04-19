@@ -4,7 +4,8 @@ package sim
 // sim advances run-mode logic by deriving nets and ticking part simulation interfaces.
 // Subsystem: simulation engine.
 // It reads world/part contracts and flatten output while staying independent from editor.
-// Flow position: run pipeline branch invoked by app during active simulation mode.
+// Run mode: a background goroutine steps SimTimeMicros by StepMicros and calls resolveAndTick; UI rate is decoupled.
+// Flow position: run pipeline for world state; app starts/stops the background loop on mode change.
 
 import (
 	"coilforge/internal/core"
@@ -12,17 +13,57 @@ import (
 	"coilforge/internal/part"
 	"coilforge/internal/world"
 	"math/rand"
+	"sync"
 )
 
-// FrameAdvanceMicros is how much simulated time advances each run-mode frame.
-// Legacy mapping: 1000 abstract steps × 10 µs/step.
-const FrameAdvanceMicros = 10_000
+// StepMicros is the simulation clock quantum: each loop iteration advances SimTimeMicros by this amount.
+const StepMicros = 10
 
 // maxResolveIterations defines a package-level constant.
 const maxResolveIterations = 8
 
 // simRand stores package-level state.
 var simRand = rand.New(rand.NewSource(1))
+
+var (
+	simLoopStop chan struct{}
+	simLoopWG   sync.WaitGroup
+)
+
+// LoopBegin starts a goroutine that advances simulated time continuously until [LoopEnd].
+func LoopBegin() {
+	if simLoopStop != nil {
+		return
+	}
+	simLoopStop = make(chan struct{})
+	simLoopWG.Add(1)
+	go simBackgroundLoop()
+}
+
+func simBackgroundLoop() {
+	defer simLoopWG.Done()
+	for {
+		select {
+		case <-simLoopStop:
+			return
+		default:
+		}
+		world.SimMu.Lock()
+		world.SimTimeMicros += StepMicros
+		resolveAndTick()
+		world.SimMu.Unlock()
+	}
+}
+
+// LoopEnd stops the background loop started by [LoopBegin] and waits for it to exit.
+func LoopEnd() {
+	if simLoopStop == nil {
+		return
+	}
+	close(simLoopStop)
+	simLoopWG.Wait()
+	simLoopStop = nil
+}
 
 // Start starts its work.
 func Start() {
@@ -37,12 +78,6 @@ func Stop() {
 	world.NetStates = nil
 	world.PinNet = nil
 	world.SimTimeMicros = 0
-}
-
-// AdvanceFrame handles advance frame.
-func AdvanceFrame() {
-	world.SimTimeMicros += FrameAdvanceMicros
-	resolveAndTick()
 }
 
 // HandleClick handles click.

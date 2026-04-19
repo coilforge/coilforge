@@ -1032,7 +1032,7 @@ The simulator's job:
 1. Resolve net states (who is connected to what, what is driven).
 2. Ask each part to update itself given the current net states and `NowMicros`.
 3. If any part changed (e.g. relay flipped contacts), re-resolve and repeat.
-4. Between frames, advance `SimTimeMicros` by `FrameAdvanceMicros` (future work may jump to the next scheduled event instead).
+4. In run mode, a **background goroutine** loops: add `StepMicros` to `SimTimeMicros`, then `resolveAndTick()` (under `world.SimMu`). The Ebiten `Update`/`Draw` rate is unrelated to simulated time throughput (future work may jump `SimTimeMicros` to the next scheduled event instead of fixed substeps).
 
 ### Lifecycle
 
@@ -1113,17 +1113,21 @@ event stepping (next-due optimization) and **seeded** randomness for pickup/drop
 
 ### Tick Loop
 
-Fixed-timestep, single-threaded; the relaxation loop is **deterministic** for a
-given tick stream. **Relay-scale variation** is intended to come from **timed
+Fixed timestep in simulated microseconds; net relaxation within each step is **deterministic** for a
+given `SimTimeMicros` stream. **Relay-scale variation** is intended to come from **timed
 parts and jitter**, not from a single global tie-break that pretends two relays
 always close in the same order (see above).
 
 ```go
-const FrameAdvanceMicros = 10_000  // ~10 ms of sim time per run-mode frame
+const StepMicros = 10 // µs added per background-loop iteration before resolveAndTick
 
-func AdvanceFrame() {
-    world.SimTimeMicros += FrameAdvanceMicros
-    resolveAndTick()
+func simBackgroundLoop() {
+    for /* until stopped */ {
+        world.SimMu.Lock()
+        world.SimTimeMicros += StepMicros
+        resolveAndTick()
+        world.SimMu.Unlock()
+    }
 }
 
 func resolveAndTick() {
@@ -1340,10 +1344,7 @@ func (a *App) Update() error {
         editor.HandleClick(pt, mouseButton)
     }
 
-    // 6. Advance simulation.
-    if world.RunMode {
-        sim.AdvanceFrame()
-    }
+    // 6. Simulation advances in sim.LoopBegin's goroutine, not here.
 
     return nil
 }

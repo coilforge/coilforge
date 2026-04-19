@@ -70,8 +70,9 @@ func selectedPart() part.Part {
 // ToggleRunMode switches between edit and simulation modes.
 func ToggleRunMode() {
 	if world.RunMode {
-		sim.Stop()
+		sim.LoopEnd()
 		world.RunMode = false
+		sim.Stop()
 		return
 	}
 
@@ -79,6 +80,7 @@ func ToggleRunMode() {
 	flatten.BuildNets()
 	sim.Start()
 	world.RunMode = true
+	sim.LoopBegin()
 }
 
 // partType converts a raw string ID into a strongly typed part ID.
