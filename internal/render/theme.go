@@ -58,6 +58,17 @@ func GridMajorColor() color.RGBA {
 	return color.RGBA{R: 164, G: 172, B: 188, A: 255}
 }
 
+// GridMajorColorRunMode returns major grid tint during simulation (much fainter than [GridMajorColor]); minor grid is hidden in run mode.
+// Uses opaque RGB lerped toward [SchematicBackgroundColor]—not low alpha—so faint lines stay consistent where vector alpha blending is weak.
+func GridMajorColorRunMode() color.RGBA {
+	if DarkMode {
+		// ~94% canvas + ~6% normal major tint (≈26,28,34): very subtle on R:22,G:24,B:29.
+		return color.RGBA{R: 26, G: 28, B: 34, A: 255}
+	}
+	// ~92% canvas + ~8% major tint: faint on R:244,G:246,B:250.
+	return color.RGBA{R: 238, G: 240, B: 245, A: 255}
+}
+
 // SelectionColor returns the outline color for selected items.
 func SelectionColor() color.RGBA {
 	return color.RGBA{R: 255, G: 208, B: 64, A: 255}

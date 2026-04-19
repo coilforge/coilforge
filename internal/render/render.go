@@ -82,8 +82,12 @@ func drawGrid(dst *ebiten.Image) {
 	j0 := int(math.Floor(minY / minor))
 	j1 := int(math.Ceil(maxY / minor))
 
+	runSim := world.RunMode
 	minorCol := GridMinorColor()
 	majorCol := GridMajorColor()
+	if runSim {
+		majorCol = GridMajorColorRunMode()
+	}
 
 	const swMinor float32 = 1
 	const swMajor float32 = 1.85
@@ -95,6 +99,9 @@ func drawGrid(dst *ebiten.Image) {
 			modI += ratio
 		}
 		isMajor := modI == 0
+		if runSim && !isMajor {
+			continue
+		}
 		col := minorCol
 		sw := swMinor
 		if isMajor {
@@ -113,6 +120,9 @@ func drawGrid(dst *ebiten.Image) {
 			modJ += ratio
 		}
 		isMajor := modJ == 0
+		if runSim && !isMajor {
+			continue
+		}
 		col := minorCol
 		sw := swMinor
 		if isMajor {
