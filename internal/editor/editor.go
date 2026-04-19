@@ -629,18 +629,19 @@ func handleWirePlaceClick(pt core.Pt) {
 		return
 	}
 
-	info, ok := part.Registry[wireToolID]
-	if !ok || info.NewWire == nil {
-		wireNoteBlankDown(pt)
-		return
+	// One part per straight leg so L-routes stay two selectable segments (corner is shared geometrically).
+	// Use [wire.NewStraightWire] per leg — not registry NewWire — so OrthogonalRoute's float equality cannot
+	// merge a long leg back into a single 3-point polyline (see wire.NewStraightWire).
+	// One [pushUndo] per appended leg so Undo removes a single segment (an L-click adds two undo steps).
+	for i := 0; i < len(route)-1; i++ {
+		w := wire.NewStraightWire(world.AllocPartID(), route[i], route[i+1], world.AllocPinID)
+		if w == nil {
+			wireNoteBlankDown(pt)
+			return
+		}
+		pushUndo()
+		world.Parts = append(world.Parts, w)
 	}
-	w := info.NewWire(world.AllocPartID(), WireAnchor, dest, world.AllocPinID)
-	if w == nil {
-		wireNoteBlankDown(pt)
-		return
-	}
-	pushUndo()
-	world.Parts = append(world.Parts, w)
 
 	if pinOk {
 		endWirePlacement()

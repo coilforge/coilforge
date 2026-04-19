@@ -40,7 +40,21 @@ func newWireEndpoints(id int, from, to core.Pt, allocPin func() core.PinID) part
 	if len(pts) < 2 {
 		return nil
 	}
+	// Editor places multi-leg routes as multiple Wire parts (one straight segment each); callers that
+	// still pass a diagonal pair get one polyline with an elbow here.
 	return newWirePolyline(id, pts, allocPin)
+}
+
+// NewStraightWire creates one axis-aligned schematic segment using exactly two waypoints — no OrthogonalRoute.
+//
+// Routing each L-leg through [OrthogonalRoute] uses float equality on X/Y; long grid coordinates can differ
+// in the least bits so a single leg is misclassified as diagonal and collapses into one Wire with three points.
+// Splitting routes in the editor must call this instead of registry NewWire per leg.
+func NewStraightWire(id int, from, to core.Pt, allocPin func() core.PinID) part.Part {
+	if from.X == to.X && from.Y == to.Y {
+		return nil
+	}
+	return newWirePolyline(id, []core.Pt{from, to}, allocPin)
 }
 
 func newWirePolyline(id int, pts []core.Pt, allocPin func() core.PinID) *Wire {
