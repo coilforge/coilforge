@@ -10,9 +10,9 @@ import (
 	"coilforge/internal/part"
 )
 
-// HalfPeriodMicros is one on or off phase of the output (full cycle = 2×).
-// Fixed at 250ms per phase until a properties UI exposes timing.
-const HalfPeriodMicros = 250_000
+// clockHalfPhaseIters is sim-loop iterations per on/off phase. Chosen so, at ~1:1 sim-µs vs wall-µs (e.g. 10k ticks/s with
+// 100 µs [core.SimStepMicros]), one half-phase is ~0.5 s wall → ~1 Hz full square wave — visible without full-speed fast-forward.
+const clockHalfPhaseIters = 5_000
 
 // SeedNets drives the attached net high or low from simulated time (square wave).
 func (self *Clock) SeedNets(union part.NetUnion, netByPin func(core.PinID) int, high, low map[int]bool, nowMicros uint64) {
@@ -24,7 +24,7 @@ func (self *Clock) SeedNets(union part.NetUnion, netByPin func(core.PinID) int, 
 	if root < 0 {
 		return
 	}
-	half := uint64(HalfPeriodMicros)
+	half := uint64(clockHalfPhaseIters) * uint64(core.SimStepMicros)
 	if half == 0 {
 		return
 	}
@@ -34,4 +34,26 @@ func (self *Clock) SeedNets(union part.NetUnion, netByPin func(core.PinID) int, 
 	} else {
 		low[root] = true
 	}
+}
+
+// HalfPeriodMicros returns one clock half-cycle duration in simulated microseconds (matches [SeedNets] timing).
+func HalfPeriodMicros() uint64 {
+	return uint64(clockHalfPhaseIters) * uint64(core.SimStepMicros)
+}
+
+// PhaseAt returns 0 while OUT is seeded high and 1 while seeded low ([SeedNets] semantics).
+func PhaseAt(nowMicros uint64) int {
+	half := HalfPeriodMicros()
+	if half == 0 {
+		return 0
+	}
+	return int((nowMicros / half) % 2)
+}
+
+// PhaseLabel returns "high" or "low" for logging and diagnostics ([PhaseAt] mapping).
+func PhaseLabel(nowMicros uint64) string {
+	if PhaseAt(nowMicros) == 0 {
+		return "high"
+	}
+	return "low"
 }

@@ -60,6 +60,16 @@ var ScreenH int
 // RunMode stores package-level state.
 var RunMode bool
 
+// SimFullSpeed runs the background sim loop as fast as possible (no pacing sleep).
+// When false and SimTargetTicksPerSec > 0, the loop targets that many iterations per wall second (deadline-smoothed).
+var SimFullSpeed = true
+
+// DefaultSimTargetTicksPerSec is the default paced target when SimFullSpeed is false.
+const DefaultSimTargetTicksPerSec = 10_000
+
+// SimTargetTicksPerSec is the wall-clock sim-loop iterations per second when pacing is active.
+var SimTargetTicksPerSec = DefaultSimTargetTicksPerSec
+
 // Nets stores package-level state.
 var Nets []core.Net
 
@@ -108,6 +118,8 @@ func Reset() {
 	Cam = core.Pt{}
 	Zoom = defaultZoom
 	RunMode = false
+	SimFullSpeed = true
+	SimTargetTicksPerSec = DefaultSimTargetTicksPerSec
 	Nets = nil
 	NetStates = nil
 	PinNet = nil

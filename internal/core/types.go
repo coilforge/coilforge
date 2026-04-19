@@ -29,6 +29,10 @@ type PartTypeID string
 type PinID int
 type NetID int
 
+// SimStepMicros is simulated time advanced each simulation loop iteration (microseconds).
+// Relay-scale default (e.g. 3ms edges still resolve). Catalog timing often uses iteration budgets × this value.
+const SimStepMicros = 100
+
 // BasePart is the common authored state embedded in every part.
 type BasePart struct {
 	ID       int        `json:"id"`       // identifier.

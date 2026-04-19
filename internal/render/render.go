@@ -17,6 +17,8 @@ import (
 )
 
 // DrawScene draws scene.
+// In run mode, SimMu is held only while parts are drawn (NetState reads PinNet/NetStates).
+// Chrome and other UI draw outside this path so the sim goroutine can advance SimTimeMicros during rasterization.
 func DrawScene(dst *ebiten.Image) {
 	fillSchematicBackground(dst)
 	drawGrid(dst)
@@ -31,6 +33,8 @@ func DrawScene(dst *ebiten.Image) {
 	}
 
 	if world.RunMode {
+		world.SimMu.RLock()
+		defer world.SimMu.RUnlock()
 		ctx.NetState = func(pinID core.PinID) int {
 			netID, ok := world.PinNet[pinID]
 			if !ok {

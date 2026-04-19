@@ -5,6 +5,7 @@ package sim
 // Subsystem: simulation engine.
 // It reads world/part contracts and flatten output while staying independent from editor.
 // Run mode: a background goroutine steps SimTimeMicros by StepMicros and calls resolveAndTick; UI rate is decoupled.
+// Optional pacing ([world.SimFullSpeed] off): smoothed deadline scheduling targets SimTargetTicksPerSec iterations per wall second.
 // Flow position: run pipeline for world state; app starts/stops the background loop on mode change.
 
 import (
@@ -14,13 +15,20 @@ import (
 	"coilforge/internal/world"
 	"math/rand"
 	"sync"
+	"time"
 )
 
-// StepMicros is the simulation clock quantum: each loop iteration advances SimTimeMicros by this amount.
-const StepMicros = 10
+// StepMicros is the simulation clock quantum (re-export of [core.SimStepMicros]).
+const StepMicros = core.SimStepMicros
 
 // maxResolveIterations defines a package-level constant.
 const maxResolveIterations = 8
+
+const (
+	minSimTargetTicksPerSec = 1
+	maxSimTargetTicksPerSec = 1_000_000
+	paceLateResync          = 200 * time.Millisecond
+)
 
 // simRand stores package-level state.
 var simRand = rand.New(rand.NewSource(1))
@@ -42,17 +50,53 @@ func LoopBegin() {
 
 func simBackgroundLoop() {
 	defer simLoopWG.Done()
+	var paceNext time.Time
+	var wasPaced bool
 	for {
 		select {
 		case <-simLoopStop:
 			return
 		default:
 		}
+		paced := !world.SimFullSpeed && world.SimTargetTicksPerSec > 0
+		if paced && !wasPaced {
+			paceNext = time.Time{}
+		}
+		wasPaced = paced
+
 		world.SimMu.Lock()
 		world.SimTimeMicros += StepMicros
 		resolveAndTick()
 		world.SimMu.Unlock()
+
+		if !paced {
+			continue
+		}
+
+		tps := clampSimTargetTicks(world.SimTargetTicksPerSec)
+		period := time.Second / time.Duration(tps)
+		now := time.Now()
+		if paceNext.IsZero() {
+			paceNext = now
+		}
+		paceNext = paceNext.Add(period)
+		d := time.Until(paceNext)
+		if d > 0 {
+			time.Sleep(d)
+		} else if -d > paceLateResync {
+			paceNext = now
+		}
 	}
+}
+
+func clampSimTargetTicks(t int) int {
+	if t < minSimTargetTicksPerSec {
+		return minSimTargetTicksPerSec
+	}
+	if t > maxSimTargetTicksPerSec {
+		return maxSimTargetTicksPerSec
+	}
+	return t
 }
 
 // LoopEnd stops the background loop started by [LoopBegin] and waits for it to exit.

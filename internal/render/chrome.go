@@ -43,6 +43,8 @@ const (
 	toolbarActiveStrokeWidth = 2.0
 
 	statusBarBottomMarginPx = 10
+	// simRealtimeRightPad is space from the right window edge to the end of the right toolbar strip + margin.
+	simRealtimeRightPad = chromeEdgeMargin + toolbarStripWidthPx + chromeEdgeMargin
 )
 
 // ToolbarButtonAtScreenPoint returns the button index under a screen-space pointer,
@@ -285,6 +287,43 @@ func DrawStatusBar(dst *ebiten.Image, text string) {
 		tw, th = atlasMeasure(s, atlas)
 	}
 	targetX := snapToLogicalPixel(margin)
+	targetY := snapToLogicalPixel(float64(h) - float64(statusBarBottomMarginPx) - th)
+	drawAtlasText(dst, s, targetX, targetY, StatusBarTextColor())
+}
+
+// DrawSimRealtimeHUD draws bottom-right atlas text (simulated vs wall-clock rate).
+func DrawSimRealtimeHUD(dst *ebiten.Image, text string) {
+	text = strings.TrimSpace(normalizeUIString(text))
+	if text == "" {
+		return
+	}
+	w, h := world.ScreenW, world.ScreenH
+	if w <= 0 || h <= 0 {
+		return
+	}
+	atlas := uiLabelAtlas()
+	tw, th := atlasMeasure(text, atlas)
+	leftPad := float64(chromeEdgeMargin)
+	rightPad := float64(simRealtimeRightPad)
+	maxW := float64(w) - leftPad - rightPad
+	if maxW < 8 {
+		return
+	}
+	s := text
+	runes := []rune(s)
+	for tw > maxW && len(runes) > 4 {
+		runes = runes[:len(runes)-1]
+		s = string(runes)
+		tw, th = atlasMeasure(s, atlas)
+	}
+	if tw > maxW {
+		s = "..."
+		tw, th = atlasMeasure(s, atlas)
+	}
+	targetX := snapToLogicalPixel(float64(w) - rightPad - tw)
+	if targetX < leftPad {
+		targetX = leftPad
+	}
 	targetY := snapToLogicalPixel(float64(h) - float64(statusBarBottomMarginPx) - th)
 	drawAtlasText(dst, s, targetX, targetY, StatusBarTextColor())
 }

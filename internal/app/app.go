@@ -9,12 +9,14 @@ package app
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"coilforge/internal/core"
 	"coilforge/internal/editor"
 	"coilforge/internal/partmanifest"
 	"coilforge/internal/render"
 	"coilforge/internal/sim"
+	"coilforge/internal/uidebug"
 	"coilforge/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -26,10 +28,18 @@ type App struct {
 	hoverLeftTool  int  // Hovered placement tool index for left toolbar.
 	hoverRightTool int  // Hovered command tool index for right toolbar.
 	toolbarCapture bool // True while current mouse press started on toolbar chrome.
+
+	simRTLastWall   time.Time // Wall clock sample for sim vs realtime HUD.
+	simRTLastSim    uint64    // SimTimeMicros sample paired with simRTLastWall.
+	simRTRatio      float64   // Smoothed (sim μs / wall μs); 1.0 = realtime.
+	simRTHasSample  bool      // True after first paired sample in this run session.
+	simRTSmoothInit bool      // True after first EMA update (valid simRTRatio for display).
+	simRTPaceKnown  bool      // True after recording SimFullSpeed for HUD reset on F8.
+	simRTPaceLast   bool      // Last seen world.SimFullSpeed while in run mode.
 }
 
 // windowTPS is how many times per second Ebiten calls Update (and typically Draw).
-// Simulation runs in a separate goroutine; this only controls input polling and redraw cadence (~100ms at 10 TPS).
+// Simulation runs in a separate goroutine; this only controls input polling and redraw cadence.
 const windowTPS = 10
 
 // New constructs a fresh application instance.
@@ -73,15 +83,13 @@ func (a *App) Update() error {
 		editor.HandleScroll(wheelY)
 	}
 
+	a.updateSimRealtimeHUD()
+	uidebug.LogUpdateFrame()
 	return nil
 }
 
 // Draw composes scene rendering, editor overlays, and screen-space chrome.
 func (a *App) Draw(screen *ebiten.Image) {
-	if world.RunMode {
-		world.SimMu.RLock()
-		defer world.SimMu.RUnlock()
-	}
 	render.DrawScene(screen)
 
 	if !world.RunMode {
@@ -94,6 +102,7 @@ func (a *App) Draw(screen *ebiten.Image) {
 		render.DrawPropPanel(screen, selectedPart.PropSpec())
 	}
 	render.DrawStatusBar(screen, a.statusText())
+	render.DrawSimRealtimeHUD(screen, a.simRealtimeHUDText())
 }
 
 // Layout keeps the game surface the same size as the window.
@@ -202,6 +211,9 @@ func (a *App) handleProjectHotkeys() {
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF7) {
 		_ = LoadProject(DefaultProjectPath)
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyF8) && world.RunMode {
+		world.SimFullSpeed = !world.SimFullSpeed
 	}
 }
 
