@@ -57,6 +57,15 @@ func NewStraightWire(id int, from, to core.Pt, allocPin func() core.PinID) part.
 	return newWirePolyline(id, []core.Pt{from, to}, allocPin)
 }
 
+// NewPolylineWire builds a wire through an explicit vertex path (≥2 snapped points).
+// Used when splitting an existing polyline into two nets at a tee/junction on a segment interior.
+func NewPolylineWire(id int, pts []core.Pt, allocPin func() core.PinID) part.Part {
+	if len(pts) < 2 {
+		return nil
+	}
+	return newWirePolyline(id, pts, allocPin)
+}
+
 func newWirePolyline(id int, pts []core.Pt, allocPin func() core.PinID) *Wire {
 	w := &Wire{
 		BasePart: core.BasePart{ID: id, TypeID: TypeID, Pos: pts[0]},
@@ -152,4 +161,35 @@ func (self *Wire) ApplyWorldOffset(delta core.Pt) {
 		self.Points[i].Y += delta.Y
 	}
 	self.BasePart.Pos = self.Points[0]
+}
+
+const snapEps = 1e-6
+
+// SnapWaypointsToMajorGrid rounds every vertex to the schematic major grid and drops duplicate consecutive
+// vertices (can happen after a free drag that was not aligned to the grid).
+func (self *Wire) SnapWaypointsToMajorGrid(grid float64) {
+	if grid <= 0 || len(self.Points) < 2 {
+		return
+	}
+	tmp := append([]core.Pt(nil), self.Points...)
+	for i := range tmp {
+		tmp[i].X = math.Round(tmp[i].X/grid) * grid
+		tmp[i].Y = math.Round(tmp[i].Y/grid) * grid
+	}
+	var deduped []core.Pt
+	for _, q := range tmp {
+		if len(deduped) > 0 && ptNearEq(deduped[len(deduped)-1], q) {
+			continue
+		}
+		deduped = append(deduped, q)
+	}
+	if len(deduped) < 2 {
+		return
+	}
+	self.Points = deduped
+	self.BasePart.Pos = self.Points[0]
+}
+
+func ptNearEq(a, b core.Pt) bool {
+	return math.Abs(a.X-b.X) < snapEps && math.Abs(a.Y-b.Y) < snapEps
 }

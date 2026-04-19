@@ -63,6 +63,13 @@ func HandleMouseDown(pt core.Pt, button int) {
 			WireHoverWorld = pinSnap
 			return
 		}
+		if _, junction, ok := wireBranchHit(pt); ok {
+			StartPlacement(wireToolID)
+			WireAnchor = junction
+			WireAnchorSet = true
+			WireHoverWorld = junction
+			return
+		}
 	}
 
 	idx := partAt(pt)
@@ -92,6 +99,7 @@ func HandleMouseUp(pt core.Pt, button int) {
 		endViewportPan()
 		return
 	}
+	dragEndedWithMove := !BoxSelecting && DragMoved
 	if BoxSelecting {
 		sx0, _ := world.WorldToScreen(PressWorld)
 		sx1, _ := world.WorldToScreen(pt)
@@ -108,8 +116,9 @@ func HandleMouseUp(pt core.Pt, button int) {
 		Selection = nil
 		HoverIndex = -1
 	}
-	if !BoxSelecting && DragMoved {
+	if dragEndedWithMove {
 		snapSelectedToMajorGrid()
+		applyWireSegmentNormalization(false)
 	}
 	Dragging = false
 	DragMoved = false
@@ -447,6 +456,7 @@ func Paste(offset core.Pt) {
 	for idx := start; idx < len(world.Parts); idx++ {
 		Selection = append(Selection, idx)
 	}
+	applyWireSegmentNormalization(false)
 }
 
 // StartLabelEdit starts label edit.
@@ -517,6 +527,7 @@ func commitPlacement(pos core.Pt) {
 	placed := PlacePreview.Clone(PlacePreview.Base().ID, world.AllocPinID)
 	placed.Base().Pos = snapToGrid(pos)
 	world.Parts = append(world.Parts, placed)
+	applyWireSegmentNormalization(false)
 	PlacePreview = nil
 	PlaceMode = false
 }
@@ -546,6 +557,10 @@ func snapSelectedToMajorGrid() {
 			continue
 		}
 		p := world.Parts[idx]
+		if ww, ok := p.(*wire.Wire); ok {
+			ww.SnapWaypointsToMajorGrid(world.MajorGridWorld)
+			continue
+		}
 		if _, ok := p.(part.WorldOffsettable); ok {
 			continue
 		}
@@ -642,6 +657,7 @@ func handleWirePlaceClick(pt core.Pt) {
 		pushUndo()
 		world.Parts = append(world.Parts, w)
 	}
+	applyWireSegmentNormalization(true)
 
 	if pinOk {
 		endWirePlacement()

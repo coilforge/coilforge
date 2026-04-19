@@ -73,6 +73,7 @@ func Reset() {
 	WireAnchorSet = false
 	WireAnchor = core.Pt{}
 	WireHoverWorld = core.Pt{}
+	wireBlankPrevValid = false
 }
 
 // ClearTransient handles clear transient.
