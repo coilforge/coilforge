@@ -14,12 +14,25 @@ import (
 	"coilforge/internal/world"
 	"math"
 	"sort"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // wireToolID matches [wire.TypeID]; editor avoids importing catalog packages for routing helpers only.
 const wireToolID core.PartTypeID = "wire"
+
+const (
+	wireDoubleClickMaxGap         = 400 * time.Millisecond
+	wireDoubleClickMaxDistWorldSq = 12.0 * 12.0
+)
+
+// Blank-canvas double-click detection for ending a wire run (second press must be on empty canvas).
+var (
+	wireBlankPrevTime  time.Time
+	wireBlankPrevPt    core.Pt
+	wireBlankPrevValid bool
+)
 
 // HandleMouseDown handles mouse down (edit mode): part pick, placement commit, or marquee start.
 func HandleMouseDown(pt core.Pt, button int) {
@@ -40,6 +53,16 @@ func HandleMouseDown(pt core.Pt, button int) {
 	if PlaceMode && PlacePreview != nil {
 		commitPlacement(pt)
 		return
+	}
+
+	if !LabelEditing && !PlaceMode {
+		if pinSnap, ok := pinHit(pt); ok {
+			StartPlacement(wireToolID)
+			WireAnchor = pinSnap
+			WireAnchorSet = true
+			WireHoverWorld = pinSnap
+			return
+		}
 	}
 
 	idx := partAt(pt)
@@ -159,6 +182,7 @@ func StartPlacement(typeID core.PartTypeID) {
 		WireAnchorSet = false
 		WireAnchor = core.Pt{}
 		WireHoverWorld = core.Pt{}
+		wireBlankPrevValid = false
 		PlaceMode = true
 		return
 	}
@@ -572,28 +596,123 @@ func collectBoxSelection(r core.Rect, crossing bool) []int {
 }
 
 func handleWirePlaceClick(pt core.Pt) {
-	a := snapToGrid(pt)
-	if !WireAnchorSet {
-		WireAnchor = a
-		WireAnchorSet = true
-		WireHoverWorld = a
+	if wireTryDoubleClickBlank(pt) {
+		endWirePlacement()
 		return
 	}
+
 	b := snapToGrid(pt)
-	if len(orthRoutePreview(WireAnchor, b)) < 2 {
+	pinSnap, pinOk := pinHit(pt)
+
+	if !WireAnchorSet {
+		if pinOk {
+			WireAnchor = pinSnap
+		} else {
+			WireAnchor = b
+		}
+		WireAnchorSet = true
+		WireHoverWorld = WireAnchor
+		wireNoteBlankDown(pt)
 		return
 	}
+
+	dest := b
+	if pinOk {
+		dest = pinSnap
+	}
+	route := orthRoutePreview(WireAnchor, dest)
+	if len(route) < 2 {
+		if pinOk {
+			endWirePlacement()
+		}
+		wireNoteBlankDown(pt)
+		return
+	}
+
 	info, ok := part.Registry[wireToolID]
 	if !ok || info.NewWire == nil {
+		wireNoteBlankDown(pt)
 		return
 	}
-	w := info.NewWire(world.AllocPartID(), WireAnchor, b, world.AllocPinID)
+	w := info.NewWire(world.AllocPartID(), WireAnchor, dest, world.AllocPinID)
 	if w == nil {
+		wireNoteBlankDown(pt)
 		return
 	}
 	pushUndo()
 	world.Parts = append(world.Parts, w)
+
+	if pinOk {
+		endWirePlacement()
+	} else {
+		WireAnchor = dest
+		WireAnchorSet = true
+		WireHoverWorld = dest
+	}
+	wireNoteBlankDown(pt)
+}
+
+func endWirePlacement() {
+	PlaceMode = false
+	PlaceTool = ""
+	PlacePreview = nil
 	WireAnchorSet = false
+	WireAnchor = core.Pt{}
+	WireHoverWorld = core.Pt{}
+	wireBlankPrevValid = false
+}
+
+// wireDoubleClickEligible is true for empty canvas or for hitting a wire stroke only: after placing a segment,
+// the next click often lands on that wire's HitTest, which would otherwise block double-click exit.
+func wireDoubleClickEligible(pt core.Pt) bool {
+	idx := partAt(pt)
+	if idx < 0 {
+		return true
+	}
+	return world.Parts[idx].Base().TypeID == wireToolID
+}
+
+func pinHit(pt core.Pt) (core.Pt, bool) {
+	for i := len(world.Parts) - 1; i >= 0; i-- {
+		h := world.Parts[i].HitTest(pt)
+		if !h.Hit || h.Kind != part.HitPin {
+			continue
+		}
+		for _, a := range world.Parts[i].Anchors() {
+			if a.PinID == h.PinID {
+				return snapToGrid(a.Pt), true
+			}
+		}
+	}
+	return core.Pt{}, false
+}
+
+func wireTryDoubleClickBlank(pt core.Pt) bool {
+	if !wireDoubleClickEligible(pt) {
+		return false
+	}
+	if !wireBlankPrevValid {
+		return false
+	}
+	if time.Since(wireBlankPrevTime) > wireDoubleClickMaxGap {
+		return false
+	}
+	dx := pt.X - wireBlankPrevPt.X
+	dy := pt.Y - wireBlankPrevPt.Y
+	if dx*dx+dy*dy > wireDoubleClickMaxDistWorldSq {
+		return false
+	}
+	return true
+}
+
+func wireNoteBlankDown(pt core.Pt) {
+	if wireDoubleClickEligible(pt) {
+		wireBlankPrevTime = time.Now()
+		wireBlankPrevPt = pt
+		wireBlankPrevValid = true
+	} else {
+		wireBlankPrevValid = false
+	}
 }
 
 // orthRoutePreview matches [wire.OrthogonalRoute] (kept here to avoid editor → catalog import).

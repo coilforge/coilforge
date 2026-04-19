@@ -38,7 +38,7 @@ var (
 	PanLastScreenX  int  // Last pointer position during viewport pan (screen px).
 	PanLastScreenY  int
 
-	// Wire placement: first click sets anchor; second click commits an orthogonal route.
+	// Wire placement: anchor + hover preview; clicks add segments until Esc, pin endpoint, or double-click blank canvas.
 	WireAnchorSet  bool
 	WireAnchor     core.Pt
 	WireHoverWorld core.Pt
@@ -79,6 +79,10 @@ func Reset() {
 func ClearTransient() {
 	PlaceMode = false
 	PlacePreview = nil
+	PlaceTool = ""
+	WireAnchorSet = false
+	WireAnchor = core.Pt{}
+	WireHoverWorld = core.Pt{}
 	Dragging = false
 	DragMoved = false
 	DragUndoRecorded = false
@@ -88,5 +92,5 @@ func ClearTransient() {
 	BoxSelectCrossing = false
 	LabelEditing = false
 	ViewportPanDrag = false
-	WireAnchorSet = false
+	wireBlankPrevValid = false
 }

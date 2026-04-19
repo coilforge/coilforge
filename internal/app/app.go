@@ -40,8 +40,10 @@ type App struct {
 }
 
 // windowTPS is how many times per second Ebiten calls Update (and typically Draw).
+// Keep this well above ~20 so short double-clicks and other press/release edges are not missed
+// between samples (10 TPS was too low: a second click could land in the same 100ms window with no extra frame).
 // Simulation runs in a separate goroutine; this only controls input polling and redraw cadence.
-const windowTPS = 10
+const windowTPS = 60
 
 // New constructs a fresh application instance.
 func New() *App {
