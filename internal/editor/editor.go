@@ -63,13 +63,6 @@ func HandleMouseDown(pt core.Pt, button int) {
 			WireHoverWorld = pinSnap
 			return
 		}
-		if _, junction, ok := wireBranchHit(pt); ok {
-			StartPlacement(wireToolID)
-			WireAnchor = junction
-			WireAnchorSet = true
-			WireHoverWorld = junction
-			return
-		}
 	}
 
 	idx := partAt(pt)
