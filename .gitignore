@@ -7,6 +7,7 @@ dist/
 *.exe
 *.out
 *.test
+*.log
 
 # Go caches
 .cache/
