@@ -12,15 +12,33 @@ import (
 	"coilforge/internal/world"
 )
 
+const (
+	maxUndoSteps = 50
+	maxUndoBytes = 50 << 20 // 50 MiB
+)
+
 type Snapshot struct {
 	Parts      []part.Record // part list.
 	NextPartID int           // next part id value.
 	NextPinID  core.PinID    // next pin id value.
 }
 
+func trimUndoStackToCap() {
+	for len(UndoStack) > 0 {
+		stepsOver := len(UndoStack) > maxUndoSteps
+		bytesOver := stackApproxBytes(UndoStack) > maxUndoBytes
+		if !stepsOver && !bytesOver {
+			break
+		}
+		UndoStack[0] = Snapshot{}
+		UndoStack = UndoStack[1:]
+	}
+}
+
 // pushUndo handles push undo.
 func pushUndo() {
 	UndoStack = append(UndoStack, captureSnapshot())
+	trimUndoStackToCap()
 	RedoStack = nil
 }
 
@@ -40,6 +58,7 @@ func Redo() {
 		return
 	}
 	UndoStack = append(UndoStack, captureSnapshot())
+	trimUndoStackToCap()
 	restoreSnapshot(RedoStack[len(RedoStack)-1])
 	RedoStack = RedoStack[:len(RedoStack)-1]
 }
