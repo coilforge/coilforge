@@ -162,145 +162,145 @@ func init() {
 
 func drawVector_indicator_off_0(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, 0.000000, 0.000000, 63.158000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{-62.940000, 0.000000, -134.098000, 0.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{62.940000, 0.000000, 134.098000, 0.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{45.536277, -45.001704, -45.351015, 45.527791}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-45.254848, -45.254848, 45.274647, 45.632443}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -62.940000, 0.000000, -134.098000, 0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 62.940000, 0.000000, 134.098000, 0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 45.536277, -45.001704, -45.351015, 45.527791, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -45.254848, -45.254848, 45.274647, 45.632443, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_off_1(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, 0.000007, 0.000003, 63.158000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{64.020059, 0.251024, -64.260465, 0.251024}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-0.141421, -64.266837, -0.141421, 64.013687}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{128.840996, -128.839996, 45.340996, -45.365996}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-44.500000, 44.527000, -128.000000, 128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 64.020059, 0.251024, -64.260465, 0.251024, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -0.141421, -64.266837, -0.141421, 64.013687, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 128.840996, -128.839996, 45.340996, -45.365996, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -44.500000, 44.527000, -128.000000, 128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_off_2(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, -0.000000, 0.000000, 63.158000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{-0.000000, -62.940000, -0.000000, -134.098000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-0.000000, 62.940000, -0.000000, 134.098000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{45.001704, 45.536277, -45.527791, -45.351015}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{45.254848, -45.254848, -45.632443, 45.274647}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -0.000000, -62.940000, -0.000000, -134.098000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -0.000000, 62.940000, -0.000000, 134.098000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 45.001704, 45.536277, -45.527791, -45.351015, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 45.254848, -45.254848, -45.632443, 45.274647, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_off_3(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, -0.000003, 0.000007, 63.158000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{-0.251024, 64.020059, -0.251024, -64.260465}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{64.266837, -0.141421, -64.013687, -0.141421}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{128.839996, 128.840996, 45.365996, 45.340996}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-44.527000, -44.500000, -128.000000, -128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -0.251024, 64.020059, -0.251024, -64.260465, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 64.266837, -0.141421, -64.013687, -0.141421, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 128.839996, 128.840996, 45.365996, 45.340996, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -44.527000, -44.500000, -128.000000, -128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_off_4(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, -0.000000, -0.000000, 63.158000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{62.940000, -0.000000, 134.098000, -0.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-62.940000, -0.000000, -134.098000, -0.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-45.536277, 45.001704, 45.351015, -45.527791}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{45.254848, 45.254848, -45.274647, -45.632443}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 62.940000, -0.000000, 134.098000, -0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -62.940000, -0.000000, -134.098000, -0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -45.536277, 45.001704, 45.351015, -45.527791, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 45.254848, 45.254848, -45.274647, -45.632443, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_off_5(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, -0.000007, -0.000003, 63.158000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{-64.020059, -0.251024, 64.260465, -0.251024}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{0.141421, 64.266837, 0.141421, -64.013687}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-128.840996, 128.839996, -45.340996, 45.365996}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{44.500000, -44.527000, 128.000000, -128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -64.020059, -0.251024, 64.260465, -0.251024, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 0.141421, 64.266837, 0.141421, -64.013687, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -128.840996, 128.839996, -45.340996, 45.365996, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 44.500000, -44.527000, 128.000000, -128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_off_6(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, 0.000000, -0.000000, 63.158000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{0.000000, 62.940000, 0.000000, 134.098000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{0.000000, -62.940000, 0.000000, -134.098000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-45.001704, -45.536277, 45.527791, 45.351015}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-45.254848, 45.254848, 45.632443, -45.274647}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 0.000000, 62.940000, 0.000000, 134.098000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 0.000000, -62.940000, 0.000000, -134.098000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -45.001704, -45.536277, 45.527791, 45.351015, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -45.254848, 45.254848, 45.632443, -45.274647, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_off_7(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, 0.000003, -0.000007, 63.158000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{0.251024, -64.020059, 0.251024, 64.260465}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-64.266837, 0.141421, 64.013687, 0.141421}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-128.839996, -128.840996, -45.365996, -45.340996}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{44.527000, 44.500000, 128.000000, 128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 0.251024, -64.020059, 0.251024, 64.260465, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -64.266837, 0.141421, 64.013687, 0.141421, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -128.839996, -128.840996, -45.365996, -45.340996, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 44.527000, 44.500000, 128.000000, 128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_on_0(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, 0.000000, 0.000000, 63.158000, color.RGBA{R:255, G:172, B:0, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{-64.000000, 0.000000, -128.000000, 0.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{64.000000, 0.000000, 128.000000, 0.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{45.695000, -45.144000, -45.192000, 45.385000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-45.391000, -45.303000, 45.138000, 45.584000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -64.000000, 0.000000, -128.000000, 0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 64.000000, 0.000000, 128.000000, 0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 45.695000, -45.144000, -45.192000, 45.385000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -45.391000, -45.303000, 45.138000, 45.584000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_on_1(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, 0.000007, 0.000003, 63.158000, color.RGBA{R:255, G:172, B:0, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{64.020059, 0.251024, -64.260465, 0.251024}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-0.141421, -64.266837, -0.141421, 64.013687}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{128.840996, -128.839996, 45.340996, -45.365996}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-44.500000, 44.527000, -128.000000, 128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 64.020059, 0.251024, -64.260465, 0.251024, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -0.141421, -64.266837, -0.141421, 64.013687, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 128.840996, -128.839996, 45.340996, -45.365996, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -44.500000, 44.527000, -128.000000, 128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_on_2(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, -0.000000, 0.000000, 63.158000, color.RGBA{R:255, G:172, B:0, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{-0.000000, -64.000000, -0.000000, -128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-0.000000, 64.000000, -0.000000, 128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{45.144000, 45.695000, -45.385000, -45.192000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{45.303000, -45.391000, -45.584000, 45.138000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -0.000000, -64.000000, -0.000000, -128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -0.000000, 64.000000, -0.000000, 128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 45.144000, 45.695000, -45.385000, -45.192000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 45.303000, -45.391000, -45.584000, 45.138000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_on_3(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, -0.000003, 0.000007, 63.158000, color.RGBA{R:255, G:172, B:0, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{-0.251024, 64.020059, -0.251024, -64.260465}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{64.266837, -0.141421, -64.013687, -0.141421}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{128.839996, 128.840996, 45.365996, 45.340996}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-44.527000, -44.500000, -128.000000, -128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -0.251024, 64.020059, -0.251024, -64.260465, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 64.266837, -0.141421, -64.013687, -0.141421, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 128.839996, 128.840996, 45.365996, 45.340996, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -44.527000, -44.500000, -128.000000, -128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_on_4(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, -0.000000, -0.000000, 63.158000, color.RGBA{R:255, G:172, B:0, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{64.000000, -0.000000, 128.000000, -0.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-64.000000, -0.000000, -128.000000, -0.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-45.695000, 45.144000, 45.192000, -45.385000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{45.391000, 45.303000, -45.138000, -45.584000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 64.000000, -0.000000, 128.000000, -0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -64.000000, -0.000000, -128.000000, -0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -45.695000, 45.144000, 45.192000, -45.385000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 45.391000, 45.303000, -45.138000, -45.584000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_on_5(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, -0.000007, -0.000003, 63.158000, color.RGBA{R:255, G:172, B:0, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{-64.020059, -0.251024, 64.260465, -0.251024}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{0.141421, 64.266837, 0.141421, -64.013687}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-128.840996, 128.839996, -45.340996, 45.365996}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{44.500000, -44.527000, 128.000000, -128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -64.020059, -0.251024, 64.260465, -0.251024, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 0.141421, 64.266837, 0.141421, -64.013687, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -128.840996, 128.839996, -45.340996, 45.365996, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 44.500000, -44.527000, 128.000000, -128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_on_6(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, 0.000000, -0.000000, 63.158000, color.RGBA{R:255, G:172, B:0, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{0.000000, 64.000000, 0.000000, 128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{0.000000, -64.000000, 0.000000, -128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-45.144000, -45.695000, 45.385000, 45.192000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-45.303000, 45.391000, 45.584000, -45.138000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 0.000000, 64.000000, 0.000000, 128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 0.000000, -64.000000, 0.000000, -128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -45.144000, -45.695000, 45.385000, 45.192000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -45.303000, 45.391000, 45.584000, -45.138000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_indicator_on_7(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGCircle(ctx, base, 0.000003, -0.000007, 63.158000, color.RGBA{R:255, G:172, B:0, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGPolyline(ctx, base, []float64{0.251024, -64.020059, 0.251024, 64.260465}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-64.266837, 0.141421, 64.013687, 0.141421}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{-128.839996, -128.840996, -45.365996, -45.340996}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGPolyline(ctx, base, []float64{44.527000, 44.500000, 128.000000, 128.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 0.251024, -64.020059, 0.251024, 64.260465, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -64.266837, 0.141421, 64.013687, 0.141421, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -128.839996, -128.840996, -45.365996, -45.340996, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 44.527000, 44.500000, 128.000000, 128.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 

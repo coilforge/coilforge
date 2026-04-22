@@ -24,6 +24,7 @@ const (
 	primPolyline
 	primRect
 	primCircle
+	primCubicBezier // SVG path C: Points = x0,y0 cx1,cy1 cx2,cy2 x3,y3 (absolute cubic segment)
 )
 
 type primitive struct {
@@ -479,6 +480,17 @@ func computeGeomBBox(prims []primitive) (minX, minY, maxX, maxY float64, has boo
 		case primCircle:
 			grow(p.CX-p.R, p.CY-p.R)
 			grow(p.CX+p.R, p.CY+p.R)
+		case primCubicBezier:
+			if len(p.Points) >= 8 {
+				qminX, qminY, qmaxX, qmaxY := cubicBBox(
+					p.Points[0], p.Points[1],
+					p.Points[2], p.Points[3],
+					p.Points[4], p.Points[5],
+					p.Points[6], p.Points[7],
+				)
+				grow(qminX, qminY)
+				grow(qmaxX, qmaxY)
+			}
 		}
 	}
 	return minX, minY, maxX, maxY, has
@@ -552,6 +564,12 @@ func rotatePrimitive(p primitive, steps int) primitive {
 		}
 	case primCircle:
 		q.CX, q.CY = rotSVG90K(p.CX, p.CY, s)
+	case primCubicBezier:
+		q.Points = make([]float64, len(p.Points))
+		copy(q.Points, p.Points)
+		for i := 0; i+1 < len(q.Points); i += 2 {
+			q.Points[i], q.Points[i+1] = rotSVG90K(q.Points[i], q.Points[i+1], s)
+		}
 	default:
 		return p
 	}
@@ -615,6 +633,11 @@ func emitDrawPrimitives(buf *bytes.Buffer, asset svgAsset) {
 			buf.WriteString(fmt.Sprintf("\tpart.DrawVGCircle(ctx, base, %.6f, %.6f, %.6f, %s, %t, %s, %.6f, %t)\n",
 				prim.CX, prim.CY, prim.R,
 				colorLiteral(prim.Fill), prim.HasFill, colorLiteral(prim.Stroke), prim.StrokeWidth, prim.HasStroke))
+		case primCubicBezier:
+			buf.WriteString(fmt.Sprintf(
+				"\tpart.DrawVGCubicBezier(ctx, base, %.6f, %.6f, %.6f, %.6f, %.6f, %.6f, %.6f, %.6f, %.6f, %s)\n",
+				prim.Points[0], prim.Points[1], prim.Points[2], prim.Points[3], prim.Points[4], prim.Points[5], prim.Points[6], prim.Points[7],
+				prim.StrokeWidth, colorLiteral(prim.Stroke)))
 		}
 	}
 }
@@ -747,7 +770,39 @@ func transformSVGMatrix(m svgMatrix, x, y float64) (float64, float64) {
 	return xp, yp
 }
 
-const pinGridSnap = 64.0
+// lineSVGMatrixBakesAroundSegmentCenter reports whether transform-origin refers to the center of the
+// element box (percentage or keyword). For <line>, we approximate that as the segment midpoint so
+// matrix(...) matches typical Boxy/CSS exports with transform-origin: 50% 50%.
+func lineSVGMatrixBakesAroundSegmentCenter(transformOrigin string) bool {
+	o := strings.TrimSpace(strings.ToLower(transformOrigin))
+	if o == "" {
+		return false
+	}
+	if strings.Contains(o, "%") {
+		return true
+	}
+	for _, tok := range strings.Fields(o) {
+		if tok == "center" {
+			return true
+		}
+	}
+	return false
+}
+
+func bakeLineEndpointsWithSVGMatrix(x1, y1, x2, y2 float64, mat svgMatrix, transformOrigin string) (float64, float64, float64, float64) {
+	if lineSVGMatrixBakesAroundSegmentCenter(transformOrigin) {
+		cx := (x1 + x2) * 0.5
+		cy := (y1 + y2) * 0.5
+		rx1, ry1 := transformSVGMatrix(mat, x1-cx, y1-cy)
+		rx2, ry2 := transformSVGMatrix(mat, x2-cx, y2-cy)
+		return rx1 + cx, ry1 + cy, rx2 + cx, ry2 + cy
+	}
+	x1, y1 = transformSVGMatrix(mat, x1, y1)
+	x2, y2 = transformSVGMatrix(mat, x2, y2)
+	return x1, y1, x2, y2
+}
+
+const pinGridSnap = 32.0
 
 // Near-axis snapping (SVG user units): nearly horizontal/vertical strokes align to axis so
 // rasterization does not staircase when Boxy leaves small coordinate drift.
@@ -845,8 +900,9 @@ func snapNearAxisStrokes(asset *svgAsset) {
 	}
 }
 
-// snapPinMarkersToGrid64 moves red pin-marker circle centers to the nearest
-// intersection of the 64 user-unit grid (same grid as authoring; viewBox 512 → 9 columns).
+// snapPinMarkersToGrid64 snaps red pin-marker circle centers to the exact major-grid
+// intersections used by schematic placement/wiring. With SVGUserUnitToWorld=1/8 and
+// world.MajorGridWorld=4, one major grid step is 32 SVG user units.
 func snapPinMarkersToGrid64(asset *svgAsset) {
 	for i := range asset.Prims {
 		if asset.Prims[i].Kind != primCircle {
@@ -864,7 +920,7 @@ func snapPinMarkersToGrid64(asset *svgAsset) {
 }
 
 // rejectUnhandledTransform fails fast on transform attributes the generator does not bake into primitives.
-// Circles and ellipses may use transform="matrix(...)" only (applied to center); everything else must be
+// Circle, ellipse, and line may use transform="matrix(...)" only (center or endpoints); everything else must be
 // baked in Boxy (Object → Transform → Bake Transform) before running this tool.
 func rejectUnhandledTransform(elemLocal string, attr map[string]string) error {
 	tr := strings.TrimSpace(attr["transform"])
@@ -872,7 +928,7 @@ func rejectUnhandledTransform(elemLocal string, attr map[string]string) error {
 		return nil
 	}
 	switch elemLocal {
-	case "circle", "ellipse":
+	case "circle", "ellipse", "line":
 		if _, ok := parseSVGMatrix(tr); ok {
 			return nil
 		}
@@ -919,9 +975,17 @@ func parseSVG(data []byte) (svgAsset, error) {
 				return svgAsset{}, err
 			}
 			stroke := attr["stroke"]
+			x1 := parseFloat(attr["x1"], 0)
+			y1 := parseFloat(attr["y1"], 0)
+			x2 := parseFloat(attr["x2"], 0)
+			y2 := parseFloat(attr["y2"], 0)
+			if mat, ok := parseSVGMatrix(strings.TrimSpace(attr["transform"])); ok {
+				origin := strings.TrimSpace(attr["transform-origin"])
+				x1, y1, x2, y2 = bakeLineEndpointsWithSVGMatrix(x1, y1, x2, y2, mat, origin)
+			}
 			p := primitive{
 				Kind:        primLine,
-				Points:      []float64{parseFloat(attr["x1"], 0), parseFloat(attr["y1"], 0), parseFloat(attr["x2"], 0), parseFloat(attr["y2"], 0)},
+				Points:      []float64{x1, y1, x2, y2},
 				StrokeWidth: parseFloat(attr["stroke-width"], 1),
 				Stroke:      canonStroke(stroke),
 				HasStroke:   hasPaint(stroke),
@@ -1048,26 +1112,36 @@ func parseSVG(data []byte) (svgAsset, error) {
 				pathHasMat = true
 			}
 			strokeWidth := parseFloat(attr["stroke-width"], 1)
-			polylines, err := pathToPolylines(attr["d"])
+			pathPrims, err := pathToPrimitives(attr["d"])
 			if err != nil {
 				return svgAsset{}, err
 			}
-			for _, points := range polylines {
-				if len(points) < 4 {
+			for _, pp := range pathPrims {
+				switch pp.Kind {
+				case primLine:
+					if len(pp.Points) < 4 {
+						continue
+					}
+				case primPolyline:
+					if len(pp.Points) < 4 {
+						continue
+					}
+				case primCubicBezier:
+					if len(pp.Points) < 8 {
+						continue
+					}
+				default:
 					continue
 				}
 				if pathHasMat {
-					for i := 0; i < len(points); i += 2 {
-						points[i], points[i+1] = transformSVGMatrix(pathMat, points[i], points[i+1])
+					for i := 0; i+1 < len(pp.Points); i += 2 {
+						pp.Points[i], pp.Points[i+1] = transformSVGMatrix(pathMat, pp.Points[i], pp.Points[i+1])
 					}
 				}
-				out.Prims = append(out.Prims, primitive{
-					Kind:        primPolyline,
-					Points:      points,
-					StrokeWidth: strokeWidth,
-					Stroke:      canonStroke(stroke),
-					HasStroke:   true,
-				})
+				pp.StrokeWidth = strokeWidth
+				pp.Stroke = canonStroke(stroke)
+				pp.HasStroke = true
+				out.Prims = append(out.Prims, pp)
 			}
 		}
 	}
@@ -1077,9 +1151,9 @@ func parseSVG(data []byte) (svgAsset, error) {
 	return out, nil
 }
 
-func pathToPolylines(d string) ([][]float64, error) {
+func pathToPrimitives(d string) ([]primitive, error) {
 	tokens := tokenizePath(d)
-	var out [][]float64
+	var out []primitive
 	var curX, curY float64
 	var startX, startY float64
 	var i int
@@ -1101,7 +1175,10 @@ func pathToPolylines(d string) ([][]float64, error) {
 			}
 			x := parseFloat(tokens[i], 0)
 			y := parseFloat(tokens[i+1], 0)
-			out = append(out, []float64{curX, curY, x, y})
+			out = append(out, primitive{
+				Kind:   primLine,
+				Points: []float64{curX, curY, x, y},
+			})
 			curX, curY = x, y
 			i += 2
 		case "A":
@@ -1116,7 +1193,10 @@ func pathToPolylines(d string) ([][]float64, error) {
 			y := parseFloat(tokens[i+6], 0)
 			pts := approximateArc(curX, curY, x, y, rx, ry, largeArc, sweep)
 			if len(pts) >= 4 {
-				out = append(out, pts)
+				out = append(out, primitive{
+					Kind:   primPolyline,
+					Points: pts,
+				})
 			}
 			curX, curY = x, y
 			i += 7
@@ -1130,14 +1210,22 @@ func pathToPolylines(d string) ([][]float64, error) {
 			cy2 := parseFloat(tokens[i+3], 0)
 			x := parseFloat(tokens[i+4], 0)
 			y := parseFloat(tokens[i+5], 0)
-			flat := flattenCubicBezier(curX, curY, cx1, cy1, cx2, cy2, x, y, 24)
-			for k := 0; k+3 < len(flat); k += 2 {
-				out = append(out, []float64{flat[k], flat[k+1], flat[k+2], flat[k+3]})
-			}
+			out = append(out, primitive{
+				Kind: primCubicBezier,
+				Points: []float64{
+					curX, curY,
+					cx1, cy1,
+					cx2, cy2,
+					x, y,
+				},
+			})
 			curX, curY = x, y
 			i += 6
 		case "Z":
-			out = append(out, []float64{curX, curY, startX, startY})
+			out = append(out, primitive{
+				Kind:   primLine,
+				Points: []float64{curX, curY, startX, startY},
+			})
 			curX, curY = startX, startY
 		default:
 			return nil, fmt.Errorf("unsupported path cmd: %s", cmd)
@@ -1146,19 +1234,31 @@ func pathToPolylines(d string) ([][]float64, error) {
 	return out, nil
 }
 
-func flattenCubicBezier(x0, y0, x1, y1, x2, y2, x3, y3 float64, segments int) []float64 {
-	if segments < 2 {
-		segments = 2
+func cubicBBox(x0, y0, x1, y1, x2, y2, x3, y3 float64) (minX, minY, maxX, maxY float64) {
+	minX, maxX = x0, x0
+	minY, maxY = y0, y0
+	grow := func(x, y float64) {
+		if x < minX {
+			minX = x
+		}
+		if x > maxX {
+			maxX = x
+		}
+		if y < minY {
+			minY = y
+		}
+		if y > maxY {
+			maxY = y
+		}
 	}
-	out := make([]float64, 0, (segments+1)*2)
-	for i := 0; i <= segments; i++ {
-		t := float64(i) / float64(segments)
-		out = append(out,
-			cubicBezier(x0, x1, x2, x3, t),
-			cubicBezier(y0, y1, y2, y3, t),
-		)
+	grow(x0, y0)
+	grow(x3, y3)
+	const samples = 24
+	for i := 1; i < samples; i++ {
+		t := float64(i) / float64(samples)
+		grow(cubicBezier(x0, x1, x2, x3, t), cubicBezier(y0, y1, y2, y3, t))
 	}
-	return out
+	return minX, minY, maxX, maxY
 }
 
 func cubicBezier(p0, p1, p2, p3, t float64) float64 {

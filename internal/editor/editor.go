@@ -690,7 +690,8 @@ func pinHit(pt core.Pt) (core.Pt, bool) {
 		}
 		for _, a := range world.Parts[i].Anchors() {
 			if a.PinID == h.PinID {
-				return snapToGrid(a.Pt), true
+				// Use the exact anchor location: some catalog pins are intentionally off major-grid.
+				return a.Pt, true
 			}
 		}
 	}

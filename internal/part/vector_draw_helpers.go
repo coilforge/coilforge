@@ -15,25 +15,50 @@ func DrawVGLine(ctx DrawContext, base core.BasePart, x1, y1, x2, y2, strokeWidth
 	vector.StrokeLine(ctx.Dst, ax, ay, bx, by, vgStrokeWidth(ctx, strokeWidth), vgColor(ctx, stroke), false)
 }
 
+func DrawVGCubicBezier(ctx DrawContext, base core.BasePart, x0, y0, cx1, cy1, cx2, cy2, x3, y3, strokeWidth float64, stroke color.RGBA) {
+	sx0, sy0 := vgPointToScreen(ctx, base, x0, y0)
+	sx1, sy1 := vgPointToScreen(ctx, base, cx1, cy1)
+	sx2, sy2 := vgPointToScreen(ctx, base, cx2, cy2)
+	sx3, sy3 := vgPointToScreen(ctx, base, x3, y3)
+	var path vector.Path
+	path.MoveTo(float32(sx0), float32(sy0))
+	path.CubicTo(float32(sx1), float32(sy1), float32(sx2), float32(sy2), float32(sx3), float32(sy3))
+	sw := vgStrokeWidth(ctx, strokeWidth)
+	so := &vector.StrokeOptions{
+		Width:    sw,
+		LineJoin: vector.LineJoinRound,
+		LineCap:  vector.LineCapRound,
+	}
+	drawOp := &vector.DrawPathOptions{}
+	drawOp.ColorScale.ScaleWithColor(vgColor(ctx, stroke))
+	vector.StrokePath(ctx.Dst, &path, so, drawOp)
+}
+
 func DrawVGPolyline(ctx DrawContext, base core.BasePart, points []float64, closed bool, strokeWidth float64, stroke color.RGBA) {
 	if len(points) < 4 {
 		return
 	}
-	for i := 0; i+3 < len(points); i += 2 {
-		DrawVGLine(ctx, base, points[i], points[i+1], points[i+2], points[i+3], strokeWidth, stroke)
+	var path vector.Path
+	for i := 0; i < len(points); i += 2 {
+		sx, sy := vgPointToScreen(ctx, base, points[i], points[i+1])
+		if i == 0 {
+			path.MoveTo(sx, sy)
+		} else {
+			path.LineTo(sx, sy)
+		}
 	}
 	if closed {
-		DrawVGLine(
-			ctx,
-			base,
-			points[len(points)-2],
-			points[len(points)-1],
-			points[0],
-			points[1],
-			strokeWidth,
-			stroke,
-		)
+		path.Close()
 	}
+	sw := vgStrokeWidth(ctx, strokeWidth)
+	so := &vector.StrokeOptions{
+		Width:    sw,
+		LineJoin: vector.LineJoinRound,
+		LineCap:  vector.LineCapRound,
+	}
+	drawOp := &vector.DrawPathOptions{}
+	drawOp.ColorScale.ScaleWithColor(vgColor(ctx, stroke))
+	vector.StrokePath(ctx.Dst, &path, so, drawOp)
 }
 
 func DrawVGRoundedRect(ctx DrawContext, base core.BasePart, x, y, w, h, rx, ry float64, fill color.RGBA, hasFill bool, stroke color.RGBA, strokeWidth float64, hasStroke bool) {

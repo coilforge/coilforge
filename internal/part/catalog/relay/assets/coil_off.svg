@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-256 -256 512 512" width="512px" height="512px" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:grid x="-256" y="-256" width="512" height="512" divisions="16"></bx:grid>
+    <bx:grid x="256" y="-320" width="64" height="64"></bx:grid>
+  </defs>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="-95.225" cy="1.552" r="9.999" id="CoilA"></circle>
+  <circle style="stroke: rgb(0, 0, 0); fill: rgb(255, 0, 0);" cx="96.54" cy="0.111" r="9.999" id="CoilB"></circle>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; transform-origin: -95.029px -30.352px;" d="M -95.029 -62.352 L -95.03 1.649"></path>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; transform-origin: 96.975px -30.352px;" d="M 96.975 1.646 L 96.975 -62.351"></path>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px; stroke-linecap: round; transform-origin: -47.207px -70.51px;" d="M -31.389 -62.8 C -31.389 -74.99 -44.569 -82.59 -55.119 -76.51 C -60.149 -73.61 -63.179 -68.17 -63.019 -62.37"></path>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; stroke-linecap: round; transform-origin: -15.156px -70.469px;" d="M 0.6 -62.718 C 0.6 -74.908 -12.579 -82.508 -23.129 -76.428 C -28.159 -73.528 -31.189 -68.088 -31.029 -62.288"></path>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; stroke-linecap: round; transform-origin: 16.438px -70.469px;" d="M 32.204 -62.764 C 32.204 -74.954 19.024 -82.554 8.464 -76.474 C 3.434 -73.574 0.404 -68.134 0.564 -62.334"></path>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; stroke-linecap: round; transform-origin: 48.438px -70.469px;" d="M 64.194 -62.757 C 64.194 -74.947 51.014 -82.547 40.464 -76.467 C 35.434 -73.567 32.404 -68.127 32.564 -62.327"></path>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; stroke-linecap: round; transform-origin: -79.156px -70.469px;" d="M -63.369 -62.695 C -63.369 -74.885 -76.559 -82.485 -87.099 -76.405 C -92.129 -73.505 -95.159 -68.065 -94.999 -62.265"></path>
+  <path style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; stroke-linecap: round; transform-origin: 80.781px -70.469px;" d="M 96.568 -62.759 C 96.568 -74.949 83.388 -82.549 72.838 -76.469 C 67.808 -73.569 64.778 -68.129 64.938 -62.329"></path>
+  <polyline style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px; stroke-linejoin: round;" points="-127.78 -128.556 -128 0 128 0 128 -128"></polyline>
+</svg>

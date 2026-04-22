@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-256 -256 512 512" width="512px" height="512px" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:grid x="-256" y="-256" width="512" height="512" divisions="16"></bx:grid>
+  </defs>
+  <circle style="stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgb(255, 0, 0);" cx="-128" r="10.429" id="COM"></circle>
+  <circle style="stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgb(255, 0, 0);" cx="128" r="10.429" cy="-64" id="NC"></circle>
+  <circle style="stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgb(255, 0, 0);" cx="128" r="10.429" cy="63.763" id="NO"></circle>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" x1="-128.99" y1="96" x2="-127.38" y2="-96"></line>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" x1="127.403" y1="96" x2="128" y2="-96"></line>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" x1="-127.38" y1="0" x2="-96" y2="0"></line>
+  <circle style="stroke: rgb(0, 0, 0); stroke-width: 10px; fill: rgb(255, 255, 255);" cx="-80.171" r="16.058"></circle>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; transform-box: fill-box; transform-origin: 50% 50%;" x1="-0.946" y1="95.166" x2="32.665" y2="-64.777" transform="matrix(0, 1, -1, 0, 0, 0)"></line>
+  <polyline style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" points="127.663 63.974 64 64 64 32"></polyline>
+  <polyline style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" points="46.533 47.823 64 32 82.905 48"></polyline>
+  <polyline style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10;" points="128 -63.974 64.337 -64 64.337 -32"></polyline>
+  <polyline style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10;" points="46.87 -47.823 64.337 -32 83.242 -48"></polyline>
+</svg>
