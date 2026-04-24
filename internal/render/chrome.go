@@ -34,7 +34,8 @@ const (
 // Chrome layout for vertical toolbar strips (screen pixels).
 // Kept ~2× the original design to match doubled schematic scale (SVGUserUnitToWorld) + larger UI font atlas.
 const (
-	chromeEdgeMargin         = 16
+	chromeEdgeMargin = 16 // Used by status bar, sim HUD, schematic chrome; not for docking the toolbar strips.
+
 	toolbarStripWidthPx      = 112
 	toolbarPanelInnerPadPx   = 8
 	toolbarButtonHitPx       = 96 // Touch-style hit target; fits inside strip with inner pad.
@@ -44,9 +45,31 @@ const (
 	toolbarActiveStrokeWidth = 4.0
 
 	statusBarBottomMarginPx = 20
+	// Toolbar strips are flush to top and side edges; only the bottom is inset so status/HUD text stays readable.
+	toolbarBottomClearancePx = statusBarBottomMarginPx + 30
+
 	// simRealtimeRightPad is space from the right window edge reserved for the right toolbar (flush to edge).
 	simRealtimeRightPad = toolbarStripWidthPx
 )
+
+// toolbarStripLayout returns the toolbar panel rectangle for [DrawToolbar] and hit-testing (same math).
+func toolbarStripLayout(side int, w, h int) (x, y, bw, bh float32) {
+	bw = float32(toolbarStripWidthPx)
+	bh = float32(h) - float32(toolbarBottomClearancePx)
+	if bh < 1 {
+		bh = 1
+	}
+	y = 0
+	switch side {
+	case ToolbarLeft:
+		x = 0
+	case ToolbarRight:
+		x = float32(w) - bw
+	default:
+		return 0, 0, 0, 0
+	}
+	return x, y, bw, bh
+}
 
 // ToolbarButtonAtScreenPoint returns the button index under a screen-space pointer,
 // or -1 when the pointer is outside the visible button stack.
@@ -55,19 +78,8 @@ func ToolbarButtonAtScreenPoint(side int, tools []ToolButton, sx, sy int) int {
 	if w <= 0 || h <= 0 {
 		return -1
 	}
-	margin := float32(chromeEdgeMargin)
-	bw := float32(toolbarStripWidthPx)
-	bh := float32(h) - 2*margin
-	if bh < 1 {
-		return -1
-	}
-	var x float32
-	switch side {
-	case ToolbarLeft:
-		x = margin
-	case ToolbarRight:
-		x = float32(w) - margin - bw
-	default:
+	x, y, bw, bh := toolbarStripLayout(side, w, h)
+	if bw < 1 || bh < 1 {
 		return -1
 	}
 	if len(tools) == 0 {
@@ -78,8 +90,8 @@ func ToolbarButtonAtScreenPoint(side int, tools []ToolButton, sx, sy int) int {
 	hit := float32(toolbarButtonHitPx)
 	gap := float32(toolbarButtonGapPx)
 	contentLeft := x + inner + (bw-2*inner-hit)*0.5
-	contentTop := margin + inner
-	maxY := margin + bh - inner
+	contentTop := y + inner
+	maxY := y + bh - inner
 
 	for i := range tools {
 		y := contentTop + float32(i)*(hit+gap)
@@ -104,22 +116,11 @@ func DrawToolbar(dst *ebiten.Image, side int, tools []ToolButton, activeTool int
 	if w <= 0 || h <= 0 {
 		return
 	}
-	margin := float32(chromeEdgeMargin)
-	bw := float32(toolbarStripWidthPx)
-	bh := float32(h) - 2*margin
-	if bh < 1 {
+	x, y, bw, bh := toolbarStripLayout(side, w, h)
+	if bw < 1 || bh < 1 {
 		return
 	}
-	var x float32
-	switch side {
-	case ToolbarLeft:
-		x = margin
-	case ToolbarRight:
-		x = float32(w) - bw // Flush to window right edge (no outer margin).
-	default:
-		return
-	}
-	vector.FillRect(dst, x, margin, bw, bh, ToolbarPanelColor(), false)
+	vector.FillRect(dst, x, y, bw, bh, ToolbarPanelColor(), false)
 
 	if len(tools) == 0 {
 		return
@@ -131,8 +132,8 @@ func DrawToolbar(dst *ebiten.Image, side int, tools []ToolButton, activeTool int
 	iconSz := float32(toolbarIconSlotPx)
 	// Center the square hit target in the strip.
 	contentLeft := x + inner + (bw-2*inner-hit)*0.5
-	contentTop := margin + inner
-	maxY := margin + bh - inner
+	contentTop := y + inner
+	maxY := y + bh - inner
 
 	for i := range tools {
 		y := contentTop + float32(i)*(hit+gap)
