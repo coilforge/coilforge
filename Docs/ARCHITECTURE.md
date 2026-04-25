@@ -1402,20 +1402,28 @@ func toggleRunMode() {
 ### File I/O
 
 ```go
-func SaveProject(path string) error {
+// StorageBackend is implemented by concrete storage targets (desktop local fs,
+// browser on-device storage, cloud).
+type StorageBackend interface {
+    List(ctx context.Context) ([]DocMeta, error)
+    Load(ctx context.Context, key string) ([]byte, error)
+    Save(ctx context.Context, key string, data []byte) error
+    Delete(ctx context.Context, key string) error
+}
+
+func SaveProject(ctx context.Context, backend StorageBackend, key string) error {
     file := FileFormat{
         Parts:      world.Parts,
         NextPartID: world.NextPartID,
         NextPinID:  world.NextPinID,
     }
-    data, _ := json.MarshalIndent(file, "", "  ")
-    return os.WriteFile(path, data, 0644)
+    data, _ := MarshalProject(file) // app-level envelope + compression policy
+    return backend.Save(ctx, key, data)
 }
 
-func LoadProject(path string) error {
-    data, _ := os.ReadFile(path)
-    var file FileFormat
-    json.Unmarshal(data, &file)
+func LoadProject(ctx context.Context, backend StorageBackend, key string) error {
+    data, _ := backend.Load(ctx, key)
+    file, _ := UnmarshalProject(data)
     world.Parts = file.Parts
     world.NextPartID = file.NextPartID
     world.NextPinID = file.NextPinID
@@ -1423,6 +1431,15 @@ func LoadProject(path string) error {
     return nil
 }
 ```
+
+Backends:
+
+- Desktop: local filesystem + optional cloud backend.
+- Browser/WASM: on-device storage backend (IndexedDB/OPFS) + optional cloud backend.
+- Browser import/export: file picker flow as an explicit import/export path, not
+  as generic filesystem path I/O.
+
+The app package owns save/load orchestration and backend selection by platform.
 
 ### Toolbar
 
@@ -1443,7 +1460,11 @@ Toolbar buttons are assembled by joining `placementTools` with `part.Registry[ty
 
 ## File Format
 
-Clean break from the current format. JSON, one array of part records:
+Clean break from the current format. Canonical project schema is JSON.
+Storage encoding is separate from schema:
+
+- `plain-json`: file bytes are the schema JSON object directly.
+- `gzip-json`: file bytes are a compressed/container encoding of that same schema.
 
 ```json
 {
@@ -1479,6 +1500,23 @@ Clean break from the current format. JSON, one array of part records:
 
 Each record has a `type` discriminator and a `data` payload. Deserialization
 reads the type, looks up `part.Registry[type].Decode`, and passes the data.
+
+For compressed/container encodings, envelope fields should include:
+
+- `magic` (format identifier)
+- `version` (schema/envelope version)
+- `encoding` (`plain-json`, `gzip-json`, future options)
+- `payload` (serialized schema JSON bytes)
+
+Compression policy:
+
+- Default saves use compressed encoding (`gzip-json`) on all platforms
+  (desktop, browser on-device, cloud).
+- `plain-json` saves are directly compliant schematic JSON files (no wrapper).
+- Loader accepts both compressed and plain encodings.
+- Optional user-facing export mode can emit `plain-json` for tooling/diff workflows.
+- Do not assume IndexedDB/OPFS provides useful automatic compression. Compression
+  is an explicit app responsibility.
 
 Runtime state (e.g. relay `coilActive`, wire `state`) is included if the file
 was saved during simulation. On load, any runtime state is present but inert

@@ -95,6 +95,30 @@ func ToolbarPanelColor() color.RGBA {
 	return color.RGBA{R: 236, G: 238, B: 242, A: 240}
 }
 
+// ToolbarPanelOutlineColor returns toolbar panel border color.
+func ToolbarPanelOutlineColor() color.RGBA {
+	if DarkMode {
+		return color.RGBA{R: 94, G: 104, B: 124, A: 245}
+	}
+	return color.RGBA{R: 156, G: 166, B: 184, A: 245}
+}
+
+// ToolbarPanelBevelTopLeftColor returns toolbar panel top/left bevel shade.
+func ToolbarPanelBevelTopLeftColor() color.RGBA {
+	if DarkMode {
+		return color.RGBA{R: 104, G: 116, B: 138, A: 210}
+	}
+	return color.RGBA{R: 246, G: 250, B: 255, A: 210}
+}
+
+// ToolbarPanelBevelBottomRightColor returns toolbar panel bottom/right bevel shade.
+func ToolbarPanelBevelBottomRightColor() color.RGBA {
+	if DarkMode {
+		return color.RGBA{R: 26, G: 30, B: 38, A: 210}
+	}
+	return color.RGBA{R: 164, G: 174, B: 192, A: 210}
+}
+
 // ToolbarButtonOutlineColor returns the border color by interaction state.
 func ToolbarButtonOutlineColor(active, hovered, disabled bool) color.RGBA {
 	if disabled {

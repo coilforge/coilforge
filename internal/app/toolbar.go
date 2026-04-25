@@ -42,6 +42,7 @@ func rightToolbarButtons() []render.ToolButton {
 		{TypeID: "_pause", Label: "Pause"},
 		{TypeID: "_save", Label: "Save"},
 		{TypeID: "_load", Label: "Load"},
+		{TypeID: "_settings", Label: "Settings"},
 	}
 }
 

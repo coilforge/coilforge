@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"coilforge/internal/appsettings"
 	"coilforge/internal/core"
 	"coilforge/internal/editor"
 	"coilforge/internal/partmanifest"
@@ -29,6 +30,7 @@ type App struct {
 	hoverLeftTool  int  // Hovered placement tool index for left toolbar.
 	hoverRightTool int  // Hovered command tool index for right toolbar.
 	toolbarCapture bool // True while current mouse press started on toolbar chrome.
+	settingsOpen   bool // True while the app settings panel is visible.
 
 	simRTLastWall   time.Time // Wall clock sample for sim vs realtime HUD.
 	simRTLastSim    uint64    // SimTimeMicros sample paired with simRTLastWall.
@@ -53,6 +55,10 @@ func New() *App {
 // Run resets world state, configures the window, and starts the Ebiten loop.
 func Run() error {
 	world.Reset()
+	if loaded, err := appsettings.LoadLocal(); err == nil {
+		appsettings.Current = loaded
+	}
+	render.DarkMode = appsettings.Current.DarkMode
 	ebiten.SetWindowSize(1440, 900)
 	ebiten.SetWindowTitle("CoilForge")
 	ebiten.SetTPS(windowTPS)
@@ -104,6 +110,9 @@ func (a *App) Draw(screen *ebiten.Image) {
 	render.DrawToolbar(screen, render.ToolbarRight, rightToolbarButtons(), -1, a.hoverRightTool)
 	if selectedPart := selectedPart(); selectedPart != nil {
 		render.DrawPropPanel(screen, selectedPart.PropSpec())
+	}
+	if a.settingsOpen {
+		render.DrawSimplePanel(screen, "Settings", a.settingsPanelRows())
 	}
 	render.DrawStatusBar(screen, a.statusText())
 	render.DrawSimRealtimeHUD(screen, a.simRealtimeHUDText())
@@ -172,6 +181,9 @@ func hotkeyToEbitenKey(hotkey rune) (ebiten.Key, bool) {
 
 // handleEditorHotkeys runs editor-specific keyboard handlers.
 func (a *App) handleEditorHotkeys() {
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) && a.closeTopmostOverlay() {
+		return
+	}
 	a.handleTransformHotkeys()
 	a.handleHistoryHotkeys()
 	a.handleLabelHotkeys()
@@ -180,7 +192,6 @@ func (a *App) handleEditorHotkeys() {
 // handleTransformHotkeys processes rotate, mirror, delete, and mode keys.
 func (a *App) handleTransformHotkeys() {
 	for _, key := range []ebiten.Key{
-		ebiten.KeyEscape,
 		ebiten.KeyR,
 		ebiten.KeyM,
 		ebiten.KeyDelete,
@@ -190,6 +201,15 @@ func (a *App) handleTransformHotkeys() {
 			editor.HandleKey(key)
 		}
 	}
+}
+
+// closeTopmostOverlay closes the topmost closable app-level UI and reports whether it handled Esc.
+func (a *App) closeTopmostOverlay() bool {
+	if a.settingsOpen {
+		a.settingsOpen = false
+		return true
+	}
+	return false
 }
 
 // handleHistoryHotkeys processes undo/redo and clipboard actions.
@@ -220,8 +240,18 @@ func (a *App) handleLabelHotkeys() {
 
 // handleProjectHotkeys processes run-mode and project load/save shortcuts.
 func (a *App) handleProjectHotkeys() {
+	if inpututil.IsKeyJustPressed(ebiten.KeyF3) {
+		a.settingsOpen = !a.settingsOpen
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF4) {
-		render.DarkMode = !render.DarkMode
+		changed := appsettings.Apply(appsettings.Action{
+			Index:    0,
+			NewValue: !appsettings.Current.DarkMode,
+		})
+		if changed {
+			_ = appsettings.SaveLocalCurrent()
+		}
+		a.syncRenderThemeFromSettings()
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF5) {
 		ToggleRunMode()
@@ -269,6 +299,15 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 
 	switch {
 	case leftNow && !a.leftDown:
+		if a.settingsOpen {
+			if render.SimplePanelCloseButtonAtScreenPoint(mouseX, mouseY) {
+				a.settingsOpen = false
+			}
+			// While settings is open, consume pointer presses so schematic/editor
+			// interactions do not happen behind the panel.
+			a.toolbarCapture = true
+			break
+		}
 		if a.handleToolbarPress(mouseX, mouseY) {
 			a.toolbarCapture = true
 			break
@@ -329,11 +368,39 @@ func (a *App) handleToolbarPress(mouseX, mouseY int) bool {
 				_ = SaveProject(DefaultProjectPath)
 			case "_load":
 				_ = LoadProject(DefaultProjectPath)
+			case "_settings":
+				a.settingsOpen = !a.settingsOpen
 			}
 		}
 		return true
 	}
 	return false
+}
+
+func (a *App) syncRenderThemeFromSettings() {
+	render.DarkMode = appsettings.Current.DarkMode
+}
+
+func (a *App) settingsPanelRows() []string {
+	spec := appsettings.BuildSpec()
+	rows := make([]string, 0, len(spec.Items)+2)
+	for _, item := range spec.Items {
+		switch item.Kind {
+		case appsettings.ItemBool:
+			v, _ := item.Value.(bool)
+			state := "OFF"
+			if v {
+				state = "ON"
+			}
+			rows = append(rows, fmt.Sprintf("%s: %s", item.Label, state))
+		default:
+			rows = append(rows, fmt.Sprintf("%s", item.Label))
+		}
+	}
+	rows = append(rows, "")
+	rows = append(rows, "F4: toggle dark mode")
+	rows = append(rows, "F3: close settings")
+	return rows
 }
 
 // statusText reports the current top-level operating mode.

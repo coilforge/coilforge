@@ -25,6 +25,17 @@ type ToolButton struct {
 	Disabled bool   // Disabled buttons are rendered but not interactive.
 }
 
+// PanelFrameStyle defines visual-only frame styling for chrome panels.
+type PanelFrameStyle struct {
+	FillColor      color.Color
+	OutlineColor   color.Color
+	OutlineWidth   float32
+	BevelLight     color.Color
+	BevelDark      color.Color
+	BevelInset     float32
+	BevelLineWidth float32
+}
+
 // Toolbar dock side (plain ints). Submenus can use the same values to pick a direction.
 const (
 	ToolbarLeft  = 0
@@ -50,6 +61,14 @@ const (
 
 	// simRealtimeRightPad is space from the right window edge reserved for the right toolbar (flush to edge).
 	simRealtimeRightPad = toolbarStripWidthPx
+
+	simplePanelWidthPx       = 520
+	simplePanelHeightPx      = 300
+	simplePanelMinMarginPx   = 20
+	simplePanelCloseSizePx   = 28
+	simplePanelCloseInsetPx  = 12
+	simplePanelCloseTextOffX = 8
+	simplePanelCloseTextOffY = 8
 )
 
 // toolbarStripLayout returns the toolbar panel rectangle for [DrawToolbar] and hit-testing (same math).
@@ -120,7 +139,7 @@ func DrawToolbar(dst *ebiten.Image, side int, tools []ToolButton, activeTool int
 	if bw < 1 || bh < 1 {
 		return
 	}
-	vector.FillRect(dst, x, y, bw, bh, ToolbarPanelColor(), false)
+	DrawPanelFrame(dst, x, y, bw, bh, toolbarPanelFrameStyle())
 
 	if len(tools) == 0 {
 		return
@@ -142,6 +161,39 @@ func DrawToolbar(dst *ebiten.Image, side int, tools []ToolButton, activeTool int
 		}
 		drawToolbarButton(dst, tools[i], i, activeTool, hoverTool, contentLeft, y, hit, iconSz)
 	}
+}
+
+func toolbarPanelFrameStyle() PanelFrameStyle {
+	return PanelFrameStyle{
+		FillColor:      ToolbarPanelColor(),
+		OutlineColor:   ToolbarPanelOutlineColor(),
+		OutlineWidth:   2.0,
+		BevelLight:     ToolbarPanelBevelTopLeftColor(),
+		BevelDark:      ToolbarPanelBevelBottomRightColor(),
+		BevelInset:     2.0,
+		BevelLineWidth: 2.0,
+	}
+}
+
+// DrawPanelFrame renders a generic chrome panel frame (fill, outline, optional bevel).
+func DrawPanelFrame(dst *ebiten.Image, x, y, w, h float32, style PanelFrameStyle) {
+	vector.FillRect(dst, x, y, w, h, style.FillColor, false)
+	if style.OutlineWidth > 0 && style.OutlineColor != nil {
+		vector.StrokeRect(dst, x, y, w, h, style.OutlineWidth, style.OutlineColor, false)
+	}
+	if style.BevelLineWidth <= 0 || style.BevelInset < 0 || style.BevelLight == nil || style.BevelDark == nil {
+		return
+	}
+	inset := style.BevelInset
+	sw := style.BevelLineWidth
+	x1 := x + w - inset
+	y1 := y + h - inset
+	// Top + left edge.
+	vector.StrokeLine(dst, x+inset, y+inset, x1, y+inset, sw, style.BevelLight, false)
+	vector.StrokeLine(dst, x+inset, y+inset, x+inset, y1, sw, style.BevelLight, false)
+	// Bottom + right edge.
+	vector.StrokeLine(dst, x+inset, y1, x1, y1, sw, style.BevelDark, false)
+	vector.StrokeLine(dst, x1, y+inset, x1, y1, sw, style.BevelDark, false)
 }
 
 func drawToolbarButton(dst *ebiten.Image, btn ToolButton, index, activeTool, hoverTool int, contentLeft, y, hit, iconSz float32) {
@@ -293,6 +345,96 @@ func DrawStatusBar(dst *ebiten.Image, text string) {
 	targetX := snapToLogicalPixel(margin)
 	targetY := snapToLogicalPixel(float64(h) - float64(statusBarBottomMarginPx) - th)
 	drawAtlasText(dst, s, targetX, targetY, StatusBarTextColor())
+}
+
+// DrawSimplePanel renders a centered panel with title and simple text rows.
+func DrawSimplePanel(dst *ebiten.Image, title string, rows []string) {
+	x, y, pw, ph, ok := simplePanelLayout(world.ScreenW, world.ScreenH)
+	if !ok {
+		return
+	}
+	DrawPanelFrame(dst, x, y, pw, ph, toolbarPanelFrameStyle())
+	drawSimplePanelCloseButton(dst, x, y, pw)
+
+	titleText := strings.TrimSpace(normalizeUIString(title))
+	if titleText != "" {
+		drawAtlasText(dst, strings.ToUpper(titleText), snapToLogicalPixel(float64(x+16)), snapToLogicalPixel(float64(y+14)), StatusBarTextColor())
+	}
+
+	rowY := y + 56
+	for i := range rows {
+		if rowY > y+ph-24 {
+			break
+		}
+		line := strings.TrimSpace(normalizeUIString(rows[i]))
+		if line != "" {
+			drawAtlasText(dst, line, snapToLogicalPixel(float64(x+16)), snapToLogicalPixel(float64(rowY)), StatusBarTextColor())
+		}
+		rowY += 22
+	}
+}
+
+// SimplePanelContainsScreenPoint reports whether a screen-space pointer is inside the centered simple panel.
+func SimplePanelContainsScreenPoint(sx, sy int) bool {
+	x, y, w, h, ok := simplePanelLayout(world.ScreenW, world.ScreenH)
+	if !ok {
+		return false
+	}
+	px := float32(sx)
+	py := float32(sy)
+	return px >= x && px <= x+w && py >= y && py <= y+h
+}
+
+// SimplePanelCloseButtonAtScreenPoint reports whether a pointer hits the panel [X] button.
+func SimplePanelCloseButtonAtScreenPoint(sx, sy int) bool {
+	x, y, w, _, ok := simplePanelLayout(world.ScreenW, world.ScreenH)
+	if !ok {
+		return false
+	}
+	bx, by, bw, bh := simplePanelCloseButtonRect(x, y, w)
+	px := float32(sx)
+	py := float32(sy)
+	return px >= bx && px <= bx+bw && py >= by && py <= by+bh
+}
+
+func simplePanelLayout(screenW, screenH int) (x, y, w, h float32, ok bool) {
+	if screenW <= 0 || screenH <= 0 {
+		return 0, 0, 0, 0, false
+	}
+	w = float32(simplePanelWidthPx)
+	h = float32(simplePanelHeightPx)
+	margin := float32(simplePanelMinMarginPx)
+	if float32(screenW) < w+2*margin {
+		w = float32(screenW) - 2*margin
+	}
+	if float32(screenH) < h+2*margin {
+		h = float32(screenH) - 2*margin
+	}
+	if w < 120 || h < 80 {
+		return 0, 0, 0, 0, false
+	}
+	x = (float32(screenW) - w) * 0.5
+	y = (float32(screenH) - h) * 0.5
+	return x, y, w, h, true
+}
+
+func simplePanelCloseButtonRect(panelX, panelY, panelW float32) (x, y, w, h float32) {
+	size := float32(simplePanelCloseSizePx)
+	inset := float32(simplePanelCloseInsetPx)
+	return panelX + panelW - inset - size, panelY + inset, size, size
+}
+
+func drawSimplePanelCloseButton(dst *ebiten.Image, panelX, panelY, panelW float32) {
+	x, y, w, h := simplePanelCloseButtonRect(panelX, panelY, panelW)
+	vector.FillRect(dst, x, y, w, h, ToolbarButtonFillColor(false, false, false), false)
+	vector.StrokeRect(dst, x, y, w, h, 2.0, ToolbarButtonOutlineColor(false, false, false), false)
+	drawAtlasText(
+		dst,
+		"X",
+		snapToLogicalPixel(float64(x+float32(simplePanelCloseTextOffX))),
+		snapToLogicalPixel(float64(y+float32(simplePanelCloseTextOffY))),
+		ToolbarLabelColor(false, false, false),
+	)
 }
 
 // DrawSimRealtimeHUD draws bottom-right atlas text (simulated vs wall-clock rate).
