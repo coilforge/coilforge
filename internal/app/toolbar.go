@@ -7,7 +7,6 @@ package app
 // Flow position: app mediation layer between input intent and renderer controls.
 
 import (
-	"coilforge/internal/core"
 	"coilforge/internal/editor"
 	"coilforge/internal/flatten"
 	"coilforge/internal/part"
@@ -85,9 +84,4 @@ func ToggleRunMode() {
 	sim.Start()
 	world.RunMode = true
 	sim.LoopBegin()
-}
-
-// partType converts a raw string ID into a strongly typed part ID.
-func partType(raw string) core.PartTypeID {
-	return core.PartTypeID(raw)
 }

@@ -219,6 +219,16 @@ func resolveNets() {
 
 // resolveFromSeeds handles resolve from seeds.
 func resolveFromSeeds(union *unionFind, high, low map[int]bool, graph *part.StateGraph) map[int]int {
+	propagateStateEdges(union, high, low, graph)
+	out := make(map[int]int, len(world.Nets))
+	for _, net := range world.Nets {
+		root := union.Find(net.ID)
+		out[net.ID] = stateForRoot(root, high, low)
+	}
+	return out
+}
+
+func propagateStateEdges(union *unionFind, high, low map[int]bool, graph *part.StateGraph) {
 	// Propagate directed drives (e.g. diode ANODE -> CATHODE) until stable.
 	// Roots are evaluated after conductive unioning so edges and seeds compose.
 	for changed := true; changed; {
@@ -243,22 +253,19 @@ func resolveFromSeeds(union *unionFind, high, low map[int]bool, graph *part.Stat
 			}
 		}
 	}
+}
 
-	out := make(map[int]int, len(world.Nets))
-	for _, net := range world.Nets {
-		root := union.Find(net.ID)
-		switch {
-		case high[root] && low[root]:
-			out[net.ID] = core.NetShort
-		case high[root]:
-			out[net.ID] = core.NetHigh
-		case low[root]:
-			out[net.ID] = core.NetLow
-		default:
-			out[net.ID] = core.NetFloat
-		}
+func stateForRoot(root int, high, low map[int]bool) int {
+	switch {
+	case high[root] && low[root]:
+		return core.NetShort
+	case high[root]:
+		return core.NetHigh
+	case low[root]:
+		return core.NetLow
+	default:
+		return core.NetFloat
 	}
-	return out
 }
 
 // netByPin handles net by pin.

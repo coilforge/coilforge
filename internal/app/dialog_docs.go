@@ -115,33 +115,53 @@ func (a *App) handleDocDialogTyping() {
 		return
 	}
 	for _, key := range inpututil.AppendJustPressedKeys(nil) {
-		switch key {
-		case ebiten.KeyArrowUp:
-			if a.docDialog.selected > 0 {
-				a.docDialog.selected--
-				a.docDialog.input = a.docDialog.docs[a.docDialog.selected].Name
-			}
-		case ebiten.KeyArrowDown:
-			if a.docDialog.selected >= 0 && a.docDialog.selected < len(a.docDialog.docs)-1 {
-				a.docDialog.selected++
-				a.docDialog.input = a.docDialog.docs[a.docDialog.selected].Name
-			}
-		case ebiten.KeyBackspace:
-			runes := []rune(a.docDialog.input)
-			if len(runes) > 0 {
-				a.docDialog.input = string(runes[:len(runes)-1])
-			}
-		case ebiten.KeyEnter:
-			a.commitDocDialog()
-		case ebiten.KeyDelete:
-			a.deleteSelectedDoc()
-		}
+		a.handleDocDialogKey(key)
 	}
+	a.appendDocDialogChars()
+}
+
+func (a *App) handleDocDialogKey(key ebiten.Key) {
+	switch key {
+	case ebiten.KeyArrowUp:
+		a.selectPrevDoc()
+	case ebiten.KeyArrowDown:
+		a.selectNextDoc()
+	case ebiten.KeyBackspace:
+		a.backspaceDocInput()
+	case ebiten.KeyEnter:
+		a.commitDocDialog()
+	case ebiten.KeyDelete:
+		a.deleteSelectedDoc()
+	}
+}
+
+func (a *App) selectPrevDoc() {
+	if a.docDialog.selected <= 0 {
+		return
+	}
+	a.docDialog.selected--
+	a.docDialog.input = a.docDialog.docs[a.docDialog.selected].Name
+}
+
+func (a *App) selectNextDoc() {
+	if a.docDialog.selected < 0 || a.docDialog.selected >= len(a.docDialog.docs)-1 {
+		return
+	}
+	a.docDialog.selected++
+	a.docDialog.input = a.docDialog.docs[a.docDialog.selected].Name
+}
+
+func (a *App) backspaceDocInput() {
+	runes := []rune(a.docDialog.input)
+	if len(runes) == 0 {
+		return
+	}
+	a.docDialog.input = string(runes[:len(runes)-1])
+}
+
+func (a *App) appendDocDialogChars() {
 	for _, ch := range ebiten.AppendInputChars(nil) {
-		if ch < 32 || ch == 127 {
-			continue
-		}
-		if ch == '/' || ch == '\\' {
+		if ch < 32 || ch == 127 || ch == '/' || ch == '\\' {
 			continue
 		}
 		a.docDialog.input += string(ch)

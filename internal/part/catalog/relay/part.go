@@ -63,18 +63,41 @@ func decodePart(data json.RawMessage) (part.Part, error) {
 	if err := json.Unmarshal(data, &relay); err != nil {
 		return nil, err
 	}
-	// Backward-compat: migrate legacy relay-wide midFlipped bool to all active poles.
+	legacyFlip := decodeLegacyFlip(data)
+	legacyPins := decodeLegacyPins(data)
+	migrateRelayLegacyContactPins(&relay, legacyPins)
+	if relay.TypeID == "" {
+		relay.TypeID = TypeID
+	}
+	relay.PoleCount = clampRelayPoleCount(relay.PoleCount)
+	if relay.MidFlipMask == 0 && legacyFlip {
+		relay.MidFlipMask = relayPoleMask(relay.PoleCount)
+	}
+	relay.Rotation = normalizeRelayRotation(relay.Rotation)
+	return &relay, nil
+}
+
+func decodeLegacyFlip(data json.RawMessage) bool {
 	var legacyFlip struct {
 		MidFlipped bool `json:"midFlipped"`
 	}
 	_ = json.Unmarshal(data, &legacyFlip)
-	// Backward-compat: migrate legacy COM/NC/NO into pole 1 when present.
-	var legacy struct {
-		COM core.PinID `json:"cOM"`
-		NC  core.PinID `json:"nC"`
-		NO  core.PinID `json:"nO"`
-	}
+	return legacyFlip.MidFlipped
+}
+
+type legacyRelayPins struct {
+	COM core.PinID `json:"cOM"`
+	NC  core.PinID `json:"nC"`
+	NO  core.PinID `json:"nO"`
+}
+
+func decodeLegacyPins(data json.RawMessage) legacyRelayPins {
+	var legacy legacyRelayPins
 	_ = json.Unmarshal(data, &legacy)
+	return legacy
+}
+
+func migrateRelayLegacyContactPins(relay *Relay, legacy legacyRelayPins) {
 	// Migrate generated single-contact pins (COM/NC/NO) to pole 1 if needed.
 	if relay.COM1 == 0 && relay.COM != 0 {
 		relay.COM1 = relay.COM
@@ -85,6 +108,7 @@ func decodePart(data json.RawMessage) (part.Part, error) {
 	if relay.NO1 == 0 && relay.NO != 0 {
 		relay.NO1 = relay.NO
 	}
+	// Backward-compat: migrate legacy COM/NC/NO into pole 1 when present.
 	if relay.COM1 == 0 && legacy.COM != 0 {
 		relay.COM1 = legacy.COM
 	}
@@ -94,15 +118,6 @@ func decodePart(data json.RawMessage) (part.Part, error) {
 	if relay.NO1 == 0 && legacy.NO != 0 {
 		relay.NO1 = legacy.NO
 	}
-	if relay.TypeID == "" {
-		relay.TypeID = TypeID
-	}
-	relay.PoleCount = clampRelayPoleCount(relay.PoleCount)
-	if relay.MidFlipMask == 0 && legacyFlip.MidFlipped {
-		relay.MidFlipMask = relayPoleMask(relay.PoleCount)
-	}
-	relay.Rotation = normalizeRelayRotation(relay.Rotation)
-	return &relay, nil
 }
 
 func clampRelayPoleCount(v int) int {

@@ -10,6 +10,7 @@ import (
 	"coilforge/internal/core"
 	"coilforge/internal/part"
 	"coilforge/internal/world"
+	"image/color"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -106,59 +107,61 @@ func drawGrid(dst *ebiten.Image) {
 	const swMinor float32 = 1
 	const swMajor float32 = 1.85
 
-	for i := i0; i <= i1; i++ {
+	drawVerticalGridLines(dst, i0, i1, minor, ratio, minY, maxY, runSim, showMajor, showMinor, minorCol, majorCol, swMinor, swMajor)
+	drawHorizontalGridLines(dst, j0, j1, minor, ratio, minX, maxX, runSim, showMajor, showMinor, minorCol, majorCol, swMinor, swMajor)
+}
+
+func drawVerticalGridLines(dst *ebiten.Image, start, end int, minor float64, ratio int, minY, maxY float64, runSim, showMajor, showMinor bool, minorCol, majorCol color.RGBA, swMinor, swMajor float32) {
+	for i := start; i <= end; i++ {
 		x := float64(i) * minor
-		modI := i % ratio
-		if modI < 0 {
-			modI += ratio
-		}
-		isMajor := modI == 0
-		if runSim && !isMajor {
+		isMajor := isMajorGridIndex(i, ratio)
+		if !shouldDrawGridLine(isMajor, runSim, showMajor, showMinor) {
 			continue
 		}
-		if isMajor && !showMajor {
-			continue
-		}
-		if !isMajor && !showMinor {
-			continue
-		}
-		col := minorCol
-		sw := swMinor
-		if isMajor {
-			col = majorCol
-			sw = swMajor
-		}
+		col, sw := gridLineStyle(isMajor, minorCol, majorCol, swMinor, swMajor)
 		x0, y0 := world.WorldToScreen(core.Pt{X: x, Y: minY})
 		x1, y1 := world.WorldToScreen(core.Pt{X: x, Y: maxY})
 		vector.StrokeLine(dst, float32(x0), float32(y0), float32(x1), float32(y1), sw, col, false)
 	}
+}
 
-	for j := j0; j <= j1; j++ {
+func drawHorizontalGridLines(dst *ebiten.Image, start, end int, minor float64, ratio int, minX, maxX float64, runSim, showMajor, showMinor bool, minorCol, majorCol color.RGBA, swMinor, swMajor float32) {
+	for j := start; j <= end; j++ {
 		y := float64(j) * minor
-		modJ := j % ratio
-		if modJ < 0 {
-			modJ += ratio
-		}
-		isMajor := modJ == 0
-		if runSim && !isMajor {
+		isMajor := isMajorGridIndex(j, ratio)
+		if !shouldDrawGridLine(isMajor, runSim, showMajor, showMinor) {
 			continue
 		}
-		if isMajor && !showMajor {
-			continue
-		}
-		if !isMajor && !showMinor {
-			continue
-		}
-		col := minorCol
-		sw := swMinor
-		if isMajor {
-			col = majorCol
-			sw = swMajor
-		}
+		col, sw := gridLineStyle(isMajor, minorCol, majorCol, swMinor, swMajor)
 		x0, y0 := world.WorldToScreen(core.Pt{X: minX, Y: y})
 		x1, y1 := world.WorldToScreen(core.Pt{X: maxX, Y: y})
 		vector.StrokeLine(dst, float32(x0), float32(y0), float32(x1), float32(y1), sw, col, false)
 	}
+}
+
+func isMajorGridIndex(idx, ratio int) bool {
+	mod := idx % ratio
+	if mod < 0 {
+		mod += ratio
+	}
+	return mod == 0
+}
+
+func shouldDrawGridLine(isMajor, runSim, showMajor, showMinor bool) bool {
+	if runSim && !isMajor {
+		return false
+	}
+	if isMajor {
+		return showMajor
+	}
+	return showMinor
+}
+
+func gridLineStyle(isMajor bool, minorCol, majorCol color.RGBA, swMinor, swMajor float32) (color.RGBA, float32) {
+	if isMajor {
+		return majorCol, swMajor
+	}
+	return minorCol, swMinor
 }
 
 func visibleWorldExtent(screenW, screenH int) (minX, maxX, minY, maxY float64) {

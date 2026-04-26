@@ -470,19 +470,27 @@ func PropPanelIntButtonAtScreenPoint(spec part.PropSpec, sx, sy int) (itemIdx in
 			rowY += propPanelRowHeightPx
 			continue
 		}
-		minusX, minusY, plusX, plusY, _, _ := propIntControlRects(x, rowY, w)
-		btn := float32(propPanelButtonSizePx)
-		px := float32(sx)
-		py := float32(sy)
-		if px >= minusX && px <= minusX+btn && py >= minusY && py <= minusY+btn {
-			return i, -1, true
-		}
-		if px >= plusX && px <= plusX+btn && py >= plusY && py <= plusY+btn {
-			return i, 1, true
+		delta, hit := propPanelIntRowDeltaAtPoint(sx, sy, x, rowY, w)
+		if hit {
+			return i, delta, true
 		}
 		rowY += propPanelRowHeightPx
 	}
 	return -1, 0, false
+}
+
+func propPanelIntRowDeltaAtPoint(sx, sy int, panelX, rowY, panelW float32) (delta int, ok bool) {
+	minusX, minusY, plusX, plusY, _, _ := propIntControlRects(panelX, rowY, panelW)
+	btn := float32(propPanelButtonSizePx)
+	px := float32(sx)
+	py := float32(sy)
+	if px >= minusX && px <= minusX+btn && py >= minusY && py <= minusY+btn {
+		return -1, true
+	}
+	if px >= plusX && px <= plusX+btn && py >= plusY && py <= plusY+btn {
+		return 1, true
+	}
+	return 0, false
 }
 
 // PropPanelBoolAtScreenPoint returns bool row index when checkbox is clicked.
@@ -562,7 +570,7 @@ func DrawStatusBar(dst *ebiten.Image, text string) {
 	}
 	if tw > maxW {
 		s = "..."
-		tw, th = atlasMeasure(s, atlas)
+		_, th = atlasMeasure(s, atlas)
 	}
 	targetX := snapToLogicalPixel(margin)
 	targetY := snapToLogicalPixel(float64(h) - float64(statusBarBottomMarginPx) - th)

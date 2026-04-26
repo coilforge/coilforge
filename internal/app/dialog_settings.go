@@ -68,47 +68,8 @@ func (a *App) handleSettingsTyping() {
 		return
 	}
 	for _, key := range inpututil.AppendJustPressedKeys(nil) {
-		switch key {
-		case ebiten.KeyF3:
-			a.settingsOpen = false
-			a.settingsPathActive = false
+		if a.handleSettingsKey(key) {
 			return
-		case ebiten.KeyF4:
-			changed := appsettings.Apply(appsettings.Action{
-				Index:    0,
-				NewValue: !appsettings.Current.DarkMode,
-			})
-			if changed {
-				_ = appsettings.SaveLocalCurrent()
-			}
-			a.syncRenderThemeFromSettings()
-		case ebiten.KeyBackspace:
-			if !a.settingsPathActive {
-				continue
-			}
-			r := []rune(a.settingsPath)
-			if len(r) > 0 {
-				a.settingsPath = string(r[:len(r)-1])
-			}
-		case ebiten.KeyEnter:
-			if !a.settingsPathActive {
-				continue
-			}
-			path := strings.TrimSpace(a.settingsPath)
-			if path == "" {
-				return
-			}
-			changed := appsettings.Apply(appsettings.Action{
-				Index:    1,
-				NewValue: path,
-			})
-			if changed {
-				_ = appsettings.SaveLocalCurrent()
-				a.docDialog.store = storage.NewLocalFSStore(appsettings.Current.DefaultSaveDir)
-				if a.docDialog.mode != docDialogClosed {
-					a.refreshDocDialogList()
-				}
-			}
 		}
 	}
 	if !a.settingsPathActive {
@@ -119,6 +80,66 @@ func (a *App) handleSettingsTyping() {
 			continue
 		}
 		a.settingsPath += string(ch)
+	}
+}
+
+func (a *App) handleSettingsKey(key ebiten.Key) bool {
+	switch key {
+	case ebiten.KeyF3:
+		a.settingsOpen = false
+		a.settingsPathActive = false
+		return true
+	case ebiten.KeyF4:
+		a.toggleDarkModeSetting()
+	case ebiten.KeyBackspace:
+		a.backspaceSettingsPath()
+	case ebiten.KeyEnter:
+		a.applySettingsPath()
+	}
+	return false
+}
+
+func (a *App) toggleDarkModeSetting() {
+	changed := appsettings.Apply(appsettings.Action{
+		Index:    0,
+		NewValue: !appsettings.Current.DarkMode,
+	})
+	if changed {
+		_ = appsettings.SaveLocalCurrent()
+	}
+	a.syncRenderThemeFromSettings()
+}
+
+func (a *App) backspaceSettingsPath() {
+	if !a.settingsPathActive {
+		return
+	}
+	r := []rune(a.settingsPath)
+	if len(r) == 0 {
+		return
+	}
+	a.settingsPath = string(r[:len(r)-1])
+}
+
+func (a *App) applySettingsPath() {
+	if !a.settingsPathActive {
+		return
+	}
+	path := strings.TrimSpace(a.settingsPath)
+	if path == "" {
+		return
+	}
+	changed := appsettings.Apply(appsettings.Action{
+		Index:    1,
+		NewValue: path,
+	})
+	if !changed {
+		return
+	}
+	_ = appsettings.SaveLocalCurrent()
+	a.docDialog.store = storage.NewLocalFSStore(appsettings.Current.DefaultSaveDir)
+	if a.docDialog.mode != docDialogClosed {
+		a.refreshDocDialogList()
 	}
 }
 

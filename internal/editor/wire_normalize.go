@@ -306,6 +306,25 @@ func edgeSetsEqual(a, b []axisEdge) bool {
 }
 
 func canonicalizeColinearEdges(edges []axisEdge, pinPts []core.Pt) []axisEdge {
+	vertical, horizontal := groupAxisEdges(edges)
+	hEnds, vEnds := collectEndpointPoints(edges)
+	out := make([]axisEdge, 0, len(edges))
+	out = append(out, expandVerticalCanonicalEdges(vertical, pinPts, hEnds)...)
+	out = append(out, expandHorizontalCanonicalEdges(horizontal, pinPts, vEnds)...)
+	sortCanonicalEdges(out)
+	return out
+}
+
+func groupAxisEdges(edges []axisEdge) (
+	map[string]struct {
+		x         float64
+		intervals []axisInterval
+	},
+	map[string]struct {
+		y         float64
+		intervals []axisInterval
+	},
+) {
 	vertical := make(map[string]struct {
 		x         float64
 		intervals []axisInterval
@@ -337,7 +356,17 @@ func canonicalizeColinearEdges(edges []axisEdge, pinPts []core.Pt) []axisEdge {
 			horizontal[k] = entry
 		}
 	}
-	hEnds, vEnds := collectEndpointPoints(edges)
+	return vertical, horizontal
+}
+
+func expandVerticalCanonicalEdges(
+	vertical map[string]struct {
+		x         float64
+		intervals []axisInterval
+	},
+	pinPts []core.Pt,
+	hEnds []core.Pt,
+) []axisEdge {
 	var out []axisEdge
 	for _, entry := range vertical {
 		merged := mergeIntervals(entry.intervals)
@@ -359,6 +388,18 @@ func canonicalizeColinearEdges(edges []axisEdge, pinPts []core.Pt) []axisEdge {
 			})
 		}
 	}
+	return out
+}
+
+func expandHorizontalCanonicalEdges(
+	horizontal map[string]struct {
+		y         float64
+		intervals []axisInterval
+	},
+	pinPts []core.Pt,
+	vEnds []core.Pt,
+) []axisEdge {
+	var out []axisEdge
 	for _, entry := range horizontal {
 		merged := mergeIntervals(entry.intervals)
 		var cuts []float64
@@ -379,6 +420,10 @@ func canonicalizeColinearEdges(edges []axisEdge, pinPts []core.Pt) []axisEdge {
 			})
 		}
 	}
+	return out
+}
+
+func sortCanonicalEdges(out []axisEdge) {
 	sort.Slice(out, func(i, j int) bool {
 		if out[i].A.X != out[j].A.X {
 			return out[i].A.X < out[j].A.X
@@ -391,7 +436,6 @@ func canonicalizeColinearEdges(edges []axisEdge, pinPts []core.Pt) []axisEdge {
 		}
 		return out[i].B.Y < out[j].B.Y
 	})
-	return out
 }
 
 // explodeWireToStraights returns 2-point edges covering the same geometry after inserting interior junctions.

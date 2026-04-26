@@ -180,76 +180,92 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 
 	switch {
 	case leftNow && !a.leftDown:
-		if a.docDialog.mode != docDialogClosed {
-			if render.SimplePanelCloseButtonAtScreenPoint(mouseX, mouseY) {
-				a.closeDocDialog("")
-			} else {
-				a.handleDocDialogMousePress(mouseX, mouseY)
-			}
-			a.toolbarCapture = true
-			break
-		}
-		if a.settingsOpen {
-			if render.SimplePanelCloseButtonAtScreenPoint(mouseX, mouseY) {
-				a.settingsOpen = false
-				a.settingsPathActive = false
-			} else {
-				a.handleSettingsMousePress(mouseX, mouseY)
-			}
-			// While settings is open, consume pointer presses so schematic/editor
-			// interactions do not happen behind the panel.
-			a.toolbarCapture = true
-			break
-		}
-		if a.handleToolbarPress(mouseX, mouseY) {
-			a.toolbarCapture = true
-			break
-		}
-		if !world.RunMode && a.handlePropPanelPress(mouseX, mouseY) {
-			a.toolbarCapture = true
-			break
-		}
-		if ebiten.IsKeyPressed(ebiten.KeySpace) && !editor.LabelEditing {
-			editor.BeginViewportPan(mouseX, mouseY)
-			break
-		}
-		pt := world.ScreenToWorld(mouseX, mouseY)
-		if world.RunMode {
-			world.SimMu.Lock()
-			sim.HandlePointerDown(pt)
-			world.SimMu.Unlock()
-		} else {
-			editor.HandleMouseDown(pt, int(ebiten.MouseButtonLeft))
-		}
+		a.handleMousePress(mouseX, mouseY)
 	case leftNow && a.leftDown:
-		if a.toolbarCapture {
-			break
-		}
-		if editor.ViewportPanActive() {
-			editor.HandleViewportPanDrag(mouseX, mouseY)
-			break
-		}
-		if world.RunMode {
-			break
-		}
-		pt := world.ScreenToWorld(mouseX, mouseY)
-		editor.HandleDrag(pt)
+		a.handleMouseDrag(mouseX, mouseY)
 	case !leftNow && a.leftDown:
-		if a.toolbarCapture {
-			a.toolbarCapture = false
-			break
-		}
-		pt := world.ScreenToWorld(mouseX, mouseY)
-		if world.RunMode {
-			world.SimMu.Lock()
-			sim.HandlePointerUp()
-			world.SimMu.Unlock()
-			break
-		}
-		editor.HandleMouseUp(pt, int(ebiten.MouseButtonLeft))
+		a.handleMouseRelease(mouseX, mouseY)
 	}
 
 	a.leftDown = leftNow
+}
+
+func (a *App) handleMousePress(mouseX, mouseY int) {
+	if a.handleOverlayPointerPress(mouseX, mouseY) {
+		a.toolbarCapture = true
+		return
+	}
+	if a.handleToolbarPress(mouseX, mouseY) {
+		a.toolbarCapture = true
+		return
+	}
+	if !world.RunMode && a.handlePropPanelPress(mouseX, mouseY) {
+		a.toolbarCapture = true
+		return
+	}
+	if ebiten.IsKeyPressed(ebiten.KeySpace) && !editor.LabelEditing {
+		editor.BeginViewportPan(mouseX, mouseY)
+		return
+	}
+	pt := world.ScreenToWorld(mouseX, mouseY)
+	if world.RunMode {
+		world.SimMu.Lock()
+		sim.HandlePointerDown(pt)
+		world.SimMu.Unlock()
+		return
+	}
+	editor.HandleMouseDown(pt, int(ebiten.MouseButtonLeft))
+}
+
+func (a *App) handleOverlayPointerPress(mouseX, mouseY int) bool {
+	if a.docDialog.mode != docDialogClosed {
+		if render.SimplePanelCloseButtonAtScreenPoint(mouseX, mouseY) {
+			a.closeDocDialog("")
+		} else {
+			a.handleDocDialogMousePress(mouseX, mouseY)
+		}
+		return true
+	}
+	if !a.settingsOpen {
+		return false
+	}
+	if render.SimplePanelCloseButtonAtScreenPoint(mouseX, mouseY) {
+		a.settingsOpen = false
+		a.settingsPathActive = false
+	} else {
+		a.handleSettingsMousePress(mouseX, mouseY)
+	}
+	return true
+}
+
+func (a *App) handleMouseDrag(mouseX, mouseY int) {
+	if a.toolbarCapture {
+		return
+	}
+	if editor.ViewportPanActive() {
+		editor.HandleViewportPanDrag(mouseX, mouseY)
+		return
+	}
+	if world.RunMode {
+		return
+	}
+	pt := world.ScreenToWorld(mouseX, mouseY)
+	editor.HandleDrag(pt)
+}
+
+func (a *App) handleMouseRelease(mouseX, mouseY int) {
+	if a.toolbarCapture {
+		a.toolbarCapture = false
+		return
+	}
+	pt := world.ScreenToWorld(mouseX, mouseY)
+	if world.RunMode {
+		world.SimMu.Lock()
+		sim.HandlePointerUp()
+		world.SimMu.Unlock()
+		return
+	}
+	editor.HandleMouseUp(pt, int(ebiten.MouseButtonLeft))
 }
 
 func (a *App) handlePropPanelPress(mouseX, mouseY int) bool {
@@ -259,50 +275,62 @@ func (a *App) handlePropPanelPress(mouseX, mouseY int) bool {
 	}
 	spec := p.PropSpec()
 	if idx, ok := render.PropPanelBoolAtScreenPoint(spec, mouseX, mouseY); ok {
-		if idx < 0 || idx >= len(spec.Items) {
-			return false
-		}
-		v, ok := spec.Items[idx].Value.(bool)
-		if !ok {
-			return false
-		}
-		return editor.ApplySelectedProp(part.PropAction{
-			Index:    idx,
-			NewValue: !v,
-		})
+		return a.applyPropPanelBool(spec, idx)
 	}
 	idx, delta, ok := render.PropPanelIntButtonAtScreenPoint(spec, mouseX, mouseY)
 	if !ok || idx < 0 || idx >= len(spec.Items) {
 		return false
 	}
 	item := spec.Items[idx]
-	if item.Kind != part.PropInt && item.Kind != part.PropChoice {
+	if item.Kind == part.PropChoice {
+		return a.applyPropPanelChoice(idx, delta, item)
+	}
+	if item.Kind == part.PropInt {
+		return a.applyPropPanelInt(idx, delta, item)
+	}
+	return false
+}
+
+func (a *App) applyPropPanelBool(spec part.PropSpec, idx int) bool {
+	if idx < 0 || idx >= len(spec.Items) {
 		return false
 	}
-	if item.Kind == part.PropChoice {
-		curr, ok := item.Value.(string)
-		if !ok || len(item.Choices) == 0 {
-			return false
-		}
-		pos := 0
-		for i := range item.Choices {
-			if item.Choices[i] == curr {
-				pos = i
-				break
-			}
-		}
-		nextPos := pos + delta
-		if nextPos < 0 {
-			nextPos = len(item.Choices) - 1
-		}
-		if nextPos >= len(item.Choices) {
-			nextPos = 0
-		}
-		return editor.ApplySelectedProp(part.PropAction{
-			Index:    idx,
-			NewValue: item.Choices[nextPos],
-		})
+	v, ok := spec.Items[idx].Value.(bool)
+	if !ok {
+		return false
 	}
+	return editor.ApplySelectedProp(part.PropAction{
+		Index:    idx,
+		NewValue: !v,
+	})
+}
+
+func (a *App) applyPropPanelChoice(idx, delta int, item part.PropItem) bool {
+	curr, ok := item.Value.(string)
+	if !ok || len(item.Choices) == 0 {
+		return false
+	}
+	pos := 0
+	for i := range item.Choices {
+		if item.Choices[i] == curr {
+			pos = i
+			break
+		}
+	}
+	nextPos := pos + delta
+	if nextPos < 0 {
+		nextPos = len(item.Choices) - 1
+	}
+	if nextPos >= len(item.Choices) {
+		nextPos = 0
+	}
+	return editor.ApplySelectedProp(part.PropAction{
+		Index:    idx,
+		NewValue: item.Choices[nextPos],
+	})
+}
+
+func (a *App) applyPropPanelInt(idx, delta int, item part.PropItem) bool {
 	curr, ok := item.Value.(int)
 	if !ok {
 		return false
