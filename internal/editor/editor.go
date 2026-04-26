@@ -25,6 +25,8 @@ const wireToolID core.PartTypeID = "wire"
 const (
 	wireDoubleClickMaxGap         = 400 * time.Millisecond
 	wireDoubleClickMaxDistWorldSq = 12.0 * 12.0
+	partDoubleClickMaxGap         = 400 * time.Millisecond
+	partDoubleClickMaxDistWorldSq = 12.0 * 12.0
 )
 
 // Blank-canvas double-click detection for ending a wire run (second press must be on empty canvas).
@@ -32,7 +34,14 @@ var (
 	wireBlankPrevTime  time.Time
 	wireBlankPrevPt    core.Pt
 	wireBlankPrevValid bool
+	partPrevTime       time.Time
+	partPrevPt         core.Pt
+	partPrevIndex      = -1
 )
+
+type bodyDoubleClickTogglable interface {
+	ToggleMidFlipAt(pt core.Pt) bool
+}
 
 // HandleMouseDown handles mouse down (edit mode): part pick, placement commit, or marquee start.
 func HandleMouseDown(pt core.Pt, button int) {
@@ -69,11 +78,46 @@ func HandleMouseDown(pt core.Pt, button int) {
 	PointerDownPart = idx
 	MouseDownOnEmpty = idx < 0
 	if idx >= 0 {
+		if tryBodyDoubleClickToggle(idx, pt) {
+			Selection = []int{idx}
+			HoverIndex = idx
+			return
+		}
 		if !selectionContains(idx) {
 			Selection = []int{idx}
 		}
 		HoverIndex = idx
 	}
+}
+
+func tryBodyDoubleClickToggle(idx int, pt core.Pt) bool {
+	if idx < 0 || idx >= len(world.Parts) {
+		return false
+	}
+	p := world.Parts[idx]
+	h := p.HitTest(pt)
+	if !h.Hit || h.Kind != part.HitBody {
+		partPrevIndex = -1
+		return false
+	}
+	now := time.Now()
+	dx := pt.X - partPrevPt.X
+	dy := pt.Y - partPrevPt.Y
+	isDouble := partPrevIndex == idx &&
+		now.Sub(partPrevTime) <= partDoubleClickMaxGap &&
+		dx*dx+dy*dy <= partDoubleClickMaxDistWorldSq
+	partPrevTime = now
+	partPrevPt = pt
+	partPrevIndex = idx
+	if !isDouble {
+		return false
+	}
+	t, ok := p.(bodyDoubleClickTogglable)
+	if !ok {
+		return false
+	}
+	pushUndo()
+	return t.ToggleMidFlipAt(pt)
 }
 
 func selectionContains(idx int) bool {

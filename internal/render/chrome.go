@@ -12,6 +12,7 @@ import (
 	"coilforge/internal/world"
 	"image/color"
 	"math"
+	"strconv"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -75,6 +76,13 @@ const (
 	simplePanelCloseInsetPx  = 12
 	simplePanelCloseTextOffX = 8
 	simplePanelCloseTextOffY = 8
+
+	propPanelWidthPx      = 300
+	propPanelMinHeightPx  = 84
+	propPanelRightPadPx   = toolbarStripWidthPx + 16
+	propPanelTopPadPx     = 16
+	propPanelRowHeightPx  = 34
+	propPanelButtonSizePx = 22
 )
 
 // toolbarStripLayout returns the toolbar panel rectangle for [DrawToolbar] and hit-testing (same math).
@@ -320,7 +328,132 @@ func drawButtonBevel(dst *ebiten.Image, x, y, size float32, active bool, disable
 
 // DrawPropPanel renders the selected-part property panel chrome.
 func DrawPropPanel(dst *ebiten.Image, spec part.PropSpec) {
-	_, _ = dst, spec
+	x, y, w, h, ok := propPanelLayout(spec, world.ScreenW, world.ScreenH)
+	if !ok {
+		return
+	}
+	DrawPanelFrame(dst, x, y, w, h, toolbarPanelFrameStyle())
+	title := "Properties"
+	drawAtlasText(dst, strings.ToUpper(title), snapToLogicalPixel(float64(x+12)), snapToLogicalPixel(float64(y+12)), StatusBarTextColor())
+
+	rowY := y + 38
+	for i, item := range spec.Items {
+		if rowY+propPanelRowHeightPx > y+h-6 {
+			break
+		}
+		drawAtlasText(dst, normalizeUIString(item.Label), snapToLogicalPixel(float64(x+12)), snapToLogicalPixel(float64(rowY+8)), StatusBarTextColor())
+		switch item.Kind {
+		case part.PropInt:
+			drawPropIntControls(dst, x, rowY, w, item)
+		default:
+			drawAtlasText(dst, normalizeUIString(propValueText(item.Value)), snapToLogicalPixel(float64(x+w-118)), snapToLogicalPixel(float64(rowY+8)), StatusBarTextColor())
+		}
+		_ = i
+		rowY += propPanelRowHeightPx
+	}
+}
+
+func propValueText(v any) string {
+	switch t := v.(type) {
+	case string:
+		return t
+	case int:
+		return strconv.Itoa(t)
+	case bool:
+		if t {
+			return "true"
+		}
+		return "false"
+	default:
+		return ""
+	}
+}
+
+func drawPropIntControls(dst *ebiten.Image, x, rowY, w float32, item part.PropItem) {
+	minusX, minusY, plusX, plusY, valueX, valueY := propIntControlRects(x, rowY, w)
+	btnFill := ToolbarButtonFillColor(false, false, false)
+	btnOutline := ToolbarPanelOutlineColor()
+	vector.FillRect(dst, minusX, minusY, float32(propPanelButtonSizePx), float32(propPanelButtonSizePx), btnFill, false)
+	vector.StrokeRect(dst, minusX, minusY, float32(propPanelButtonSizePx), float32(propPanelButtonSizePx), 2.0, btnOutline, false)
+	vector.FillRect(dst, plusX, plusY, float32(propPanelButtonSizePx), float32(propPanelButtonSizePx), btnFill, false)
+	vector.StrokeRect(dst, plusX, plusY, float32(propPanelButtonSizePx), float32(propPanelButtonSizePx), 2.0, btnOutline, false)
+	drawAtlasText(dst, "-", snapToLogicalPixel(float64(minusX+7)), snapToLogicalPixel(float64(minusY+5)), StatusBarTextColor())
+	drawAtlasText(dst, "+", snapToLogicalPixel(float64(plusX+6)), snapToLogicalPixel(float64(plusY+5)), StatusBarTextColor())
+	drawAtlasText(dst, strconv.Itoa(propIntValue(item)), snapToLogicalPixel(float64(valueX)), snapToLogicalPixel(float64(valueY)), StatusBarTextColor())
+}
+
+func propIntValue(item part.PropItem) int {
+	if v, ok := item.Value.(int); ok {
+		return v
+	}
+	return 0
+}
+
+func propIntControlRects(panelX, rowY, panelW float32) (minusX, minusY, plusX, plusY, valueX, valueY float32) {
+	btn := float32(propPanelButtonSizePx)
+	plusX = panelX + panelW - 12 - btn
+	minusX = plusX - 66
+	minusY = rowY + 6
+	plusY = rowY + 6
+	valueX = minusX + btn + 16
+	valueY = rowY + 8
+	return minusX, minusY, plusX, plusY, valueX, valueY
+}
+
+// PropPanelIntButtonAtScreenPoint returns the prop row index and delta (-1/+1) for clicked int controls.
+func PropPanelIntButtonAtScreenPoint(spec part.PropSpec, sx, sy int) (itemIdx int, delta int, ok bool) {
+	x, y, w, h, okLayout := propPanelLayout(spec, world.ScreenW, world.ScreenH)
+	if !okLayout {
+		return -1, 0, false
+	}
+	if float32(sx) < x || float32(sx) > x+w || float32(sy) < y || float32(sy) > y+h {
+		return -1, 0, false
+	}
+	rowY := y + 38
+	for i, item := range spec.Items {
+		if rowY+propPanelRowHeightPx > y+h-6 {
+			break
+		}
+		if item.Kind != part.PropInt {
+			rowY += propPanelRowHeightPx
+			continue
+		}
+		minusX, minusY, plusX, plusY, _, _ := propIntControlRects(x, rowY, w)
+		btn := float32(propPanelButtonSizePx)
+		px := float32(sx)
+		py := float32(sy)
+		if px >= minusX && px <= minusX+btn && py >= minusY && py <= minusY+btn {
+			return i, -1, true
+		}
+		if px >= plusX && px <= plusX+btn && py >= plusY && py <= plusY+btn {
+			return i, 1, true
+		}
+		rowY += propPanelRowHeightPx
+	}
+	return -1, 0, false
+}
+
+func propPanelLayout(spec part.PropSpec, screenW, screenH int) (x, y, w, h float32, ok bool) {
+	if screenW <= 0 || screenH <= 0 || len(spec.Items) == 0 {
+		return 0, 0, 0, 0, false
+	}
+	w = float32(propPanelWidthPx)
+	h = float32(38 + len(spec.Items)*propPanelRowHeightPx + 10)
+	if h < float32(propPanelMinHeightPx) {
+		h = float32(propPanelMinHeightPx)
+	}
+	x = float32(screenW) - w - float32(propPanelRightPadPx)
+	y = float32(propPanelTopPadPx)
+	if x < 0 {
+		x = 0
+	}
+	if y+h > float32(screenH)-float32(toolbarBottomClearancePx) {
+		h = float32(screenH) - float32(toolbarBottomClearancePx) - y
+	}
+	if h < 40 {
+		return 0, 0, 0, 0, false
+	}
+	return x, y, w, h, true
 }
 
 // DrawStatusBar renders bottom status text chrome.

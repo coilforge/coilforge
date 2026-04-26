@@ -4,6 +4,7 @@ import (
 	"coilforge/internal/appsettings"
 	"coilforge/internal/core"
 	"coilforge/internal/editor"
+	"coilforge/internal/part"
 	"coilforge/internal/partmanifest"
 	"coilforge/internal/render"
 	"coilforge/internal/sim"
@@ -190,6 +191,10 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 			a.toolbarCapture = true
 			break
 		}
+		if !world.RunMode && a.handlePropPanelPress(mouseX, mouseY) {
+			a.toolbarCapture = true
+			break
+		}
 		if ebiten.IsKeyPressed(ebiten.KeySpace) && !editor.LabelEditing {
 			editor.BeginViewportPan(mouseX, mouseY)
 			break
@@ -225,6 +230,40 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 	}
 
 	a.leftDown = leftNow
+}
+
+func (a *App) handlePropPanelPress(mouseX, mouseY int) bool {
+	p := selectedPart()
+	if p == nil {
+		return false
+	}
+	spec := p.PropSpec()
+	idx, delta, ok := render.PropPanelIntButtonAtScreenPoint(spec, mouseX, mouseY)
+	if !ok || idx < 0 || idx >= len(spec.Items) {
+		return false
+	}
+	item := spec.Items[idx]
+	if item.Kind != part.PropInt {
+		return false
+	}
+	curr, ok := item.Value.(int)
+	if !ok {
+		return false
+	}
+	next := curr + delta
+	if item.Min != 0 && next < item.Min {
+		next = item.Min
+	}
+	if item.Max != 0 && next > item.Max {
+		next = item.Max
+	}
+	if next == curr {
+		return true
+	}
+	return editor.ApplySelectedProp(part.PropAction{
+		Index:    idx,
+		NewValue: next,
+	})
 }
 
 // handleToolbarPress applies toolbar click behavior and reports whether a press hit toolbar chrome.

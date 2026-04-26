@@ -8,20 +8,23 @@ import (
 // AddConductive closes the contact pair represented by the mid section.
 // De-energized: COM <-> NC, energized: COM <-> NO.
 func (self *Relay) AddConductive(union part.NetUnion, netByPin func(core.PinID) int) {
-	com := netByPin(self.COM)
-	if com < 0 {
-		return
+	for pole := 1; pole <= self.poleCountClamped(); pole++ {
+		comPin, ncPin, noPin := self.contactPinsForPole(pole)
+		com := netByPin(comPin)
+		if com < 0 {
+			continue
+		}
+		var other int
+		if self.Energized {
+			other = netByPin(noPin)
+		} else {
+			other = netByPin(ncPin)
+		}
+		if other < 0 {
+			continue
+		}
+		union.Union(com, other)
 	}
-	var other int
-	if self.Energized {
-		other = netByPin(self.NO)
-	} else {
-		other = netByPin(self.NC)
-	}
-	if other < 0 {
-		return
-	}
-	union.Union(com, other)
 }
 
 // Tick updates relay energized state from coil pin net states.
