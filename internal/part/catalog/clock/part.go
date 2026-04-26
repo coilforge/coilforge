@@ -18,6 +18,8 @@ const TypeID core.PartTypeID = "clock"
 type Clock struct {
 	core.BasePart // BasePart carries shared part identity and transform state.
 	ClockPinIDs
+	OnMs  int `json:"onMs"`
+	OffMs int `json:"offMs"`
 }
 
 // init registers the part type with the global registry.
@@ -36,6 +38,8 @@ func init() {
 func newPart(id int, pos core.Pt) part.Part {
 	return &Clock{
 		BasePart: core.BasePart{ID: id, TypeID: TypeID, Pos: pos},
+		OnMs:     defaultOnMs,
+		OffMs:    defaultOffMs,
 	}
 }
 
@@ -48,6 +52,8 @@ func decodePart(data json.RawMessage) (part.Part, error) {
 	if c.TypeID == "" {
 		c.TypeID = TypeID
 	}
+	c.OnMs = clampPhaseMs(c.OnMs)
+	c.OffMs = clampPhaseMs(c.OffMs)
 	return &c, nil
 }
 

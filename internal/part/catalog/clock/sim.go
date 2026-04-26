@@ -10,9 +10,37 @@ import (
 	"coilforge/internal/part"
 )
 
-// clockHalfPhaseIters is sim-loop iterations per on/off phase. Chosen so, at ~1:1 sim-µs vs wall-µs (e.g. 10k ticks/s with
-// 100 µs [core.SimStepMicros]), one half-phase is ~0.5 s wall → ~1 Hz full square wave — visible without full-speed fast-forward.
-const clockHalfPhaseIters = 5_000
+const (
+	defaultOnMs  = 500
+	defaultOffMs = 500
+	minPhaseMs   = 1
+	maxPhaseMs   = 60_000
+)
+
+func clampPhaseMs(v int) int {
+	if v == 0 {
+		return defaultOnMs
+	}
+	if v < minPhaseMs {
+		return minPhaseMs
+	}
+	if v > maxPhaseMs {
+		return maxPhaseMs
+	}
+	return v
+}
+
+func msToMicros(v int) uint64 {
+	return uint64(clampPhaseMs(v)) * 1_000
+}
+
+func (self *Clock) onMicros() uint64 {
+	return msToMicros(self.OnMs)
+}
+
+func (self *Clock) offMicros() uint64 {
+	return msToMicros(self.OffMs)
+}
 
 // SeedNets drives the attached net high or low from simulated time (square wave).
 func (self *Clock) SeedNets(union part.NetUnion, netByPin func(core.PinID) int, high, low map[int]bool, nowMicros uint64) {
@@ -24,30 +52,37 @@ func (self *Clock) SeedNets(union part.NetUnion, netByPin func(core.PinID) int, 
 	if root < 0 {
 		return
 	}
-	half := uint64(clockHalfPhaseIters) * uint64(core.SimStepMicros)
-	if half == 0 {
+	on := self.onMicros()
+	off := self.offMicros()
+	cycle := on + off
+	if cycle == 0 {
 		return
 	}
-	phase := (nowMicros / half) % 2
-	if phase == 0 {
+	phase := nowMicros % cycle
+	if phase < on {
 		high[root] = true
 	} else {
 		low[root] = true
 	}
 }
 
-// HalfPeriodMicros returns one clock half-cycle duration in simulated microseconds (matches [SeedNets] timing).
+// HalfPeriodMicros returns the default half-cycle duration used by freshly created clocks.
 func HalfPeriodMicros() uint64 {
-	return uint64(clockHalfPhaseIters) * uint64(core.SimStepMicros)
+	return uint64(defaultOnMs) * 1_000
 }
 
-// PhaseAt returns 0 while OUT is seeded high and 1 while seeded low ([SeedNets] semantics).
+// PhaseAt returns phase for the default 500ms/500ms clock.
 func PhaseAt(nowMicros uint64) int {
-	half := HalfPeriodMicros()
-	if half == 0 {
+	on := uint64(defaultOnMs) * 1_000
+	off := uint64(defaultOffMs) * 1_000
+	cycle := on + off
+	if cycle == 0 {
 		return 0
 	}
-	return int((nowMicros / half) % 2)
+	if nowMicros%cycle < on {
+		return 0
+	}
+	return 1
 }
 
 // PhaseLabel returns "high" or "low" for logging and diagnostics ([PhaseAt] mapping).

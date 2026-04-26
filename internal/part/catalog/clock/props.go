@@ -13,19 +13,37 @@ func (self *Clock) PropSpec() part.PropSpec {
 	return part.PropSpec{
 		Items: []part.PropItem{
 			{Label: "Label", Kind: part.PropText, Value: self.Label},
+			{Label: "On (ms)", Kind: part.PropInt, Value: clampPhaseMs(self.OnMs), Min: minPhaseMs, Max: maxPhaseMs},
+			{Label: "Off (ms)", Kind: part.PropInt, Value: clampPhaseMs(self.OffMs), Min: minPhaseMs, Max: maxPhaseMs},
 		},
 	}
 }
 
 // ApplyProp handles apply prop.
 func (self *Clock) ApplyProp(action part.PropAction) bool {
-	if action.Index != 0 {
+	switch action.Index {
+	case 0:
+		value, ok := action.NewValue.(string)
+		if !ok {
+			return false
+		}
+		self.Label = value
+		return true
+	case 1:
+		value, ok := action.NewValue.(int)
+		if !ok {
+			return false
+		}
+		self.OnMs = clampPhaseMs(value)
+		return true
+	case 2:
+		value, ok := action.NewValue.(int)
+		if !ok {
+			return false
+		}
+		self.OffMs = clampPhaseMs(value)
+		return true
+	default:
 		return false
 	}
-	value, ok := action.NewValue.(string)
-	if !ok {
-		return false
-	}
-	self.Label = value
-	return true
 }
