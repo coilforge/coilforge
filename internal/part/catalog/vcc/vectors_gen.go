@@ -20,59 +20,59 @@ func init() {
 	}, []string{
 		"VCC",
 	})
-	part.RegisterVectorHitBounds("vcc-0", -64.000000, -176.000000, 64.000000, 0.000000)
+	part.RegisterVectorHitBounds("vcc-0", -49.000000, -137.000000, 48.000000, 0.000000)
 	part.RegisterVectorDraw("vcc-1", drawVector_vcc_1)
 	part.RegisterPinLayout("vcc-1", []core.Pt{
 		{X:-0.000000, Y:0.000000},
 	}, []string{
 		"VCC",
 	})
-	part.RegisterVectorHitBounds("vcc-1", -0.000000, -64.000000, 176.000000, 64.000000)
+	part.RegisterVectorHitBounds("vcc-1", -0.000000, -49.000000, 137.000000, 48.000000)
 	part.RegisterVectorDraw("vcc-2", drawVector_vcc_2)
 	part.RegisterPinLayout("vcc-2", []core.Pt{
 		{X:-0.000000, Y:-0.000000},
 	}, []string{
 		"VCC",
 	})
-	part.RegisterVectorHitBounds("vcc-2", -64.000000, -0.000000, 64.000000, 176.000000)
+	part.RegisterVectorHitBounds("vcc-2", -48.000000, -0.000000, 49.000000, 137.000000)
 	part.RegisterVectorDraw("vcc-3", drawVector_vcc_3)
 	part.RegisterPinLayout("vcc-3", []core.Pt{
 		{X:0.000000, Y:-0.000000},
 	}, []string{
 		"VCC",
 	})
-	part.RegisterVectorHitBounds("vcc-3", -176.000000, -64.000000, 0.000000, 64.000000)
+	part.RegisterVectorHitBounds("vcc-3", -137.000000, -48.000000, 0.000000, 49.000000)
 }
 
 func drawVector_vcc_0(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGLine(ctx, base, 1.000000, 0.000000, 1.000000, -64.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGCircle(ctx, base, -0.000000, -112.000000, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGLine(ctx, base, -0.000000, -80.000000, -0.000000, -144.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, 33.000000, -112.000000, -31.000000, -112.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGPolyline(ctx, base, []float64{-49.000000, -112.000000, -46.000000, -97.000000, -39.000000, -84.000000, -29.000000, -73.000000, -15.000000, -66.000000, -0.000000, -64.000000, 15.000000, -66.000000, 28.000000, -73.000000, 39.000000, -84.000000, 46.000000, -97.000000, 48.000000, -112.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -0.000000, -86.000000, -0.000000, -137.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 26.000000, -112.000000, -25.000000, -112.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_vcc_1(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGLine(ctx, base, -0.000000, 1.000000, 64.000000, 1.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGCircle(ctx, base, 112.000000, -0.000000, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGLine(ctx, base, 80.000000, -0.000000, 144.000000, -0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, 112.000000, 33.000000, 112.000000, -31.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGPolyline(ctx, base, []float64{112.000000, -49.000000, 97.000000, -46.000000, 84.000000, -39.000000, 73.000000, -29.000000, 66.000000, -15.000000, 64.000000, -0.000000, 66.000000, 15.000000, 73.000000, 28.000000, 84.000000, 39.000000, 97.000000, 46.000000, 112.000000, 48.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 86.000000, -0.000000, 137.000000, -0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 112.000000, 26.000000, 112.000000, -25.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_vcc_2(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGLine(ctx, base, -1.000000, -0.000000, -1.000000, 64.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGCircle(ctx, base, 0.000000, 112.000000, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGLine(ctx, base, 0.000000, 80.000000, 0.000000, 144.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, -33.000000, 112.000000, 31.000000, 112.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGPolyline(ctx, base, []float64{49.000000, 112.000000, 46.000000, 97.000000, 39.000000, 84.000000, 29.000000, 73.000000, 15.000000, 66.000000, 0.000000, 64.000000, -15.000000, 66.000000, -28.000000, 73.000000, -39.000000, 84.000000, -46.000000, 97.000000, -48.000000, 112.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 0.000000, 86.000000, 0.000000, 137.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -26.000000, 112.000000, 25.000000, 112.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_vcc_3(ctx part.DrawContext, base core.BasePart) bool {
 	part.DrawVGLine(ctx, base, 0.000000, -1.000000, -64.000000, -1.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGCircle(ctx, base, -112.000000, 0.000000, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGLine(ctx, base, -80.000000, 0.000000, -144.000000, 0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, -112.000000, -33.000000, -112.000000, 31.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGPolyline(ctx, base, []float64{-112.000000, 49.000000, -97.000000, 46.000000, -84.000000, 39.000000, -73.000000, 29.000000, -66.000000, 15.000000, -64.000000, 0.000000, -66.000000, -15.000000, -73.000000, -28.000000, -84.000000, -39.000000, -97.000000, -46.000000, -112.000000, -48.000000}, false, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -86.000000, 0.000000, -137.000000, 0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -112.000000, -26.000000, -112.000000, 25.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
