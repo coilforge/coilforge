@@ -11,6 +11,7 @@ import "coilforge/internal/core"
 
 import (
 	_ "coilforge/internal/part/catalog/clock"
+	_ "coilforge/internal/part/catalog/diode"
 	_ "coilforge/internal/part/catalog/gnd"
 	_ "coilforge/internal/part/catalog/indicator"
 	_ "coilforge/internal/part/catalog/relay"
@@ -32,5 +33,6 @@ var PlacementTools = []PlacementTool{
 	{TypeID: "clock", Hotkey: '4'},
 	{TypeID: "relay", Hotkey: '5'},
 	{TypeID: "switches", Hotkey: '6'},
-	{TypeID: "wire", Hotkey: '7'},
+	{TypeID: "diode", Hotkey: '7'},
+	{TypeID: "wire", Hotkey: '8'},
 }

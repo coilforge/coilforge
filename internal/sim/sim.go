@@ -219,7 +219,30 @@ func resolveNets() {
 
 // resolveFromSeeds handles resolve from seeds.
 func resolveFromSeeds(union *unionFind, high, low map[int]bool, graph *part.StateGraph) map[int]int {
-	_ = graph
+	// Propagate directed drives (e.g. diode ANODE -> CATHODE) until stable.
+	// Roots are evaluated after conductive unioning so edges and seeds compose.
+	for changed := true; changed; {
+		changed = false
+		for _, edge := range graph.Edges {
+			from := union.Find(edge.FromNet)
+			to := union.Find(edge.ToNet)
+			if from < 0 || to < 0 {
+				continue
+			}
+			switch edge.Drive {
+			case core.NetHigh:
+				if high[from] && !high[to] {
+					high[to] = true
+					changed = true
+				}
+			case core.NetLow:
+				if low[from] && !low[to] {
+					low[to] = true
+					changed = true
+				}
+			}
+		}
+	}
 
 	out := make(map[int]int, len(world.Nets))
 	for _, net := range world.Nets {
