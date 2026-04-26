@@ -55,7 +55,13 @@ func hotkeyToEbitenKey(hotkey rune) (ebiten.Key, bool) {
 
 // handleEditorHotkeys runs editor-specific keyboard handlers.
 func (a *App) handleEditorHotkeys() {
-	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) && a.closeTopmostOverlay() {
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		if a.closeTopmostOverlay() {
+			return
+		}
+		if !world.RunMode {
+			editor.HandleKey(ebiten.KeyEscape)
+		}
 		return
 	}
 	a.handleTransformHotkeys()
