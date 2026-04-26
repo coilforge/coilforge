@@ -43,6 +43,19 @@ type DocBrowserRow struct {
 	Selected bool   // selected row highlight.
 }
 
+type SettingsRow struct {
+	Label     string // row label text.
+	Kind      int    // SettingsRowCheckbox or SettingsRowTextInput.
+	BoolValue bool   // checkbox value.
+	TextValue string // input value.
+	Active    bool   // active/focused input.
+}
+
+const (
+	SettingsRowCheckbox = iota
+	SettingsRowTextInput
+)
+
 // Toolbar dock side (plain ints). Submenus can use the same values to pick a direction.
 const (
 	ToolbarLeft  = 0
@@ -83,6 +96,10 @@ const (
 	propPanelTopPadPx     = 16
 	propPanelRowHeightPx  = 34
 	propPanelButtonSizePx = 22
+
+	docBrowserListTopPadPx   = 8
+	docBrowserRowAdvancePx   = 28
+	docBrowserRowHighlightPx = 26
 )
 
 // toolbarStripLayout returns the toolbar panel rectangle for [DrawToolbar] and hit-testing (same math).
@@ -513,6 +530,115 @@ func DrawSimplePanel(dst *ebiten.Image, title string, rows []string) {
 	}
 }
 
+// DrawSettingsPanel renders a centered settings panel with checkbox and text input rows.
+func DrawSettingsPanel(dst *ebiten.Image, title string, rows []SettingsRow, footer []string) {
+	x, y, pw, ph, ok := simplePanelLayout(world.ScreenW, world.ScreenH)
+	if !ok {
+		return
+	}
+	DrawPanelFrame(dst, x, y, pw, ph, toolbarPanelFrameStyle())
+	drawSimplePanelCloseButton(dst, x, y, pw)
+
+	titleText := strings.TrimSpace(normalizeUIString(title))
+	if titleText != "" {
+		drawAtlasText(dst, strings.ToUpper(titleText), snapToLogicalPixel(float64(x+16)), snapToLogicalPixel(float64(y+14)), StatusBarTextColor())
+	}
+	rowY := y + 54
+	for i := range rows {
+		if rowY > y+ph-90 {
+			break
+		}
+		switch rows[i].Kind {
+		case SettingsRowCheckbox:
+			drawSettingsCheckboxRow(dst, x+16, rowY, rows[i].Label, rows[i].BoolValue)
+			rowY += 32
+		case SettingsRowTextInput:
+			drawAtlasText(dst, normalizeUIString(rows[i].Label), snapToLogicalPixel(float64(x+16)), snapToLogicalPixel(float64(rowY)), StatusBarTextColor())
+			DrawTextInputBox(dst, x+16, rowY+16, pw-32, 34, rows[i].TextValue, rows[i].Active)
+			rowY += 58
+		}
+	}
+	footerY := y + ph - 68
+	for i := range footer {
+		if footerY > y+ph-12 {
+			break
+		}
+		line := strings.TrimSpace(normalizeUIString(footer[i]))
+		if line != "" {
+			drawAtlasText(dst, line, snapToLogicalPixel(float64(x+16)), snapToLogicalPixel(float64(footerY)), StatusBarTextColor())
+		}
+		footerY += 20
+	}
+}
+
+func drawSettingsCheckboxRow(dst *ebiten.Image, x, y float32, label string, checked bool) {
+	box := float32(22)
+	vector.FillRect(dst, x, y, box, box, ToolbarButtonFillColor(false, false, false), false)
+	vector.StrokeRect(dst, x, y, box, box, 2.0, ToolbarPanelOutlineColor(), false)
+	if checked {
+		drawAtlasText(dst, "X", snapToLogicalPixel(float64(x+6)), snapToLogicalPixel(float64(y+3)), StatusBarTextColor())
+	}
+	drawAtlasText(dst, normalizeUIString(label), snapToLogicalPixel(float64(x+box+10)), snapToLogicalPixel(float64(y+3)), StatusBarTextColor())
+}
+
+// SettingsPanelCheckboxAtScreenPoint returns checkbox row index for pointer hit.
+func SettingsPanelCheckboxAtScreenPoint(rows []SettingsRow, sx, sy int) (int, bool) {
+	x, y, pw, ph, ok := simplePanelLayout(world.ScreenW, world.ScreenH)
+	if !ok {
+		return -1, false
+	}
+	px := float32(sx)
+	py := float32(sy)
+	if px < x || px > x+pw || py < y || py > y+ph {
+		return -1, false
+	}
+	rowY := y + 54
+	for i := range rows {
+		switch rows[i].Kind {
+		case SettingsRowCheckbox:
+			cx := x + 16
+			cy := rowY
+			if px >= cx && px <= cx+22 && py >= cy && py <= cy+22 {
+				return i, true
+			}
+			rowY += 32
+		case SettingsRowTextInput:
+			rowY += 58
+		}
+	}
+	return -1, false
+}
+
+// SettingsPanelTextInputAtScreenPoint returns text-input row index for pointer hit.
+func SettingsPanelTextInputAtScreenPoint(rows []SettingsRow, sx, sy int) (int, bool) {
+	x, y, pw, ph, ok := simplePanelLayout(world.ScreenW, world.ScreenH)
+	if !ok {
+		return -1, false
+	}
+	px := float32(sx)
+	py := float32(sy)
+	if px < x || px > x+pw || py < y || py > y+ph {
+		return -1, false
+	}
+	rowY := y + 54
+	for i := range rows {
+		switch rows[i].Kind {
+		case SettingsRowCheckbox:
+			rowY += 32
+		case SettingsRowTextInput:
+			tx := x + 16
+			ty := rowY + 16
+			tw := pw - 32
+			th := float32(34)
+			if px >= tx && px <= tx+tw && py >= ty && py <= ty+th {
+				return i, true
+			}
+			rowY += 58
+		}
+	}
+	return -1, false
+}
+
 // DrawTextInputBox renders a simple single-line text input field.
 func DrawTextInputBox(dst *ebiten.Image, x, y, w, h float32, text string, active bool) {
 	fill := ToolbarButtonFillColor(false, false, false)
@@ -542,21 +668,52 @@ func DrawDocBrowserPanel(dst *ebiten.Image, title, fileName string, rows []DocBr
 	vector.FillRect(dst, listX, listY, listW, listH, ToolbarButtonDisabledFillColor(), false)
 	vector.StrokeRect(dst, listX, listY, listW, listH, 2.0, ToolbarPanelOutlineColor(), false)
 
-	rowY := listY + 8
+	rowY := listY + float32(docBrowserListTopPadPx)
 	for i := range rows {
-		if rowY+22 > listY+listH-4 {
+		if rowY+float32(docBrowserRowHighlightPx) > listY+listH-4 {
 			break
 		}
 		if rows[i].Selected {
-			vector.FillRect(dst, listX+4, rowY-2, listW-8, 22, ToolbarButtonFillColor(false, true, false), false)
+			vector.FillRect(dst, listX+4, rowY-2, listW-8, float32(docBrowserRowHighlightPx), ToolbarButtonFillColor(false, true, false), false)
 		}
 		drawAtlasText(dst, normalizeUIString(rows[i].Text), snapToLogicalPixel(float64(listX+8)), snapToLogicalPixel(float64(rowY)), ToolbarLabelColor(false, rows[i].Selected, false))
-		rowY += 22
+		rowY += float32(docBrowserRowAdvancePx)
 	}
 
 	if footer != "" {
 		drawAtlasText(dst, normalizeUIString(footer), snapToLogicalPixel(float64(x+16)), snapToLogicalPixel(float64(y+ph-28)), StatusBarTextColor())
 	}
+}
+
+// DocBrowserRowAtScreenPoint returns the hovered row index in the doc browser list.
+func DocBrowserRowAtScreenPoint(sx, sy int, rowsCount int) (int, bool) {
+	if rowsCount <= 0 {
+		return -1, false
+	}
+	x, y, pw, ph, ok := simplePanelLayout(world.ScreenW, world.ScreenH)
+	if !ok {
+		return -1, false
+	}
+	listX := x + 16
+	listY := y + 104
+	listW := pw - 32
+	listH := ph - 144
+	px := float32(sx)
+	py := float32(sy)
+	if px < listX || px > listX+listW || py < listY || py > listY+listH {
+		return -1, false
+	}
+	rowY := listY + float32(docBrowserListTopPadPx)
+	for i := 0; i < rowsCount; i++ {
+		if rowY+float32(docBrowserRowHighlightPx) > listY+listH-4 {
+			break
+		}
+		if py >= rowY-2 && py <= rowY-2+float32(docBrowserRowHighlightPx) {
+			return i, true
+		}
+		rowY += float32(docBrowserRowAdvancePx)
+	}
+	return -1, false
 }
 
 // SimplePanelContainsScreenPoint reports whether a screen-space pointer is inside the centered simple panel.

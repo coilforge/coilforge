@@ -29,7 +29,7 @@ func LoadLocal() (Values, error) {
 	if err := json.Unmarshal(data, &values); err != nil {
 		return Defaults(), err
 	}
-	return values, nil
+	return Normalize(values), nil
 }
 
 // SaveLocalCurrent stores Current in the platform user config directory.

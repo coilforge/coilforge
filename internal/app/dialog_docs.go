@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"coilforge/internal/render"
 	"coilforge/internal/storage"
@@ -28,12 +29,17 @@ type docDialogState struct {
 	selected int
 	input    string
 	errText  string
+
+	lastClickAt    time.Time
+	lastClickIndex int
 }
 
 func (a *App) openDocDialog(mode docDialogMode) {
 	a.settingsOpen = false
 	a.docDialog.mode = mode
 	a.docDialog.errText = ""
+	a.docDialog.lastClickAt = time.Time{}
+	a.docDialog.lastClickIndex = -1
 	a.refreshDocDialogList()
 	if len(a.docDialog.docs) > 0 {
 		a.docDialog.selected = 0
@@ -51,6 +57,34 @@ func (a *App) openDocDialog(mode docDialogMode) {
 func (a *App) closeDocDialog(errText string) {
 	a.docDialog.mode = docDialogClosed
 	a.docDialog.errText = errText
+	a.docDialog.lastClickAt = time.Time{}
+	a.docDialog.lastClickIndex = -1
+}
+
+func (a *App) handleDocDialogMousePress(mouseX, mouseY int) bool {
+	idx, ok := render.DocBrowserRowAtScreenPoint(mouseX, mouseY, len(a.docDialog.docs))
+	if !ok {
+		a.docDialog.lastClickIndex = -1
+		return false
+	}
+	if idx < 0 || idx >= len(a.docDialog.docs) {
+		a.docDialog.lastClickIndex = -1
+		return false
+	}
+	a.docDialog.selected = idx
+	a.docDialog.input = a.docDialog.docs[idx].Name
+	now := time.Now()
+	if a.docDialog.mode == docDialogLoad &&
+		a.docDialog.lastClickIndex == idx &&
+		now.Sub(a.docDialog.lastClickAt) <= 400*time.Millisecond {
+		a.commitDocDialog()
+		a.docDialog.lastClickIndex = -1
+		a.docDialog.lastClickAt = time.Time{}
+		return true
+	}
+	a.docDialog.lastClickIndex = idx
+	a.docDialog.lastClickAt = now
+	return true
 }
 
 func (a *App) refreshDocDialogList() {

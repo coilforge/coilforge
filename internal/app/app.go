@@ -26,6 +26,8 @@ type App struct {
 	hoverRightTool int  // Hovered command tool index for right toolbar.
 	toolbarCapture bool // True while current mouse press started on toolbar chrome.
 	settingsOpen   bool // True while the app settings panel is visible.
+	settingsPath   string
+	settingsPathActive bool
 	docDialog      docDialogState
 
 	simRTLastWall   time.Time // Wall clock sample for sim vs realtime HUD.
@@ -45,10 +47,12 @@ const windowTPS = 60
 
 // New constructs a fresh application instance.
 func New() *App {
-	store, _ := storage.NewDefaultLocalFSStore()
+	store := storage.NewLocalFSStore(appsettings.Current.DefaultSaveDir)
 	return &App{
 		hoverLeftTool:  -1,
 		hoverRightTool: -1,
+		settingsPath:   appsettings.Current.DefaultSaveDir,
+		settingsPathActive: true,
 		docDialog: docDialogState{
 			mode:     docDialogClosed,
 			store:    store,
@@ -88,6 +92,23 @@ func (a *App) Update() error {
 		}
 	}
 
+	// Modal doc dialog: consume all keyboard/mouse input while open.
+	if a.docDialog.mode != docDialogClosed {
+		a.handleDocDialogTyping()
+		a.handleMouse(mx, my)
+		a.updateSimRealtimeHUD()
+		uidebug.LogUpdateFrame()
+		return nil
+	}
+	// Settings is keyboard-editable; keep input focused here while open.
+	if a.settingsOpen {
+		a.handleSettingsTyping()
+		a.handleMouse(mx, my)
+		a.updateSimRealtimeHUD()
+		uidebug.LogUpdateFrame()
+		return nil
+	}
+
 	a.handleToolHotkeys()
 	a.handleEditorHotkeys()
 	a.handleProjectHotkeys()
@@ -118,7 +139,7 @@ func (a *App) Draw(screen *ebiten.Image) {
 		render.DrawPropPanel(screen, selectedPart.PropSpec())
 	}
 	if a.settingsOpen {
-		render.DrawSimplePanel(screen, "Settings", a.settingsPanelRows())
+		render.DrawSettingsPanel(screen, "Settings", a.settingsPanelRows(), a.settingsPanelFooter())
 	}
 	if a.docDialog.mode != docDialogClosed {
 		render.DrawDocBrowserPanel(screen, a.docDialogTitle(), a.docDialog.input, a.docDialogRows(), a.docDialogFooter())

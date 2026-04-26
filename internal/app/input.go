@@ -16,6 +16,9 @@ import (
 
 // handleToolHotkeys maps numeric keys to placement tool selection.
 func (a *App) handleToolHotkeys() {
+	if a.docDialog.mode != docDialogClosed {
+		return
+	}
 	for _, item := range partmanifest.PlacementTools {
 		key, ok := hotkeyToEbitenKey(item.Hotkey)
 		if ok && inpututil.IsKeyJustPressed(key) {
@@ -114,6 +117,12 @@ func (a *App) handleLabelHotkeys() {
 func (a *App) handleProjectHotkeys() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyF3) {
 		a.settingsOpen = !a.settingsOpen
+		if a.settingsOpen {
+			a.settingsPath = appsettings.Current.DefaultSaveDir
+			a.settingsPathActive = true
+		} else {
+			a.settingsPathActive = false
+		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF4) {
 		changed := appsettings.Apply(appsettings.Action{
@@ -174,6 +183,8 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 		if a.docDialog.mode != docDialogClosed {
 			if render.SimplePanelCloseButtonAtScreenPoint(mouseX, mouseY) {
 				a.closeDocDialog("")
+			} else {
+				a.handleDocDialogMousePress(mouseX, mouseY)
 			}
 			a.toolbarCapture = true
 			break
@@ -181,6 +192,9 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 		if a.settingsOpen {
 			if render.SimplePanelCloseButtonAtScreenPoint(mouseX, mouseY) {
 				a.settingsOpen = false
+				a.settingsPathActive = false
+			} else {
+				a.handleSettingsMousePress(mouseX, mouseY)
 			}
 			// While settings is open, consume pointer presses so schematic/editor
 			// interactions do not happen behind the panel.
@@ -287,6 +301,12 @@ func (a *App) handleToolbarPress(mouseX, mouseY int) bool {
 				a.openDocDialog(docDialogLoad)
 			case "_settings":
 				a.settingsOpen = !a.settingsOpen
+				if a.settingsOpen {
+					a.settingsPath = appsettings.Current.DefaultSaveDir
+					a.settingsPathActive = true
+				} else {
+					a.settingsPathActive = false
+				}
 			}
 		}
 		return true

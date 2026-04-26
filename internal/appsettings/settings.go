@@ -1,5 +1,10 @@
 package appsettings
 
+import (
+	"os"
+	"path/filepath"
+)
+
 // File overview:
 // settings defines app-level preferences and a UI-oriented spec/action contract.
 // Subsystem: app settings domain.
@@ -34,11 +39,13 @@ const (
 
 const (
 	itemIdxDarkMode = iota
+	itemIdxDefaultSaveDir
 )
 
 // Values stores in-memory app preference values.
 type Values struct {
-	DarkMode bool `json:"darkMode"` // Theme toggle preference.
+	DarkMode       bool   `json:"darkMode"`       // Theme toggle preference.
+	DefaultSaveDir string `json:"defaultSaveDir"` // Folder used by save/load document browser.
 }
 
 // Current stores active app preferences.
@@ -47,7 +54,8 @@ var Current = Defaults()
 // Defaults returns built-in app preference defaults.
 func Defaults() Values {
 	return Values{
-		DarkMode: true,
+		DarkMode:       true,
+		DefaultSaveDir: resolveDefaultSaveDir(),
 	}
 }
 
@@ -56,6 +64,7 @@ func BuildSpec() Spec {
 	return Spec{
 		Items: []Item{
 			{Label: "Dark mode", Kind: ItemBool, Value: Current.DarkMode},
+			{Label: "Default save directory", Kind: ItemText, Value: Current.DefaultSaveDir},
 		},
 	}
 }
@@ -70,7 +79,35 @@ func Apply(action Action) bool {
 		}
 		Current.DarkMode = v
 		return true
+	case itemIdxDefaultSaveDir:
+		v, ok := action.NewValue.(string)
+		if !ok || Current.DefaultSaveDir == v {
+			return false
+		}
+		Current.DefaultSaveDir = v
+		return true
 	default:
 		return false
 	}
+}
+
+// Normalize fills unset settings with built-in defaults.
+func Normalize(v Values) Values {
+	d := Defaults()
+	if v.DefaultSaveDir == "" {
+		v.DefaultSaveDir = d.DefaultSaveDir
+	}
+	return v
+}
+
+func resolveDefaultSaveDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return "."
+	}
+	desktop := filepath.Join(home, "Desktop")
+	if info, err := os.Stat(desktop); err == nil && info.IsDir() {
+		return desktop
+	}
+	return home
 }

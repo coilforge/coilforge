@@ -1,36 +1,125 @@
 package app
 
 import (
-	"fmt"
+	"strings"
 
 	"coilforge/internal/appsettings"
 	"coilforge/internal/render"
+	"coilforge/internal/storage"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 func (a *App) syncRenderThemeFromSettings() {
 	render.DarkMode = appsettings.Current.DarkMode
 }
 
-func (a *App) settingsPanelRows() []string {
-	spec := appsettings.BuildSpec()
-	rows := make([]string, 0, len(spec.Items)+2)
-	for _, item := range spec.Items {
-		switch item.Kind {
-		case appsettings.ItemBool:
-			v, _ := item.Value.(bool)
-			state := "OFF"
-			if v {
-				state = "ON"
+func (a *App) settingsPanelRows() []render.SettingsRow {
+	if strings.TrimSpace(a.settingsPath) == "" {
+		a.settingsPath = appsettings.Current.DefaultSaveDir
+	}
+	return []render.SettingsRow{
+		{
+			Label:     "Dark mode",
+			Kind:      render.SettingsRowCheckbox,
+			BoolValue: appsettings.Current.DarkMode,
+		},
+		{
+			Label:     "Default save directory",
+			Kind:      render.SettingsRowTextInput,
+			TextValue: a.settingsPath,
+			Active:    a.settingsPathActive,
+		},
+	}
+}
+
+func (a *App) settingsPanelFooter() []string {
+	return []string{
+		"Enter: apply path",
+		"F4: toggle dark mode    F3: close settings",
+	}
+}
+
+func (a *App) handleSettingsMousePress(mouseX, mouseY int) {
+	rows := a.settingsPanelRows()
+	if idx, ok := render.SettingsPanelCheckboxAtScreenPoint(rows, mouseX, mouseY); ok {
+		if idx == 0 {
+			changed := appsettings.Apply(appsettings.Action{
+				Index:    0,
+				NewValue: !appsettings.Current.DarkMode,
+			})
+			if changed {
+				_ = appsettings.SaveLocalCurrent()
 			}
-			rows = append(rows, fmt.Sprintf("%s: %s", item.Label, state))
-		default:
-			rows = append(rows, fmt.Sprintf("%s", item.Label))
+			a.syncRenderThemeFromSettings()
+		}
+		return
+	}
+	if _, ok := render.SettingsPanelTextInputAtScreenPoint(rows, mouseX, mouseY); ok {
+		a.settingsPathActive = true
+		return
+	}
+	a.settingsPathActive = false
+}
+
+func (a *App) handleSettingsTyping() {
+	if !a.settingsOpen {
+		return
+	}
+	for _, key := range inpututil.AppendJustPressedKeys(nil) {
+		switch key {
+		case ebiten.KeyF3:
+			a.settingsOpen = false
+			a.settingsPathActive = false
+			return
+		case ebiten.KeyF4:
+			changed := appsettings.Apply(appsettings.Action{
+				Index:    0,
+				NewValue: !appsettings.Current.DarkMode,
+			})
+			if changed {
+				_ = appsettings.SaveLocalCurrent()
+			}
+			a.syncRenderThemeFromSettings()
+		case ebiten.KeyBackspace:
+			if !a.settingsPathActive {
+				continue
+			}
+			r := []rune(a.settingsPath)
+			if len(r) > 0 {
+				a.settingsPath = string(r[:len(r)-1])
+			}
+		case ebiten.KeyEnter:
+			if !a.settingsPathActive {
+				continue
+			}
+			path := strings.TrimSpace(a.settingsPath)
+			if path == "" {
+				return
+			}
+			changed := appsettings.Apply(appsettings.Action{
+				Index:    1,
+				NewValue: path,
+			})
+			if changed {
+				_ = appsettings.SaveLocalCurrent()
+				a.docDialog.store = storage.NewLocalFSStore(appsettings.Current.DefaultSaveDir)
+				if a.docDialog.mode != docDialogClosed {
+					a.refreshDocDialogList()
+				}
+			}
 		}
 	}
-	rows = append(rows, "")
-	rows = append(rows, "F4: toggle dark mode")
-	rows = append(rows, "F3: close settings")
-	return rows
+	if !a.settingsPathActive {
+		return
+	}
+	for _, ch := range ebiten.AppendInputChars(nil) {
+		if ch < 32 || ch == 127 {
+			continue
+		}
+		a.settingsPath += string(ch)
+	}
 }
 
 // closeTopmostOverlay closes the topmost closable app-level UI and reports whether it handled Esc.
@@ -41,6 +130,7 @@ func (a *App) closeTopmostOverlay() bool {
 	}
 	if a.settingsOpen {
 		a.settingsOpen = false
+		a.settingsPathActive = false
 		return true
 	}
 	return false
