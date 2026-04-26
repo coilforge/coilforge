@@ -26,11 +26,20 @@ type FileFormat struct {
 
 // SaveProject saves project.
 func SaveProject(path string) error {
+	data, err := MarshalProject()
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0o644)
+}
+
+// MarshalProject serializes the current world state to project file bytes.
+func MarshalProject() ([]byte, error) {
 	records := make([]part.Record, 0, len(world.Parts))
 	for _, p := range world.Parts {
 		record, err := part.EncodeRecord(p)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		records = append(records, record)
 	}
@@ -43,10 +52,9 @@ func SaveProject(path string) error {
 
 	data, err := json.MarshalIndent(file, "", "  ")
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	return os.WriteFile(path, data, 0o644)
+	return data, nil
 }
 
 // LoadProject loads project.
@@ -55,7 +63,11 @@ func LoadProject(path string) error {
 	if err != nil {
 		return err
 	}
+	return UnmarshalProject(data)
+}
 
+// UnmarshalProject restores world state from project file bytes.
+func UnmarshalProject(data []byte) error {
 	var file FileFormat
 	if err := json.Unmarshal(data, &file); err != nil {
 		return err

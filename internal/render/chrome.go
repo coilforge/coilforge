@@ -36,6 +36,12 @@ type PanelFrameStyle struct {
 	BevelLineWidth float32
 }
 
+// DocBrowserRow is one visible row in the save/load browser list.
+type DocBrowserRow struct {
+	Text     string // row label text.
+	Selected bool   // selected row highlight.
+}
+
 // Toolbar dock side (plain ints). Submenus can use the same values to pick a direction.
 const (
 	ToolbarLeft  = 0
@@ -371,6 +377,52 @@ func DrawSimplePanel(dst *ebiten.Image, title string, rows []string) {
 			drawAtlasText(dst, line, snapToLogicalPixel(float64(x+16)), snapToLogicalPixel(float64(rowY)), StatusBarTextColor())
 		}
 		rowY += 22
+	}
+}
+
+// DrawTextInputBox renders a simple single-line text input field.
+func DrawTextInputBox(dst *ebiten.Image, x, y, w, h float32, text string, active bool) {
+	fill := ToolbarButtonFillColor(false, false, false)
+	outline := ToolbarButtonOutlineColor(false, active, false)
+	vector.FillRect(dst, x, y, w, h, fill, false)
+	vector.StrokeRect(dst, x, y, w, h, 2.0, outline, false)
+	drawAtlasText(dst, strings.TrimSpace(normalizeUIString(text)), snapToLogicalPixel(float64(x+10)), snapToLogicalPixel(float64(y+8)), ToolbarLabelColor(false, active, false))
+}
+
+// DrawDocBrowserPanel renders a centered save/load browser panel.
+func DrawDocBrowserPanel(dst *ebiten.Image, title, fileName string, rows []DocBrowserRow, footer string) {
+	x, y, pw, ph, ok := simplePanelLayout(world.ScreenW, world.ScreenH)
+	if !ok {
+		return
+	}
+	DrawPanelFrame(dst, x, y, pw, ph, toolbarPanelFrameStyle())
+	drawSimplePanelCloseButton(dst, x, y, pw)
+
+	drawAtlasText(dst, strings.ToUpper(strings.TrimSpace(normalizeUIString(title))), snapToLogicalPixel(float64(x+16)), snapToLogicalPixel(float64(y+14)), StatusBarTextColor())
+	drawAtlasText(dst, "Filename", snapToLogicalPixel(float64(x+16)), snapToLogicalPixel(float64(y+42)), StatusBarTextColor())
+	DrawTextInputBox(dst, x+16, y+58, pw-32, 34, fileName, true)
+
+	listX := x + 16
+	listY := y + 104
+	listW := pw - 32
+	listH := ph - 144
+	vector.FillRect(dst, listX, listY, listW, listH, ToolbarButtonDisabledFillColor(), false)
+	vector.StrokeRect(dst, listX, listY, listW, listH, 2.0, ToolbarPanelOutlineColor(), false)
+
+	rowY := listY + 8
+	for i := range rows {
+		if rowY+22 > listY+listH-4 {
+			break
+		}
+		if rows[i].Selected {
+			vector.FillRect(dst, listX+4, rowY-2, listW-8, 22, ToolbarButtonFillColor(false, true, false), false)
+		}
+		drawAtlasText(dst, normalizeUIString(rows[i].Text), snapToLogicalPixel(float64(listX+8)), snapToLogicalPixel(float64(rowY)), ToolbarLabelColor(false, rows[i].Selected, false))
+		rowY += 22
+	}
+
+	if footer != "" {
+		drawAtlasText(dst, normalizeUIString(footer), snapToLogicalPixel(float64(x+16)), snapToLogicalPixel(float64(y+ph-28)), StatusBarTextColor())
 	}
 }
 
