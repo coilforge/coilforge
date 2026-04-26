@@ -362,6 +362,10 @@ func DrawPropPanel(dst *ebiten.Image, spec part.PropSpec) {
 		switch item.Kind {
 		case part.PropInt:
 			drawPropIntControls(dst, x, rowY, w, item)
+		case part.PropChoice:
+			drawPropChoiceControls(dst, x, rowY, w, item)
+		case part.PropBool:
+			drawPropBoolControl(dst, x, rowY, w, item)
 		default:
 			drawAtlasText(dst, normalizeUIString(propValueText(item.Value)), snapToLogicalPixel(float64(x+w-118)), snapToLogicalPixel(float64(rowY+8)), StatusBarTextColor())
 		}
@@ -406,6 +410,37 @@ func propIntValue(item part.PropItem) int {
 	return 0
 }
 
+func drawPropChoiceControls(dst *ebiten.Image, x, rowY, w float32, item part.PropItem) {
+	minusX, minusY, plusX, plusY, valueX, valueY := propIntControlRects(x, rowY, w)
+	btnFill := ToolbarButtonFillColor(false, false, false)
+	btnOutline := ToolbarPanelOutlineColor()
+	vector.FillRect(dst, minusX, minusY, float32(propPanelButtonSizePx), float32(propPanelButtonSizePx), btnFill, false)
+	vector.StrokeRect(dst, minusX, minusY, float32(propPanelButtonSizePx), float32(propPanelButtonSizePx), 2.0, btnOutline, false)
+	vector.FillRect(dst, plusX, plusY, float32(propPanelButtonSizePx), float32(propPanelButtonSizePx), btnFill, false)
+	vector.StrokeRect(dst, plusX, plusY, float32(propPanelButtonSizePx), float32(propPanelButtonSizePx), 2.0, btnOutline, false)
+	drawAtlasText(dst, "<", snapToLogicalPixel(float64(minusX+6)), snapToLogicalPixel(float64(minusY+5)), StatusBarTextColor())
+	drawAtlasText(dst, ">", snapToLogicalPixel(float64(plusX+6)), snapToLogicalPixel(float64(plusY+5)), StatusBarTextColor())
+	drawAtlasText(dst, normalizeUIString(propChoiceValue(item)), snapToLogicalPixel(float64(valueX)), snapToLogicalPixel(float64(valueY)), StatusBarTextColor())
+}
+
+func propChoiceValue(item part.PropItem) string {
+	if v, ok := item.Value.(string); ok {
+		return v
+	}
+	return ""
+}
+
+func drawPropBoolControl(dst *ebiten.Image, x, rowY, w float32, item part.PropItem) {
+	boxX := x + w - 34
+	boxY := rowY + 4
+	boxSize := float32(22)
+	vector.FillRect(dst, boxX, boxY, boxSize, boxSize, ToolbarButtonFillColor(false, false, false), false)
+	vector.StrokeRect(dst, boxX, boxY, boxSize, boxSize, 2.0, ToolbarPanelOutlineColor(), false)
+	if v, ok := item.Value.(bool); ok && v {
+		drawAtlasText(dst, "X", snapToLogicalPixel(float64(boxX+6)), snapToLogicalPixel(float64(boxY+4)), StatusBarTextColor())
+	}
+}
+
 func propIntControlRects(panelX, rowY, panelW float32) (minusX, minusY, plusX, plusY, valueX, valueY float32) {
 	btn := float32(propPanelButtonSizePx)
 	plusX = panelX + panelW - 12 - btn
@@ -431,7 +466,7 @@ func PropPanelIntButtonAtScreenPoint(spec part.PropSpec, sx, sy int) (itemIdx in
 		if rowY+propPanelRowHeightPx > y+h-6 {
 			break
 		}
-		if item.Kind != part.PropInt {
+		if item.Kind != part.PropInt && item.Kind != part.PropChoice {
 			rowY += propPanelRowHeightPx
 			continue
 		}
@@ -448,6 +483,37 @@ func PropPanelIntButtonAtScreenPoint(spec part.PropSpec, sx, sy int) (itemIdx in
 		rowY += propPanelRowHeightPx
 	}
 	return -1, 0, false
+}
+
+// PropPanelBoolAtScreenPoint returns bool row index when checkbox is clicked.
+func PropPanelBoolAtScreenPoint(spec part.PropSpec, sx, sy int) (itemIdx int, ok bool) {
+	x, y, w, h, okLayout := propPanelLayout(spec, world.ScreenW, world.ScreenH)
+	if !okLayout {
+		return -1, false
+	}
+	if float32(sx) < x || float32(sx) > x+w || float32(sy) < y || float32(sy) > y+h {
+		return -1, false
+	}
+	rowY := y + 38
+	for i, item := range spec.Items {
+		if rowY+propPanelRowHeightPx > y+h-6 {
+			break
+		}
+		if item.Kind != part.PropBool {
+			rowY += propPanelRowHeightPx
+			continue
+		}
+		boxX := x + w - 34
+		boxY := rowY + 4
+		boxSize := float32(22)
+		px := float32(sx)
+		py := float32(sy)
+		if px >= boxX && px <= boxX+boxSize && py >= boxY && py <= boxY+boxSize {
+			return i, true
+		}
+		rowY += propPanelRowHeightPx
+	}
+	return -1, false
 }
 
 func propPanelLayout(spec part.PropSpec, screenW, screenH int) (x, y, w, h float32, ok bool) {

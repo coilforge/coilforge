@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-256 -256 512 512" width="512px" height="512px" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:grid x="-256" y="-256" width="64" height="64"></bx:grid>
+    <bx:export>
+      <bx:file format="svg"></bx:file>
+    </bx:export>
+  </defs>
+  <circle style="fill: rgb(255, 0, 0); stroke-width: 10px; stroke-linecap: round;" cx="-128" r="13.032" id="A" cy="-0.493"></circle>
+  <circle style="fill: rgb(255, 0, 0); stroke-width: 10; stroke-linecap: round;" cx="128" r="13.032" id="B" cy="-0.493"></circle>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10px;" x1="-128" y1="-0.329" x2="-64" y2="0"></line>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10;" x1="52.116" y1="-0.493" x2="128" y2="0"></line>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; transform-box: fill-box; transform-origin: 50% 50%;" x1="44.243" y1="-9.075" x2="69.79" y2="-9.075" transform="matrix(0, -1, 1, 0, -0.000009, 0.000005)"></line>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10;" x1="44.243" y1="-9.075" x2="69.79" y2="-9.075" transform="matrix(1e-8, -0.99999992, 1.00000001, 9e-8, 66.09149027, 47.94149718)"></line>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; transform-origin: 51.418px -22.311px;" x1="42.386" y1="-13.279" x2="60.45" y2="-31.344"></line>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10; transform-origin: 62.616px -22.064px;" x1="71.648" y1="-13.032" x2="53.583" y2="-31.097"></line>
+  <line style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 10;" x1="-66.455" y1="0" x2="73.085" y2="-64"></line>
+</svg>

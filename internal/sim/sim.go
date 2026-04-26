@@ -36,6 +36,7 @@ var simRand = rand.New(rand.NewSource(1))
 var (
 	simLoopStop chan struct{}
 	simLoopWG   sync.WaitGroup
+	activeMomentary part.InputHandler
 )
 
 // LoopBegin starts a goroutine that advances simulated time continuously until [LoopEnd].
@@ -126,20 +127,40 @@ func Stop() {
 }
 
 // HandleClick handles click.
-func HandleClick(pt core.Pt) {
+func HandlePointerDown(pt core.Pt) {
 	for i := len(world.Parts) - 1; i >= 0; i-- {
 		hit := world.Parts[i].HitTest(pt)
 		if !hit.Hit {
 			continue
 		}
 		if handler, ok := world.Parts[i].(part.InputHandler); ok {
-			changed, _ := handler.HandleInput(true)
+			changed, momentary := handler.HandleInput(true)
+			if momentary {
+				activeMomentary = handler
+			}
 			if changed {
 				resolveAndTick()
 			}
 		}
 		return
 	}
+	activeMomentary = nil
+}
+
+// HandlePointerUp releases a pressed momentary input, if any.
+func HandlePointerUp() {
+	if activeMomentary == nil {
+		return
+	}
+	if activeMomentary.ReleaseMomentary() {
+		resolveAndTick()
+	}
+	activeMomentary = nil
+}
+
+// HandleClick keeps backward compatibility with existing callers.
+func HandleClick(pt core.Pt) {
+	HandlePointerDown(pt)
 }
 
 // resolveAndTick handles resolve and tick.

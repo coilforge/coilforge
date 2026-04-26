@@ -11,6 +11,30 @@ const TypeID core.PartTypeID = "relay"
 type Relay struct {
 	core.BasePart
 	RelayPinIDs
+	COM1 core.PinID `json:"cOM1"`
+	COM2 core.PinID `json:"cOM2"`
+	COM3 core.PinID `json:"cOM3"`
+	COM4 core.PinID `json:"cOM4"`
+	COM5 core.PinID `json:"cOM5"`
+	COM6 core.PinID `json:"cOM6"`
+	COM7 core.PinID `json:"cOM7"`
+	COM8 core.PinID `json:"cOM8"`
+	NC1  core.PinID `json:"nC1"`
+	NC2  core.PinID `json:"nC2"`
+	NC3  core.PinID `json:"nC3"`
+	NC4  core.PinID `json:"nC4"`
+	NC5  core.PinID `json:"nC5"`
+	NC6  core.PinID `json:"nC6"`
+	NC7  core.PinID `json:"nC7"`
+	NC8  core.PinID `json:"nC8"`
+	NO1  core.PinID `json:"nO1"`
+	NO2  core.PinID `json:"nO2"`
+	NO3  core.PinID `json:"nO3"`
+	NO4  core.PinID `json:"nO4"`
+	NO5  core.PinID `json:"nO5"`
+	NO6  core.PinID `json:"nO6"`
+	NO7  core.PinID `json:"nO7"`
+	NO8  core.PinID `json:"nO8"`
 	PoleCount    int   `json:"poleCount"`    // Number of contact poles (1..8).
 	MidFlipMask  uint8 `json:"midFlipMask"`  // Per-pole flip bits (bit0=pole1 ... bit7=pole8).
 	Energized    bool  `json:"-"`            // Driven by simulation in run mode; not persisted.
@@ -51,6 +75,16 @@ func decodePart(data json.RawMessage) (part.Part, error) {
 		NO  core.PinID `json:"nO"`
 	}
 	_ = json.Unmarshal(data, &legacy)
+	// Migrate generated single-contact pins (COM/NC/NO) to pole 1 if needed.
+	if relay.COM1 == 0 && relay.COM != 0 {
+		relay.COM1 = relay.COM
+	}
+	if relay.NC1 == 0 && relay.NC != 0 {
+		relay.NC1 = relay.NC
+	}
+	if relay.NO1 == 0 && relay.NO != 0 {
+		relay.NO1 = relay.NO
+	}
 	if relay.COM1 == 0 && legacy.COM != 0 {
 		relay.COM1 = legacy.COM
 	}
@@ -108,8 +142,36 @@ func (self *Relay) Clone(newID int, allocPin func() core.PinID) part.Part {
 	c.ID = newID
 	c.PoleCount = clampRelayPoleCount(c.PoleCount)
 	assignNewRelayPins(&c, allocPin)
+	assignNewRelayContactPins(&c, allocPin)
 	c.Energized = false
 	return &c
+}
+
+func assignNewRelayContactPins(self *Relay, alloc func() core.PinID) {
+	self.COM1 = alloc()
+	self.COM2 = alloc()
+	self.COM3 = alloc()
+	self.COM4 = alloc()
+	self.COM5 = alloc()
+	self.COM6 = alloc()
+	self.COM7 = alloc()
+	self.COM8 = alloc()
+	self.NC1 = alloc()
+	self.NC2 = alloc()
+	self.NC3 = alloc()
+	self.NC4 = alloc()
+	self.NC5 = alloc()
+	self.NC6 = alloc()
+	self.NC7 = alloc()
+	self.NC8 = alloc()
+	self.NO1 = alloc()
+	self.NO2 = alloc()
+	self.NO3 = alloc()
+	self.NO4 = alloc()
+	self.NO5 = alloc()
+	self.NO6 = alloc()
+	self.NO7 = alloc()
+	self.NO8 = alloc()
 }
 
 // ToggleMidFlip toggles relay contact-side orientation at rest.

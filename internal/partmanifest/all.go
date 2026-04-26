@@ -14,6 +14,7 @@ import (
 	_ "coilforge/internal/part/catalog/gnd"
 	_ "coilforge/internal/part/catalog/indicator"
 	_ "coilforge/internal/part/catalog/relay"
+	_ "coilforge/internal/part/catalog/switches"
 	_ "coilforge/internal/part/catalog/vcc"
 	_ "coilforge/internal/part/catalog/wire"
 )
@@ -30,5 +31,6 @@ var PlacementTools = []PlacementTool{
 	{TypeID: "vcc", Hotkey: '3'},
 	{TypeID: "clock", Hotkey: '4'},
 	{TypeID: "relay", Hotkey: '5'},
-	{TypeID: "wire", Hotkey: '6'},
+	{TypeID: "switches", Hotkey: '6'},
+	{TypeID: "wire", Hotkey: '7'},
 }

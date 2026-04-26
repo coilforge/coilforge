@@ -7,92 +7,29 @@ import "coilforge/internal/core"
 
 // RelayPinIDs holds stable pin identity for this catalog type.
 type RelayPinIDs struct {
-	COM1 core.PinID `json:"cOM1"`
-	COM2 core.PinID `json:"cOM2"`
-	COM3 core.PinID `json:"cOM3"`
-	COM4 core.PinID `json:"cOM4"`
-	COM5 core.PinID `json:"cOM5"`
-	COM6 core.PinID `json:"cOM6"`
-	COM7 core.PinID `json:"cOM7"`
-	COM8 core.PinID `json:"cOM8"`
+	COM core.PinID `json:"cOM"`
 	CoilA core.PinID `json:"coilA"`
 	CoilB core.PinID `json:"coilB"`
-	NC1 core.PinID `json:"nC1"`
-	NC2 core.PinID `json:"nC2"`
-	NC3 core.PinID `json:"nC3"`
-	NC4 core.PinID `json:"nC4"`
-	NC5 core.PinID `json:"nC5"`
-	NC6 core.PinID `json:"nC6"`
-	NC7 core.PinID `json:"nC7"`
-	NC8 core.PinID `json:"nC8"`
-	NO1 core.PinID `json:"nO1"`
-	NO2 core.PinID `json:"nO2"`
-	NO3 core.PinID `json:"nO3"`
-	NO4 core.PinID `json:"nO4"`
-	NO5 core.PinID `json:"nO5"`
-	NO6 core.PinID `json:"nO6"`
-	NO7 core.PinID `json:"nO7"`
-	NO8 core.PinID `json:"nO8"`
+	NC core.PinID `json:"nC"`
+	NO core.PinID `json:"nO"`
 }
 
 // relayPinMarkerMap maps SVG marker ids from the vector layout to pin IDs for anchor placement.
 func relayPinMarkerMap(self *Relay) map[string]core.PinID {
 	return map[string]core.PinID{
-		"COM1": self.COM1,
-		"COM2": self.COM2,
-		"COM3": self.COM3,
-		"COM4": self.COM4,
-		"COM5": self.COM5,
-		"COM6": self.COM6,
-		"COM7": self.COM7,
-		"COM8": self.COM8,
+		"COM": self.COM,
 		"CoilA": self.CoilA,
 		"CoilB": self.CoilB,
-		"NC1": self.NC1,
-		"NC2": self.NC2,
-		"NC3": self.NC3,
-		"NC4": self.NC4,
-		"NC5": self.NC5,
-		"NC6": self.NC6,
-		"NC7": self.NC7,
-		"NC8": self.NC8,
-		"NO1": self.NO1,
-		"NO2": self.NO2,
-		"NO3": self.NO3,
-		"NO4": self.NO4,
-		"NO5": self.NO5,
-		"NO6": self.NO6,
-		"NO7": self.NO7,
-		"NO8": self.NO8,
+		"NC": self.NC,
+		"NO": self.NO,
 	}
 }
 
 // assignNewRelayPins allocates fresh pin IDs (e.g. clone).
 func assignNewRelayPins(self *Relay, alloc func() core.PinID) {
-	self.COM1 = alloc()
-	self.COM2 = alloc()
-	self.COM3 = alloc()
-	self.COM4 = alloc()
-	self.COM5 = alloc()
-	self.COM6 = alloc()
-	self.COM7 = alloc()
-	self.COM8 = alloc()
+	self.COM = alloc()
 	self.CoilA = alloc()
 	self.CoilB = alloc()
-	self.NC1 = alloc()
-	self.NC2 = alloc()
-	self.NC3 = alloc()
-	self.NC4 = alloc()
-	self.NC5 = alloc()
-	self.NC6 = alloc()
-	self.NC7 = alloc()
-	self.NC8 = alloc()
-	self.NO1 = alloc()
-	self.NO2 = alloc()
-	self.NO3 = alloc()
-	self.NO4 = alloc()
-	self.NO5 = alloc()
-	self.NO6 = alloc()
-	self.NO7 = alloc()
-	self.NO8 = alloc()
+	self.NC = alloc()
+	self.NO = alloc()
 }

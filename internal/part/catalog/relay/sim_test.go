@@ -13,11 +13,12 @@ func (u *unionSpy) Union(a, b int) { u.pairs = append(u.pairs, [2]int{a, b}) }
 func (u *unionSpy) Find(a int) int  { return a }
 
 func TestRelayAddConductiveDeenergizedUsesNC(t *testing.T) {
-	r := &Relay{RelayPinIDs: RelayPinIDs{
+	r := &Relay{
 		COM1: 1,
 		NC1:  2,
 		NO1:  3,
-	}, PoleCount: 1}
+		PoleCount: 1,
+	}
 	u := &unionSpy{}
 	netByPin := func(pin core.PinID) int {
 		switch pin {
@@ -40,11 +41,12 @@ func TestRelayAddConductiveDeenergizedUsesNC(t *testing.T) {
 }
 
 func TestRelayAddConductiveEnergizedUsesNO(t *testing.T) {
-	r := &Relay{RelayPinIDs: RelayPinIDs{
+	r := &Relay{
 		COM1: 1,
 		NC1:  2,
 		NO1:  3,
-	}, PoleCount: 1}
+		PoleCount: 1,
+	}
 	u := &unionSpy{}
 	netByPin := func(pin core.PinID) int {
 		switch pin {
@@ -67,10 +69,11 @@ func TestRelayAddConductiveEnergizedUsesNO(t *testing.T) {
 }
 
 func TestRelayAddConductiveMultiPole(t *testing.T) {
-	r := &Relay{RelayPinIDs: RelayPinIDs{
+	r := &Relay{
 		COM1: 1, NC1: 2, NO1: 3,
 		COM2: 4, NC2: 5, NO2: 6,
-	}, PoleCount: 2}
+		PoleCount: 2,
+	}
 	u := &unionSpy{}
 	netByPin := func(pin core.PinID) int {
 		switch pin {

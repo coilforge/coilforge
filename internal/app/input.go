@@ -216,7 +216,7 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 		pt := world.ScreenToWorld(mouseX, mouseY)
 		if world.RunMode {
 			world.SimMu.Lock()
-			sim.HandleClick(pt)
+			sim.HandlePointerDown(pt)
 			world.SimMu.Unlock()
 		} else {
 			editor.HandleMouseDown(pt, int(ebiten.MouseButtonLeft))
@@ -240,6 +240,12 @@ func (a *App) handleMouse(mouseX, mouseY int) {
 			break
 		}
 		pt := world.ScreenToWorld(mouseX, mouseY)
+		if world.RunMode {
+			world.SimMu.Lock()
+			sim.HandlePointerUp()
+			world.SimMu.Unlock()
+			break
+		}
 		editor.HandleMouseUp(pt, int(ebiten.MouseButtonLeft))
 	}
 
@@ -252,13 +258,50 @@ func (a *App) handlePropPanelPress(mouseX, mouseY int) bool {
 		return false
 	}
 	spec := p.PropSpec()
+	if idx, ok := render.PropPanelBoolAtScreenPoint(spec, mouseX, mouseY); ok {
+		if idx < 0 || idx >= len(spec.Items) {
+			return false
+		}
+		v, ok := spec.Items[idx].Value.(bool)
+		if !ok {
+			return false
+		}
+		return editor.ApplySelectedProp(part.PropAction{
+			Index:    idx,
+			NewValue: !v,
+		})
+	}
 	idx, delta, ok := render.PropPanelIntButtonAtScreenPoint(spec, mouseX, mouseY)
 	if !ok || idx < 0 || idx >= len(spec.Items) {
 		return false
 	}
 	item := spec.Items[idx]
-	if item.Kind != part.PropInt {
+	if item.Kind != part.PropInt && item.Kind != part.PropChoice {
 		return false
+	}
+	if item.Kind == part.PropChoice {
+		curr, ok := item.Value.(string)
+		if !ok || len(item.Choices) == 0 {
+			return false
+		}
+		pos := 0
+		for i := range item.Choices {
+			if item.Choices[i] == curr {
+				pos = i
+				break
+			}
+		}
+		nextPos := pos + delta
+		if nextPos < 0 {
+			nextPos = len(item.Choices) - 1
+		}
+		if nextPos >= len(item.Choices) {
+			nextPos = 0
+		}
+		return editor.ApplySelectedProp(part.PropAction{
+			Index:    idx,
+			NewValue: item.Choices[nextPos],
+		})
 	}
 	curr, ok := item.Value.(int)
 	if !ok {
