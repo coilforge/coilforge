@@ -16,7 +16,7 @@ const clockHalfPhaseIters = 5_000
 
 // SeedNets drives the attached net high or low from simulated time (square wave).
 func (self *Clock) SeedNets(union part.NetUnion, netByPin func(core.PinID) int, high, low map[int]bool, nowMicros uint64) {
-	netID := netByPin(self.OUT)
+	netID := netByPin(self.CLK)
 	if netID < 0 {
 		return
 	}

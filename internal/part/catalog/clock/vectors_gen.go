@@ -16,63 +16,75 @@ const RotationSlots = 4
 func init() {
 	part.RegisterVectorDraw("clock-0", drawVector_clock_0)
 	part.RegisterPinLayout("clock-0", []core.Pt{
-		{X:0.000000, Y:-0.000000},
+		{X:0.000000, Y:64.000000},
 	}, []string{
-		"OUT",
+		"CLK",
 	})
-	part.RegisterVectorHitBounds("clock-0", -64.000000, -0.019000, 64.471000, 108.628000)
+	part.RegisterVectorHitBounds("clock-0", -64.000000, -128.000000, 64.000000, 64.000000)
 	part.RegisterVectorDraw("clock-1", drawVector_clock_1)
 	part.RegisterPinLayout("clock-1", []core.Pt{
-		{X:0.000000, Y:0.000000},
+		{X:-64.000000, Y:0.000000},
 	}, []string{
-		"OUT",
+		"CLK",
 	})
-	part.RegisterVectorHitBounds("clock-1", -108.628000, -64.000000, 0.019000, 64.471000)
+	part.RegisterVectorHitBounds("clock-1", -64.000000, -64.000000, 128.000000, 64.000000)
 	part.RegisterVectorDraw("clock-2", drawVector_clock_2)
 	part.RegisterPinLayout("clock-2", []core.Pt{
-		{X:-0.000000, Y:0.000000},
+		{X:-0.000000, Y:-64.000000},
 	}, []string{
-		"OUT",
+		"CLK",
 	})
-	part.RegisterVectorHitBounds("clock-2", -64.471000, -108.628000, 64.000000, 0.019000)
+	part.RegisterVectorHitBounds("clock-2", -64.000000, -64.000000, 64.000000, 128.000000)
 	part.RegisterVectorDraw("clock-3", drawVector_clock_3)
 	part.RegisterPinLayout("clock-3", []core.Pt{
-		{X:-0.000000, Y:-0.000000},
+		{X:64.000000, Y:-0.000000},
 	}, []string{
-		"OUT",
+		"CLK",
 	})
-	part.RegisterVectorHitBounds("clock-3", -0.019000, -64.471000, 108.628000, 64.000000)
+	part.RegisterVectorHitBounds("clock-3", -128.000000, -64.000000, 64.000000, 64.000000)
 }
 
 func drawVector_clock_0(ctx part.DrawContext, base core.BasePart) bool {
-	part.DrawVGLine(ctx, base, -64.000000, 64.162000, 64.471000, 64.162000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, -31.491000, 86.021000, 31.962000, 86.021000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, -9.528000, 108.628000, 10.470000, 108.628000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, 0.327500, 63.510000, 0.327500, -0.019000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGRoundedRect(ctx, base, -64.000000, -128.000000, 128.000000, 128.000000, 20.000000, 20.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
+	part.DrawVGLine(ctx, base, 0.000000, 0.000000, 0.000000, 64.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -16.000000, -44.000000, -16.000000, -84.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 16.000000, -44.000000, 16.000000, -84.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -21.000000, -84.000000, 21.000000, -84.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -40.000000, -49.000000, -11.000000, -49.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 11.000000, -49.000000, 40.000000, -49.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_clock_1(ctx part.DrawContext, base core.BasePart) bool {
-	part.DrawVGLine(ctx, base, -64.162000, -64.000000, -64.162000, 64.471000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, -86.021000, -31.491000, -86.021000, 31.962000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, -108.628000, -9.528000, -108.628000, 10.470000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, -63.510000, 0.327500, 0.019000, 0.327500, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGRoundedRect(ctx, base, -0.000000, -64.000000, 128.000000, 128.000000, 20.000000, 20.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
+	part.DrawVGLine(ctx, base, -0.000000, 0.000000, -64.000000, 0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 44.000000, -16.000000, 84.000000, -16.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 44.000000, 16.000000, 84.000000, 16.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 84.000000, -21.000000, 84.000000, 21.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 49.000000, -40.000000, 49.000000, -11.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 49.000000, 11.000000, 49.000000, 40.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_clock_2(ctx part.DrawContext, base core.BasePart) bool {
-	part.DrawVGLine(ctx, base, 64.000000, -64.162000, -64.471000, -64.162000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, 31.491000, -86.021000, -31.962000, -86.021000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, 9.528000, -108.628000, -10.470000, -108.628000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, -0.327500, -63.510000, -0.327500, 0.019000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGRoundedRect(ctx, base, -64.000000, -0.000000, 128.000000, 128.000000, 20.000000, 20.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
+	part.DrawVGLine(ctx, base, -0.000000, -0.000000, -0.000000, -64.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 16.000000, 44.000000, 16.000000, 84.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -16.000000, 44.000000, -16.000000, 84.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 21.000000, 84.000000, -21.000000, 84.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 40.000000, 49.000000, 11.000000, 49.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -11.000000, 49.000000, -40.000000, 49.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_clock_3(ctx part.DrawContext, base core.BasePart) bool {
-	part.DrawVGLine(ctx, base, 64.162000, 64.000000, 64.162000, -64.471000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, 86.021000, 31.491000, 86.021000, -31.962000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, 108.628000, 9.528000, 108.628000, -10.470000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, 63.510000, -0.327500, -0.019000, -0.327500, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGRoundedRect(ctx, base, -128.000000, -64.000000, 128.000000, 128.000000, 20.000000, 20.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
+	part.DrawVGLine(ctx, base, 0.000000, -0.000000, 64.000000, -0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -44.000000, 16.000000, -84.000000, 16.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -44.000000, -16.000000, -84.000000, -16.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -84.000000, 21.000000, -84.000000, -21.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -49.000000, 40.000000, -49.000000, 11.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -49.000000, -11.000000, -49.000000, -40.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 

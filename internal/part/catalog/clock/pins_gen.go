@@ -7,17 +7,17 @@ import "coilforge/internal/core"
 
 // ClockPinIDs holds stable pin identity for this catalog type.
 type ClockPinIDs struct {
-	OUT core.PinID `json:"oUT"`
+	CLK core.PinID `json:"cLK"`
 }
 
 // clockPinMarkerMap maps SVG marker ids from the vector layout to pin IDs for anchor placement.
 func clockPinMarkerMap(self *Clock) map[string]core.PinID {
 	return map[string]core.PinID{
-		"OUT": self.OUT,
+		"CLK": self.CLK,
 	}
 }
 
 // assignNewClockPins allocates fresh pin IDs (e.g. clone).
 func assignNewClockPins(self *Clock, alloc func() core.PinID) {
-	self.OUT = alloc()
+	self.CLK = alloc()
 }

@@ -517,9 +517,10 @@ func bboxRotatedRect(x, y, w, h float64, steps int) (float64, float64, float64, 
 	}
 	cx := []float64{x, x + w, x + w, x}
 	cy := []float64{y, y, y + h, y + h}
-	minX, maxX := cx[0], cx[0]
-	minY, maxY := cy[0], cy[0]
-	for i := 0; i < 4; i++ {
+	rx0, ry0 := rotSVG90K(cx[0], cy[0], s)
+	minX, maxX := rx0, rx0
+	minY, maxY := ry0, ry0
+	for i := 1; i < 4; i++ {
 		rx, ry := rotSVG90K(cx[i], cy[i], s)
 		if rx < minX {
 			minX = rx
@@ -652,8 +653,9 @@ func loadVectorSVG(absPath string) (svgAsset, []svgPinCenter, error) {
 		return svgAsset{}, nil, err
 	}
 	validateCenteredViewBox(merged.ViewMinX, merged.ViewMinY, merged.ViewW, merged.ViewH, absPath)
-	snapPinMarkersToGrid64(&merged)
 	snapNearAxisStrokes(&merged)
+	snapGeometryToGrid(&merged, geomGridSnap)
+	snapPinMarkersToGrid64(&merged)
 	pins := extractRedPinMarkers(&merged)
 	seenID := map[string]bool{}
 	for _, p := range pins {
@@ -668,6 +670,36 @@ func loadVectorSVG(absPath string) (svgAsset, []svgPinCenter, error) {
 	stripSemanticPinLabelMarkers(&merged)
 	merged.Prims = orderPrimitivesFillUnderStroke(merged.Prims)
 	return merged, pins, nil
+}
+
+func snapGeometryToGrid(asset *svgAsset, step float64) {
+	if step <= 0 {
+		return
+	}
+	snap := func(v float64) float64 {
+		return math.Round(v/step) * step
+	}
+	for i := range asset.Prims {
+		p := &asset.Prims[i]
+		switch p.Kind {
+		case primLine, primPolyline, primCubicBezier:
+			for j := 0; j+1 < len(p.Points); j += 2 {
+				p.Points[j] = snap(p.Points[j])
+				p.Points[j+1] = snap(p.Points[j+1])
+			}
+		case primRect:
+			p.X = snap(p.X)
+			p.Y = snap(p.Y)
+			p.W = snap(p.W)
+			p.H = snap(p.H)
+			p.Rx = snap(p.Rx)
+			p.Ry = snap(p.Ry)
+		case primCircle:
+			p.CX = snap(p.CX)
+			p.CY = snap(p.CY)
+			p.R = snap(p.R)
+		}
+	}
 }
 
 func extractRedPinMarkers(asset *svgAsset) []svgPinCenter {
@@ -737,6 +769,8 @@ type svgMatrix struct {
 	a, b, c, d, e, f float64
 }
 
+const matrixRotationSnapDeg = 5.0
+
 func parseSVGMatrix(transform string) (svgMatrix, bool) {
 	transform = strings.TrimSpace(transform)
 	if transform == "" {
@@ -754,14 +788,28 @@ func parseSVGMatrix(transform string) (svgMatrix, bool) {
 	if len(fields) != 6 {
 		return svgMatrix{}, false
 	}
-	return svgMatrix{
+	m := svgMatrix{
 		a: parseFloat(fields[0], 1),
 		b: parseFloat(fields[1], 0),
 		c: parseFloat(fields[2], 0),
 		d: parseFloat(fields[3], 1),
 		e: parseFloat(fields[4], 0),
 		f: parseFloat(fields[5], 0),
-	}, true
+	}
+	snapSVGMatrixRotationNoise(&m)
+	return m, true
+}
+
+func snapSVGMatrixRotationNoise(m *svgMatrix) {
+	// Treat tiny matrix off-diagonal terms as export noise.
+	// With |sin(theta)| below sin(5°), visual rotation/shear is negligible.
+	sinThreshold := math.Sin(matrixRotationSnapDeg * math.Pi / 180.0)
+	if math.Abs(m.b) < sinThreshold {
+		m.b = 0
+	}
+	if math.Abs(m.c) < sinThreshold {
+		m.c = 0
+	}
 }
 
 func transformSVGMatrix(m svgMatrix, x, y float64) (float64, float64) {
@@ -803,6 +851,7 @@ func bakeLineEndpointsWithSVGMatrix(x1, y1, x2, y2 float64, mat svgMatrix, trans
 }
 
 const pinGridSnap = 32.0
+const geomGridSnap = 1.0
 
 // Near-axis snapping (SVG user units): nearly horizontal/vertical strokes align to axis so
 // rasterization does not staircase when Boxy leaves small coordinate drift.
@@ -920,7 +969,7 @@ func snapPinMarkersToGrid64(asset *svgAsset) {
 }
 
 // rejectUnhandledTransform fails fast on transform attributes the generator does not bake into primitives.
-// Circle, ellipse, and line may use transform="matrix(...)" only (center or endpoints); everything else must be
+// Circle, ellipse, line, and rect may use transform="matrix(...)" only; everything else must be
 // baked in Boxy (Object → Transform → Bake Transform) before running this tool.
 func rejectUnhandledTransform(elemLocal string, attr map[string]string) error {
 	tr := strings.TrimSpace(attr["transform"])
@@ -928,7 +977,7 @@ func rejectUnhandledTransform(elemLocal string, attr map[string]string) error {
 		return nil
 	}
 	switch elemLocal {
-	case "circle", "ellipse", "line":
+	case "circle", "ellipse", "line", "rect":
 		if _, ok := parseSVGMatrix(tr); ok {
 			return nil
 		}
@@ -1037,6 +1086,22 @@ func parseSVG(data []byte) (svgAsset, error) {
 				Stroke:      canonStroke(stroke),
 				HasStroke:   hasPaint(stroke),
 				StrokeWidth: parseFloat(attr["stroke-width"], 1),
+			}
+			if mat, ok := parseSVGMatrix(strings.TrimSpace(attr["transform"])); ok {
+				// Bake affine matrix into an axis-aligned rect by transforming corners
+				// and taking the resulting bounding box.
+				x0, y0 := transformSVGMatrix(mat, p.X, p.Y)
+				x1, y1 := transformSVGMatrix(mat, p.X+p.W, p.Y)
+				x2, y2 := transformSVGMatrix(mat, p.X+p.W, p.Y+p.H)
+				x3, y3 := transformSVGMatrix(mat, p.X, p.Y+p.H)
+				minX := minFloat64(minFloat64(x0, x1), minFloat64(x2, x3))
+				maxX := maxFloat64(maxFloat64(x0, x1), maxFloat64(x2, x3))
+				minY := minFloat64(minFloat64(y0, y1), minFloat64(y2, y3))
+				maxY := maxFloat64(maxFloat64(y0, y1), maxFloat64(y2, y3))
+				p.X = minX
+				p.Y = minY
+				p.W = maxX - minX
+				p.H = maxY - minY
 			}
 			if p.HasFill || p.HasStroke {
 				out.Prims = append(out.Prims, p)
@@ -1646,6 +1711,20 @@ func max0(v float64) float64 {
 		return 0
 	}
 	return v
+}
+
+func minFloat64(a, b float64) float64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func maxFloat64(a, b float64) float64 {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 const mathPi = math.Pi

@@ -16,63 +16,63 @@ const RotationSlots = 4
 func init() {
 	part.RegisterVectorDraw("vcc-0", drawVector_vcc_0)
 	part.RegisterPinLayout("vcc-0", []core.Pt{
-		{X:0.000000, Y:-0.000000},
-	}, []string{
-		"VCC",
-	})
-	part.RegisterVectorHitBounds("vcc-0", -64.287000, -175.879991, 63.713000, 0.000000)
-	part.RegisterVectorDraw("vcc-1", drawVector_vcc_1)
-	part.RegisterPinLayout("vcc-1", []core.Pt{
 		{X:0.000000, Y:0.000000},
 	}, []string{
 		"VCC",
 	})
-	part.RegisterVectorHitBounds("vcc-1", -0.000000, -64.287000, 175.879991, 63.713000)
-	part.RegisterVectorDraw("vcc-2", drawVector_vcc_2)
-	part.RegisterPinLayout("vcc-2", []core.Pt{
+	part.RegisterVectorHitBounds("vcc-0", -64.000000, -176.000000, 64.000000, 0.000000)
+	part.RegisterVectorDraw("vcc-1", drawVector_vcc_1)
+	part.RegisterPinLayout("vcc-1", []core.Pt{
 		{X:-0.000000, Y:0.000000},
 	}, []string{
 		"VCC",
 	})
-	part.RegisterVectorHitBounds("vcc-2", -63.713000, -0.000000, 64.287000, 175.879991)
-	part.RegisterVectorDraw("vcc-3", drawVector_vcc_3)
-	part.RegisterPinLayout("vcc-3", []core.Pt{
+	part.RegisterVectorHitBounds("vcc-1", -0.000000, -64.000000, 176.000000, 64.000000)
+	part.RegisterVectorDraw("vcc-2", drawVector_vcc_2)
+	part.RegisterPinLayout("vcc-2", []core.Pt{
 		{X:-0.000000, Y:-0.000000},
 	}, []string{
 		"VCC",
 	})
-	part.RegisterVectorHitBounds("vcc-3", -175.879991, -63.713000, 0.000000, 64.287000)
+	part.RegisterVectorHitBounds("vcc-2", -64.000000, -0.000000, 64.000000, 176.000000)
+	part.RegisterVectorDraw("vcc-3", drawVector_vcc_3)
+	part.RegisterPinLayout("vcc-3", []core.Pt{
+		{X:0.000000, Y:-0.000000},
+	}, []string{
+		"VCC",
+	})
+	part.RegisterVectorHitBounds("vcc-3", -176.000000, -64.000000, 0.000000, 64.000000)
 }
 
 func drawVector_vcc_0(ctx part.DrawContext, base core.BasePart) bool {
-	part.DrawVGLine(ctx, base, 0.614500, 0.000000, 0.614500, -63.529000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGCircle(ctx, base, -0.287000, -111.879991, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGLine(ctx, base, -0.143500, -80.118000, -0.143500, -143.640000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, 32.518000, -112.020000, -31.002000, -112.020000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 1.000000, 0.000000, 1.000000, -64.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGCircle(ctx, base, -0.000000, -112.000000, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
+	part.DrawVGLine(ctx, base, -0.000000, -80.000000, -0.000000, -144.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 33.000000, -112.000000, -31.000000, -112.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_vcc_1(ctx part.DrawContext, base core.BasePart) bool {
-	part.DrawVGLine(ctx, base, -0.000000, 0.614500, 63.529000, 0.614500, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGCircle(ctx, base, 111.879991, -0.287000, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGLine(ctx, base, 80.118000, -0.143500, 143.640000, -0.143500, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, 112.020000, 32.518000, 112.020000, -31.002000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -0.000000, 1.000000, 64.000000, 1.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGCircle(ctx, base, 112.000000, -0.000000, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
+	part.DrawVGLine(ctx, base, 80.000000, -0.000000, 144.000000, -0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 112.000000, 33.000000, 112.000000, -31.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_vcc_2(ctx part.DrawContext, base core.BasePart) bool {
-	part.DrawVGLine(ctx, base, -0.614500, -0.000000, -0.614500, 63.529000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGCircle(ctx, base, 0.287000, 111.879991, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGLine(ctx, base, 0.143500, 80.118000, 0.143500, 143.640000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, -32.518000, 112.020000, 31.002000, 112.020000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -1.000000, -0.000000, -1.000000, 64.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGCircle(ctx, base, 0.000000, 112.000000, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
+	part.DrawVGLine(ctx, base, 0.000000, 80.000000, 0.000000, 144.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -33.000000, 112.000000, 31.000000, 112.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
 func drawVector_vcc_3(ctx part.DrawContext, base core.BasePart) bool {
-	part.DrawVGLine(ctx, base, 0.000000, -0.614500, -63.529000, -0.614500, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGCircle(ctx, base, -111.879991, 0.287000, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
-	part.DrawVGLine(ctx, base, -80.118000, 0.143500, -143.640000, 0.143500, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
-	part.DrawVGLine(ctx, base, -112.020000, -32.518000, -112.020000, 31.002000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, 0.000000, -1.000000, -64.000000, -1.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGCircle(ctx, base, -112.000000, 0.000000, 64.000000, color.RGBA{R:255, G:255, B:255, A:255}, true, color.RGBA{R:0, G:0, B:0, A:255}, 10.000000, true)
+	part.DrawVGLine(ctx, base, -80.000000, 0.000000, -144.000000, 0.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
+	part.DrawVGLine(ctx, base, -112.000000, -33.000000, -112.000000, 31.000000, 10.000000, color.RGBA{R:0, G:0, B:0, A:255})
 	return true
 }
 
