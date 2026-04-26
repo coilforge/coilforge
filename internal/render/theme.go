@@ -76,7 +76,11 @@ func SelectionColor() color.RGBA {
 
 // GhostTint returns the tint color used for translucent preview visuals.
 func GhostTint() color.RGBA {
-	return color.RGBA{R: 255, G: 255, B: 255, A: 144}
+	if DarkMode {
+		return color.RGBA{R: 255, G: 255, B: 255, A: 144}
+	}
+	// In light mode, use a dark tint so ghost previews remain visible.
+	return color.RGBA{R: 38, G: 46, B: 62, A: 160}
 }
 
 // BoxSelectFillColor returns translucent marquee fill: window (L→R) vs crossing (R→L).

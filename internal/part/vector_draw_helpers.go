@@ -181,6 +181,10 @@ func vgColor(ctx DrawContext, c color.RGBA) color.RGBA {
 		return src
 	}
 	tint := color.RGBA{R: 255, G: 255, B: 255, A: 144}
+	if !ctx.DarkMode {
+		// Light-mode previews need a dark tint to stay visible on bright canvas.
+		tint = color.RGBA{R: 38, G: 46, B: 62, A: 160}
+	}
 	// Blend toward a light ghost tint instead of multiplying channels.
 	mix := float64(tint.A) / 255.0
 	inv := 1.0 - mix
